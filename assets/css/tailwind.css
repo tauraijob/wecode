@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy-50: #f5f7fb;
+  --navy-100: #e8edf7;
+  --navy-200: #cfdaf0;
+  --navy-300: #a6bde3;
+  --navy-400: #7899d1;
+  --navy-500: #456dac;
+  --navy-600: #2e518d;
+  --navy-700: #213c6d;
+  --navy-800: #182a4e;
+  --navy-900: #111c36;
+}
+
+@layer base {
+  html { @apply scroll-smooth; }
+  body { @apply bg-navy-950 text-white antialiased; }
+}
+

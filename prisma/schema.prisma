@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  INDIVIDUAL
+  STUDENT
+  CORPORATE
+  ADMIN
+}
+
+enum RequestCategory {
+  TRAINING
+  WORKSHOP
+  SCHOOL_CLUB
+  SERVICES
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SCHEDULED
+  COMPLETED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum Interval {
+  MONTHLY
+  YEARLY
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  role           Role      @default(INDIVIDUAL)
+  hashedPassword String
+  phone          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  requests       Request[]
+  invoices       Invoice[]
+  subscriptions  Subscription[]
+}
+
+model Request {
+  id          String         @id @default(cuid())
+  category    RequestCategory
+  description String?
+  status      RequestStatus  @default(PENDING)
+  scheduledAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  user        User           @relation(fields: [userId], references: [id])
+  userId      String
+
+  invoices    Invoice[]
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  number     String        @unique
+  currency   String        @default("USD")
+  amountUsd  Decimal       @db.Decimal(10, 2)
+  status     InvoiceStatus @default(DRAFT)
+  dueDate    DateTime?
+  createdAt  DateTime      @default(now())
+
+  user       User          @relation(fields: [userId], references: [id])
+  userId     String
+
+  request    Request?      @relation(fields: [requestId], references: [id])
+  requestId  String?
+
+  payments   Payment[]
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  currency   String        @default("USD")
+  amountUsd  Decimal       @db.Decimal(10, 2)
+  status     PaymentStatus @default(PENDING)
+  method     String?
+  createdAt  DateTime      @default(now())
+
+  invoice    Invoice       @relation(fields: [invoiceId], references: [id])
+  invoiceId  String
+}
+
+model Subscription {
+  id              String    @id @default(cuid())
+  name            String
+  interval        Interval  @default(MONTHLY)
+  nextRenewalDate DateTime?
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id])
+  userId          String
+}
