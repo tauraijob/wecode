@@ -51,7 +51,7 @@
         <div>
           <div class="mb-3 text-lg font-semibold">WeCodeZW</div>
           <p class="text-navy-200">Bridging knowledge, technology, and innovation for a digital-first world.</p>
-          <div class="mt-4 text-sm text-navy-300">WhatsApp: +27 61 629 1608</div>
+          <div class="mt-4 text-sm text-navy-300">WhatsApp: +263 778 456 168</div>
         </div>
         <div>
           <div class="mb-3 font-semibold">Offerings</div>
@@ -67,7 +67,7 @@
           <ul class="space-y-2 text-navy-200">
             <li><NuxtLink to="/about">About</NuxtLink></li>
             <li><NuxtLink to="/contact">Contact</NuxtLink></li>
-            <li><a href="https://wa.me/27616291608" target="_blank" class="underline">WhatsApp</a></li>
+            <li><a href="https://wa.me/263778456168" target="_blank" class="underline">WhatsApp</a></li>
           </ul>
         </div>
         <div>

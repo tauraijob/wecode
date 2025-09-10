@@ -7,7 +7,7 @@
   </Teleport>
   <div id="whatsapp" class="fixed bottom-6 right-6 z-50">
     <a
-      href="https://wa.me/27616291608"
+      href="https://wa.me/263778456168"
       target="_blank"
       rel="noopener"
       class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-white shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"

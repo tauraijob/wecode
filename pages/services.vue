@@ -5,7 +5,7 @@
     <h1 class="text-4xl font-extrabold tracking-tight">IT Services</h1>
     <p class="mt-4 max-w-2xl text-navy-200">Website & software development, systems management, and cybersecurity solutions.</p>
     <div class="mt-6 overflow-hidden rounded-xl border border-navy-800">
-      <img alt="Servers and cloud infrastructure" src="https://images.unsplash.com/photo-1581091870622-7f3cba5a2c82?q=80&w=1600&auto=format&fit=crop" class="h-64 w-full object-cover opacity-85" />
+      <img alt="Servers and cloud infrastructure" :src="heroSrc" @error="onHeroError" referrerpolicy="no-referrer" decoding="async" class="h-48 w-full object-cover opacity-85 sm:h-56 md:h-64" />
     </div>
     <div class="mt-8 grid gap-6 md:grid-cols-3">
       <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-6 hover:border-navy-600 transition-colors">
@@ -45,5 +45,12 @@
   </section>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const primary = 'https://images.unsplash.com/photo-1581091870622-7f3cba5a2c82?q=80&w=1600&auto=format&fit=crop'
+const fallback = 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1600&auto=format&fit=crop'
+const heroSrc = ref(primary)
+function onHeroError() {
+  if (heroSrc.value !== fallback) heroSrc.value = fallback
+}
+</script>
 

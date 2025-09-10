@@ -50,7 +50,7 @@
         </div>
       </div>
       <div class="mt-8">
-        <a href="https://wa.me/27616291608" target="_blank" class="rounded-md bg-navy-400 px-5 py-3 font-medium text-navy-950 shadow-sm shadow-navy-900/30 hover:bg-navy-300">WhatsApp to Order</a>
+        <a href="https://wa.me/263778456168" target="_blank" class="rounded-md bg-navy-400 px-5 py-3 font-medium text-navy-950 shadow-sm shadow-navy-900/30 hover:bg-navy-300">WhatsApp to Order</a>
       </div>
     </div>
     </div>
