@@ -12,6 +12,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+      },
       colors: {
         navy: {
           50: '#f5f7fb',

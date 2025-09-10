@@ -18,5 +18,21 @@
 @layer base {
   html { @apply scroll-smooth; }
   body { @apply bg-navy-950 text-white antialiased; }
+  
+  /* Ensure form elements have proper text color */
+  input, textarea, select {
+    color: white !important;
+  }
+  
+  /* Style select options */
+  select option {
+    background-color: #1e293b;
+    color: #e2e8f0;
+  }
+  
+  /* Custom breakpoint for extra small screens */
+  @media (min-width: 475px) {
+    .xs\:inline { display: inline; }
+  }
 }
 
