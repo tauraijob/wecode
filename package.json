@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@nuxtjs/sitemap": "^7.4.3",
     "@prisma/client": "^5.18.0",
     "bcryptjs": "^2.4.3",
     "dayjs": "^1.11.13",

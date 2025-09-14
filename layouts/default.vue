@@ -1,5 +1,8 @@
 <template>
   <div class="min-h-screen bg-navy-950 text-white">
+    <!-- Structured Data -->
+    <script type="application/ld+json" v-html="JSON.stringify(organizationSchema)"></script>
+    <script type="application/ld+json" v-html="JSON.stringify(websiteSchema)"></script>
     <header class="sticky top-0 z-40 border-b border-navy-800 bg-navy-950/60 backdrop-blur supports-[backdrop-filter]:bg-navy-950/50">
       <div class="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4 py-3">
         <NuxtLink to="/" class="flex items-center gap-2 font-semibold tracking-tight">
@@ -89,9 +92,14 @@
 <script setup lang="ts">
 import UiInput from '@/components/ui/Input.vue'
 import UiButton from '@/components/ui/Button.vue'
+
 const me = await $fetch('/api/auth/me').catch(() => null)
 const menuOpen = ref(false)
 const mobileOpen = ref(false)
+
+// Structured data for SEO
+const { organizationSchema, websiteSchema } = useStructuredData()
+
 async function onLogout() {
   await $fetch('/api/auth/logout', { method: 'POST' }).catch(() => null)
   await navigateTo('/auth/login')

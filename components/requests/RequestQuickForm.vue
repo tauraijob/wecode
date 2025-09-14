@@ -72,6 +72,11 @@ async function onSubmit() {
     })
     if ((res as any)?.ok) {
       successMsg.value = 'Request received. We will contact you within 1 business day.'
+      
+      // Track analytics event
+      const { trackTrainingRequest } = useGoogleAnalytics()
+      trackTrainingRequest()
+      
       form.fullName = ''
       form.email = ''
       form.clientType = 'individual'
