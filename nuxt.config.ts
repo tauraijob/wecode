@@ -27,7 +27,7 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { property: 'og:title', content: 'WeCodeZW — Digital Skills, IT Services, and Innovation' },
         { property: 'og:description', content: 'Empowering Zimbabwe with digital skills training, coding classes, IT services, and innovative products for a digital-first world.' },
-        { property: 'og:url', content: 'https://wecodezw.com' },
+        { property: 'og:url', content: 'https://wecode.co.zw' },
         { property: 'og:site_name', content: 'WeCodeZW' },
         { property: 'og:locale', content: 'en_ZW' },
         { name: 'twitter:card', content: 'summary_large_image' },
@@ -37,7 +37,7 @@ export default defineNuxtConfig({
         { name: 'msapplication-TileColor', content: '#213c6d' }
       ],
       link: [
-        { rel: 'canonical', href: 'https://wecodezw.com' },
+        { rel: 'canonical', href: 'https://wecode.co.zw' },
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
