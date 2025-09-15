@@ -14,7 +14,9 @@
           <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
             <NuxtLink to="/request" class="rounded-md bg-navy-400 px-4 sm:px-5 py-3 font-medium text-navy-950 shadow-sm shadow-navy-900/30 hover:bg-navy-300 text-center">Request Training</NuxtLink>
             <NuxtLink to="/services" class="rounded-md border border-navy-700 px-4 sm:px-5 py-3 font-medium hover:border-navy-500 text-center">IT Services</NuxtLink>
-            <NuxtLink to="/training" class="underline text-navy-300">short computer courses in Harare</NuxtLink>
+          </div>
+          <div class="mt-3 text-sm text-navy-300">
+            Looking for <NuxtLink to="/training" class="underline hover:text-navy-100">short computer courses in Harare</NuxtLink>?
           </div>
           <div class="mt-4 sm:mt-6 text-sm text-navy-300">Pricing, invoices, and payments are in USD.</div>
         </div>
