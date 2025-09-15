@@ -2,8 +2,8 @@
   <section class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_70%_-20%,rgba(46,81,141,0.35),rgba(17,28,54,0))]"></div>
     <div class="mx-auto max-w-6xl px-4 py-16">
-    <h1 class="text-4xl font-extrabold tracking-tight">Digital Skills Training</h1>
-    <p class="mt-4 max-w-2xl text-navy-200">Hands‑on programs in programming, web development, cybersecurity, data, and more—built to get you job‑ready.</p>
+    <h1 class="text-4xl font-extrabold tracking-tight">Coding Academy in Zimbabwe</h1>
+    <p class="mt-4 max-w-2xl text-navy-200">Hands‑on coding courses and short computer courses in Harare and across Zimbabwe. Learn computer programming, web development, cybersecurity, data, and more—built to get you job‑ready.</p>
     <div class="mt-6 overflow-hidden rounded-xl border border-navy-800">
       <img alt="Code editor and learning" src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1600&auto=format&fit=crop" class="h-48 w-full object-cover opacity-85 sm:h-56 md:h-64" />
     </div>
@@ -49,6 +49,15 @@
         </div>
       </div>
     </section>
+
+    <section class="mt-12">
+      <h2 class="text-2xl font-bold tracking-tight">Short computer courses in Harare</h2>
+      <p class="mt-2 max-w-3xl text-navy-300">
+        Looking for <strong>short computer courses in Harare</strong>? We offer fast‑track, practical classes in
+        Microsoft Office, typing & productivity, and foundational <strong>computer programming</strong>. Start with
+        the basics, then grow into web development and cybersecurity. <NuxtLink to="/request" class="underline text-navy-200">Request a training plan</NuxtLink>.
+      </p>
+    </section>
     <div class="mt-8 grid gap-6 md:grid-cols-3">
       <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-6 hover:border-navy-600 transition-colors">
         <div class="text-sm text-navy-300">Beginner</div>
@@ -90,5 +99,18 @@
   </section>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+useHead({
+  title: 'Coding Academy in Zimbabwe | WeCodeZW',
+  meta: [
+    {
+      name: 'description',
+      content: 'Coding academy in Zimbabwe offering short computer courses in Harare and nationwide. Learn computer programming, web development, cybersecurity, and data skills with hands‑on training.'
+    },
+    { property: 'og:title', content: 'Coding Academy in Zimbabwe | WeCodeZW' },
+    { property: 'og:description', content: 'Short computer courses in Harare and nationwide. Hands‑on coding courses, web development, cybersecurity, and data training.' },
+    { name: 'keywords', content: 'coding academy in zimbabwe, short computer courses in harare, short computer courses in zimbabwe, coding courses, computer programming' }
+  ]
+})
+</script>
 

@@ -2,8 +2,8 @@
   <section class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_70%_-20%,rgba(46,81,141,0.35),rgba(17,28,54,0))]"></div>
     <div class="mx-auto max-w-6xl px-4 py-16">
-    <h1 class="text-4xl font-extrabold tracking-tight">School Clubs: Coding & Robotics</h1>
-    <p class="mt-4 max-w-2xl text-navy-200">We establish and support clubs to nurture the next generation of tech‑savvy innovators.</p>
+    <h1 class="text-4xl font-extrabold tracking-tight">Coding & Robotics Clubs for Schools</h1>
+    <p class="mt-4 max-w-2xl text-navy-200">We establish and support coding and robotics clubs in Zimbabwean schools to nurture the next generation of tech‑savvy innovators.</p>
     <div class="mt-6 overflow-hidden rounded-xl border border-navy-800">
       <img alt="Students building robots with microcontrollers" src="https://images.unsplash.com/photo-1529101091764-c3526daf38fe?q=80&w=1600&auto=format&fit=crop" class="h-64 w-full object-cover opacity-85" />
     </div>
@@ -45,5 +45,15 @@
   </section>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+useHead({
+  title: 'Coding & Robotics Clubs in Zimbabwe | WeCodeZW',
+  meta: [
+    { name: 'description', content: 'Set up coding and robotics clubs in Zimbabwean schools. Mentoring, curriculum, competitions, and STEM partnerships.' },
+    { name: 'keywords', content: 'school coding clubs, robotics clubs, Zimbabwe schools, STEM clubs, coding for kids' },
+    { property: 'og:title', content: 'Coding & Robotics Clubs in Zimbabwe | WeCodeZW' },
+    { property: 'og:description', content: 'We help schools launch coding & robotics clubs with mentoring and competitions.' }
+  ]
+})
+</script>
 

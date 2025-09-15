@@ -2,8 +2,8 @@
   <section class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_70%_-20%,rgba(46,81,141,0.35),rgba(17,28,54,0))]"></div>
     <div class="mx-auto max-w-6xl px-4 py-16">
-    <h1 class="text-4xl font-extrabold tracking-tight">IT Services</h1>
-    <p class="mt-4 max-w-2xl text-navy-200">Website & software development, systems management, and cybersecurity solutions.</p>
+    <h1 class="text-4xl font-extrabold tracking-tight">IT Services in Zimbabwe</h1>
+    <p class="mt-4 max-w-2xl text-navy-200">Website & software development, systems management, and cybersecurity solutions for businesses and NGOs across Zimbabwe.</p>
     <div class="mt-6 overflow-hidden rounded-xl border border-navy-800">
       <img alt="Servers and cloud infrastructure" :src="heroSrc" @error="onHeroError" referrerpolicy="no-referrer" decoding="async" class="h-48 w-full object-cover opacity-85 sm:h-56 md:h-64" />
     </div>
@@ -21,6 +21,14 @@
         <div class="mt-1 text-xl font-semibold">Cybersecurity</div>
       </div>
     </div>
+
+    <section class="mt-12">
+      <h2 class="text-2xl font-bold tracking-tight">Short computer courses for teams</h2>
+      <p class="mt-2 max-w-3xl text-navy-300">
+        Upskill your workforce with <NuxtLink to="/training" class="underline text-navy-200">short computer courses in Harare</NuxtLink> and nationwide. From Microsoft 365 to
+        <strong>computer programming</strong> and cybersecurity, we tailor programs to outcomes.
+      </p>
+    </section>
     <div class="mt-12 grid gap-6 md:grid-cols-3">
       <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-5">
         <img alt="API development" src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop" class="h-28 w-full rounded object-cover opacity-85"/>
@@ -52,5 +60,15 @@ const heroSrc = ref(primary)
 function onHeroError() {
   if (heroSrc.value !== fallback) heroSrc.value = fallback
 }
+
+useHead({
+  title: 'IT Services in Zimbabwe | WeCodeZW',
+  meta: [
+    { name: 'description', content: 'IT services in Zimbabwe: web & app development, cloud & systems management, and cybersecurity for businesses and NGOs.' },
+    { name: 'keywords', content: 'IT services, software development, systems management, cybersecurity, Zimbabwe, Harare' },
+    { property: 'og:title', content: 'IT Services in Zimbabwe | WeCodeZW' },
+    { property: 'og:description', content: 'Web & app development, cloud operations, and cybersecurity solutions across Zimbabwe.' }
+  ]
+})
 </script>
 
