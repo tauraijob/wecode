@@ -68,7 +68,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || '',
-      siteUrl: process.env.SITE_URL || 'https://wecodezw.com'
+      siteUrl: process.env.SITE_URL || 'https://wecode.co.zw'
+    }
+  },
+  nitro: {
+    prerender: {
+      routes: ['/sitemap.xml', '/robots.txt']
     }
   }
 })
