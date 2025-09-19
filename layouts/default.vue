@@ -21,7 +21,8 @@
           <div v-else class="relative">
             <button @click="menuOpen = !menuOpen" class="rounded-md bg-white/10 px-2 sm:px-3 py-1.5 text-xs sm:text-sm hover:bg-white/15">{{ me.name }}</button>
             <div v-if="menuOpen" class="absolute right-0 mt-2 w-48 overflow-hidden rounded-md border border-navy-800 bg-navy-900/95 text-sm shadow-lg">
-              <NuxtLink @click="menuOpen=false" to="/dashboard" class="block px-3 py-2 hover:bg-white/10">Dashboard</NuxtLink>
+              <NuxtLink v-if="me.role==='ADMIN'" @click="menuOpen=false" to="/admin" class="block px-3 py-2 hover:bg-white/10">Admin</NuxtLink>
+              <NuxtLink v-else @click="menuOpen=false" to="/dashboard" class="block px-3 py-2 hover:bg-white/10">Dashboard</NuxtLink>
               <NuxtLink @click="menuOpen=false" to="/dashboard/account" class="block px-3 py-2 hover:bg-white/10">Account settings</NuxtLink>
               <button @click="onLogout" class="block w-full px-3 py-2 text-left hover:bg-white/10">Logout</button>
             </div>

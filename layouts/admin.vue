@@ -1,4 +1,31 @@
 <template>
+  <div class="min-h-screen grid grid-cols-12 bg-navy-950 text-white">
+    <aside class="col-span-12 md:col-span-3 lg:col-span-2 border-r border-navy-800">
+      <div class="px-4 py-5 text-xl font-bold">Admin</div>
+      <nav class="px-2 pb-6 space-y-1">
+        <NuxtLink to="/admin" class="block rounded-md px-3 py-2 hover:bg-white/5">Dashboard</NuxtLink>
+        <NuxtLink to="/admin/users" class="block rounded-md px-3 py-2 hover:bg-white/5">Users</NuxtLink>
+        <NuxtLink to="/admin/schools" class="block rounded-md px-3 py-2 hover:bg-white/5">Schools</NuxtLink>
+        <NuxtLink to="/admin/clubs" class="block rounded-md px-3 py-2 hover:bg-white/5">Clubs</NuxtLink>
+        <NuxtLink to="/admin/requests" class="block rounded-md px-3 py-2 hover:bg-white/5">Requests</NuxtLink>
+        <NuxtLink to="/admin/quotes" class="block rounded-md px-3 py-2 hover:bg-white/5">Quotes</NuxtLink>
+        <NuxtLink to="/admin/billing" class="block rounded-md px-3 py-2 hover:bg-white/5">Invoices & Payments</NuxtLink>
+      </nav>
+    </aside>
+    <main class="col-span-12 md:col-span-9 lg:col-span-10">
+      <slot />
+    </main>
+  </div>
+</template>
+
+<script setup lang="ts">
+const me = await $fetch('/api/auth/me').catch(() => null)
+if (!me || me.role !== 'ADMIN') {
+  await navigateTo('/dashboard')
+}
+</script>
+
+<template>
   <div class="min-h-screen grid grid-cols-1 md:grid-cols-[260px_1fr] bg-navy-950 text-white">
     <aside class="hidden md:block border-r border-navy-800 bg-navy-900/30">
       <div class="flex items-center gap-3 p-4">
@@ -6,7 +33,7 @@
         <div class="font-semibold tracking-tight">WeCodeZW Admin</div>
       </div>
       <nav class="mt-2 space-y-1 px-2">
-        <NuxtLink :to="'/admin/dashboard'" :class="navClass('/admin/dashboard')">Dashboard</NuxtLink>
+        <NuxtLink :to="'/admin'" :class="navClass('/admin')">Dashboard</NuxtLink>
         <NuxtLink :to="'/admin/dashboard#users'" :class="navClass('/admin/dashboard#users')">Users</NuxtLink>
         <NuxtLink :to="'/admin/dashboard#requests'" :class="navClass('/admin/dashboard#requests')">Requests</NuxtLink>
         <NuxtLink :to="'/admin/dashboard#invoices'" :class="navClass('/admin/dashboard#invoices')">Invoices</NuxtLink>
@@ -40,7 +67,7 @@
             <div class="text-xl font-semibold">WeCodeZW</div>
           </div>
           <nav class="space-y-1">
-            <NuxtLink @click="open=false" :to="'/admin/dashboard'" :class="navClass('/admin/dashboard')">Dashboard</NuxtLink>
+            <NuxtLink @click="open=false" :to="'/admin'" :class="navClass('/admin')">Dashboard</NuxtLink>
             <NuxtLink @click="open=false" :to="'/admin/dashboard#users'" :class="navClass('/admin/dashboard#users')">Users</NuxtLink>
             <NuxtLink @click="open=false" :to="'/admin/dashboard#requests'" :class="navClass('/admin/dashboard#requests')">Requests</NuxtLink>
             <NuxtLink @click="open=false" :to="'/admin/dashboard#invoices'" :class="navClass('/admin/dashboard#invoices')">Invoices</NuxtLink>

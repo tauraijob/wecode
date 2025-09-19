@@ -36,7 +36,7 @@ async function onSubmit() {
       body: { email: email.value, password: password.value }
     })
     if (me && me.role === 'ADMIN') {
-      await navigateTo('/admin/dashboard')
+      await navigateTo('/admin')
     } else {
       await navigateTo('/dashboard')
     }

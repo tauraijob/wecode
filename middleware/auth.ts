@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const me = await $fetch('/api/auth/me').catch(() => null)
   if (!me) return navigateTo('/auth/login?next=' + encodeURIComponent(to.fullPath))
   if (to.path.startsWith('/dashboard') && me.role === 'ADMIN') {
-    return navigateTo('/admin/dashboard')
+    return navigateTo('/admin')
   }
 })
 

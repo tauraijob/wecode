@@ -1,6 +1,7 @@
 import { QuoteRequestSchema, calculateQuote, renderInvoiceHtml } from '@/server/utils/pricing'
 import { sendMail } from '@/server/utils/mailer'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
+import prisma from '@/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -15,6 +16,62 @@ export default defineEventHandler(async (event) => {
   const invoiceNumber = `WCZW-${Date.now()}`
   const company = { name: 'WeCodeZW', email: process.env.MAIL_FROM || 'info@wecode.co.zw', phone: '+263778456168' }
   const html = renderInvoiceHtml({ quote, request: data, invoiceNumber, company })
+
+  // Upsert user and school, persist quote+invoice
+  const user = await prisma.user.upsert({
+    where: { email: data.email },
+    update: { name: data.contactName, phone: data.phone || undefined },
+    create: { email: data.email, name: data.contactName, hashedPassword: '' }
+  })
+
+  const school = await prisma.school.upsert({
+    where: { contactEmail: data.email },
+    update: { name: data.schoolName, contactName: data.contactName, phone: data.phone || undefined, ownerId: user.id },
+    create: { name: data.schoolName, contactEmail: data.email, contactName: data.contactName, phone: data.phone || undefined, ownerId: user.id }
+  })
+
+  const quoteRecord = await prisma.quote.create({
+    data: {
+      number: invoiceNumber,
+      currency: quote.currency,
+      totalUsd: quote.total,
+      data: quote as any,
+      userId: user.id,
+      schoolId: school.id,
+      items: {
+        create: quote.items.map(i => ({ name: i.name, unitUsd: i.unitPrice, quantity: i.quantity, lineUsd: i.total }))
+      }
+    }
+  })
+
+  // Also create a pending request and an invoice record for admin visibility
+  const requestRecord = await prisma.request.create({
+    data: {
+      category: 'SCHOOL_CLUB' as any,
+      description: `Quote ${invoiceNumber} for ${data.schoolName}`,
+      status: 'PENDING' as any,
+      userId: user.id
+    }
+  })
+
+  const invoiceRecord = await prisma.invoice.create({
+    data: {
+      number: invoiceNumber,
+      currency: quote.currency,
+      amountUsd: quote.total,
+      status: 'SENT' as any,
+      userId: user.id,
+      requestId: requestRecord.id,
+      schoolId: school.id
+    }
+  })
+
+  // Create a magic-link for immediate access
+  const token = crypto.randomUUID().replace(/-/g, '')
+  const expires = new Date(Date.now() + 1000 * 60 * 30)
+  await prisma.magicLink.create({ data: { token, userId: user.id, expiresAt: expires } })
+  const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
+  const dashLink = `${siteUrl}/api/auth/magic-link/verify?token=${token}`
 
   const adminTo = process.env.MAIL_TO || process.env.MAIL_FROM
   if (!adminTo) throw createError({ statusCode: 500, statusMessage: 'MAIL_TO not configured' })
@@ -50,12 +107,12 @@ export default defineEventHandler(async (event) => {
   await sendMail({
     to: data.email,
     subject: `Your Quote — WeCodeZW — ${invoiceNumber}`,
-    text: `Thank you for your request. Total: ${quote.currency} ${quote.total.toFixed(2)}.`,
-    html,
+    text: `Thank you for your request. Total: ${quote.currency} ${quote.total.toFixed(2)}. Access your dashboard: ${dashLink}`,
+    html: `${html}<div style="margin-top:16px"><a href="${dashLink}">Access your dashboard</a></div>`,
     ...(attachments ? { attachments } : {}) as any
   })
 
-  return { ok: true, invoiceNumber, total: quote.total, currency: quote.currency }
+  return { ok: true, invoiceNumber, total: quote.total, currency: quote.currency, quoteId: quoteRecord.id, invoiceId: invoiceRecord.id, requestId: requestRecord.id }
 })
 
 

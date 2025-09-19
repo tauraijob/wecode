@@ -1,13 +1,12 @@
-import { verifyJwt } from '~~/server/utils/jwt'
-import { prisma } from '~~/server/utils/prisma'
+import prisma from '@/server/utils/db'
+import { verifySession } from '@/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const token = getCookie(event, 'token')
-  if (!token) return null
-  const payload = verifyJwt(token)
-  if (!payload) return null
-  const user = await prisma.user.findUnique({ where: { id: payload.userId } })
-  if (!user) return null
-  return { id: user.id, email: user.email, name: user.name, role: user.role }
+  const token = getCookie(event, 'auth_token')
+  const session = token ? verifySession<{ uid: string }>(token) : null
+  if (!session?.uid) throw createError({ statusCode: 401, statusMessage: 'Unauthenticated' })
+  const user = await prisma.user.findUnique({ where: { id: session.uid }, select: { id: true, email: true, name: true, role: true } })
+  if (!user) throw createError({ statusCode: 404, statusMessage: 'User not found' })
+  return user
 })
 

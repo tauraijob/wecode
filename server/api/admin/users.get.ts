@@ -1,12 +1,27 @@
-import { prisma } from '~~/server/utils/prisma'
-import { verifyJwt } from '~~/server/utils/jwt'
+import prisma from '@/server/utils/db'
+import { getCurrentUser } from '@/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const token = getCookie(event, 'token')
-  const auth = token ? verifyJwt(token) : null
-  if (!auth || auth.role !== 'ADMIN') {
+  const user = await getCurrentUser(event)
+  if (!user || user.role !== 'ADMIN') {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
-  return prisma.user.findMany({ orderBy: { createdAt: 'desc' } })
+  
+  const rows = await prisma.user.findMany({ 
+    orderBy: { createdAt: 'desc' }, 
+    select: { 
+      id: true, 
+      name: true, 
+      email: true, 
+      role: true, 
+      createdAt: true,
+      school: {
+        select: {
+          name: true
+        }
+      }
+    } 
+  })
+  return rows
 })
 

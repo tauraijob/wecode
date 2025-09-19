@@ -1,7 +1,7 @@
-import { prisma } from '~~/server/utils/prisma'
-import { verifyJwt } from '~~/server/utils/jwt'
-import { Decimal } from '@prisma/client/runtime/library'
 import { z } from 'zod'
+import prisma from '@/server/utils/db'
+import { getCurrentUser } from '@/server/utils/auth'
+import { Decimal } from '@prisma/client/runtime/library'
 
 const Schema = z.object({
   requestId: z.string(),
@@ -10,13 +10,16 @@ const Schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const token = getCookie(event, 'token')
-  const auth = token ? verifyJwt(token) : null
-  if (!auth || auth.role !== 'ADMIN') throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  const user = await getCurrentUser(event)
+  if (!user || user.role !== 'ADMIN') {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
 
   const body = await readBody(event)
   const parsed = Schema.safeParse(body)
-  if (!parsed.success) throw createError({ statusCode: 400, statusMessage: 'Invalid input' })
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid input' })
+  }
 
   const req = await prisma.request.update({
     where: { id: parsed.data.requestId },
