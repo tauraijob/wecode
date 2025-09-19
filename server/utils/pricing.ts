@@ -122,7 +122,7 @@ export function calculateQuote(input: QuoteRequest): QuoteResult {
   const plan = planList.find(p => p.id === input.planId)
   if (!plan) throw new Error('Invalid plan selected')
 
-  const effectiveStudents = Math.max(input.students, plan.minimumStudents)
+  const effectiveStudents = input.students
   const planMonths = input.months
   const planQuantity = effectiveStudents * planMonths
   const planTotal = plan.price * planQuantity

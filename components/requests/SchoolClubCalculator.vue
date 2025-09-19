@@ -43,7 +43,6 @@
       <div>
         <UiLabel class="text-navy-200">Students</UiLabel>
         <UiInput v-model.number="form.students" type="number" min="1" required class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
-        <div class="mt-1 text-xs text-navy-300">Min enforced by plan.</div>
       </div>
       <div>
         <UiLabel class="text-navy-200">Teacher Training</UiLabel>
@@ -198,7 +197,7 @@ watch(() => form.level, (lvl) => {
 
 const total = computed(() => {
   const p = plans.value.find(p => p.id === form.planId)!
-  const students = Math.max(form.students, p.minimumStudents)
+  const students = form.students
   let planTotal = p.price * students * form.months
   const teacherTotal = teacherBasic.value * 50 + teacherFacilitator.value * 100 + teacherTermly.value * 60
   const kitsTotal = kitMicrobit.value * 35 + kitBitbot.value * 70 + kitPack.value * 350
