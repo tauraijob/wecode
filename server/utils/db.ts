@@ -1,18 +1,24 @@
-import { PrismaClient } from '@prisma/client'
+// Dynamic import to avoid build-time issues
+let prisma: any = null
 
-// Ensure a single PrismaClient instance across HMR in dev
-// eslint-disable-next-line import/no-mutable-exports
-let prisma: PrismaClient
+declare const globalThis: { prismaGlobal?: any } & typeof global
 
-declare const globalThis: { prismaGlobal?: PrismaClient } & typeof global
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient()
-} else {
-  if (!globalThis.prismaGlobal) {
-    globalThis.prismaGlobal = new PrismaClient()
+// Only initialize Prisma if DATABASE_URL is available
+if (process.env.DATABASE_URL) {
+  try {
+    const { PrismaClient } = require('@prisma/client')
+    
+    if (process.env.NODE_ENV === 'production') {
+      prisma = new PrismaClient()
+    } else {
+      if (!globalThis.prismaGlobal) {
+        globalThis.prismaGlobal = new PrismaClient()
+      }
+      prisma = globalThis.prismaGlobal
+    }
+  } catch (error) {
+    console.warn('Prisma client not available:', error)
   }
-  prisma = globalThis.prismaGlobal
 }
 
 export default prisma

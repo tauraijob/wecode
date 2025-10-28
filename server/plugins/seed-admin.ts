@@ -1,7 +1,13 @@
 import { hashPassword } from '~~/server/utils/password'
-import { prisma } from '~~/server/utils/prisma'
+import prisma from '~~/server/utils/db'
 
 export default defineNitroPlugin(async () => {
+  // Skip seeding if no database connection
+  if (!prisma) {
+    console.log('[seed] Skipping seed - no database connection')
+    return
+  }
+
   try {
     const demoUsers = [
       { email: 'admin@wecodezw.com', name: 'WeCodeZW Admin', role: 'ADMIN', password: 'Admin@12345' },

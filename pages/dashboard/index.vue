@@ -63,9 +63,19 @@
 </template>
 
 <script setup lang="ts">
-import { Chart, registerables } from 'chart.js'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
 
-Chart.register(...registerables)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
 
 const quotes = ref<{ id: string; number: string; totalUsd: number }[]>([])
 const invoices = ref<any[]>([])

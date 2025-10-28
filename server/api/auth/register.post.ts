@@ -1,4 +1,4 @@
-import { prisma } from '~~/server/utils/prisma'
+import prisma from '~~/server/utils/db'
 import { hashPassword } from '~~/server/utils/password'
 import { z } from 'zod'
 import { setCookie } from 'h3'

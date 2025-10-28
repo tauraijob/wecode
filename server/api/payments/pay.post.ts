@@ -1,4 +1,4 @@
-import { prisma } from '~~/server/utils/prisma'
+import prisma from '~~/server/utils/db'
 import { verifyJwt } from '~~/server/utils/jwt'
 import { Decimal } from '@prisma/client/runtime/library'
 import { z } from 'zod'

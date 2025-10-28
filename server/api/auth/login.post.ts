@@ -1,4 +1,4 @@
-import { prisma } from '~~/server/utils/prisma'
+import prisma from '~~/server/utils/db'
 import { verifyPassword } from '~~/server/utils/password'
 import { z } from 'zod'
 import { setCookie } from 'h3'
@@ -10,6 +10,10 @@ const LoginSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  if (!prisma) {
+    throw createError({ statusCode: 503, statusMessage: 'Database not available' })
+  }
+  
   const body = await readBody(event)
   const parsed = LoginSchema.safeParse(body)
   if (!parsed.success) {
