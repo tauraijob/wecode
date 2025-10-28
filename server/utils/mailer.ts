@@ -23,6 +23,7 @@ export async function sendMail(options: {
   html?: string
   text?: string
   replyTo?: string
+  attachments?: any[]
 }) {
   const from = ((globalThis as any).process?.env?.MAIL_FROM) as string | undefined
   if (!from) throw new Error('MAIL_FROM env not set')
@@ -34,7 +35,8 @@ export async function sendMail(options: {
     subject: options.subject,
     text: options.text,
     html: options.html,
-    replyTo: options.replyTo
+    replyTo: options.replyTo,
+    attachments: options.attachments
   })
 }
 

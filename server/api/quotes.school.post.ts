@@ -1,9 +1,14 @@
-import { QuoteRequestSchema, calculateQuote, renderInvoiceHtml } from '@/server/utils/pricing'
-import { sendMail } from '@/server/utils/mailer'
+import { QuoteRequestSchema, calculateQuote, renderInvoiceHtml } from '~~/server/utils/pricing'
+import { sendMail } from '~~/server/utils/mailer'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import prisma from '@/server/utils/db'
+import prisma from '~~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
+  // Check if database is available
+  if (!prisma) {
+    throw createError({ statusCode: 503, statusMessage: 'Database not available' })
+  }
+
   const body = await readBody(event)
   const parsed = QuoteRequestSchema.safeParse(body)
   if (!parsed.success) {
@@ -81,36 +86,47 @@ export default defineEventHandler(async (event) => {
   // Optional PDF attachment if requested
   let attachments: any[] | undefined
   if ((data as any)?.attachPdf) {
-    const pdfDoc = await PDFDocument.create()
-    const page = pdfDoc.addPage([612, 792]) // Letter
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const title = `Invoice ${invoiceNumber}`
-    page.drawText('WeCodeZW', { x: 50, y: 740, size: 18, font, color: rgb(0.13, 0.24, 0.43) })
-    page.drawText(title, { x: 50, y: 720, size: 14, font })
-    page.drawText(`School: ${data.schoolName}`, { x: 50, y: 700, size: 12, font })
-    page.drawText(`Contact: ${data.contactName} • ${data.email}`, { x: 50, y: 684, size: 12, font })
-    page.drawText(`Total: ${quote.currency} ${quote.total.toFixed(2)}`, { x: 50, y: 668, size: 12, font })
-    const pdfBytes = await pdfDoc.save()
-    attachments = [{ filename: `${invoiceNumber}.pdf`, content: Buffer.from(pdfBytes), contentType: 'application/pdf' }]
+    try {
+      const pdfDoc = await PDFDocument.create()
+      const page = pdfDoc.addPage([612, 792]) // Letter
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+      const title = `Invoice ${invoiceNumber}`
+      page.drawText('WeCodeZW', { x: 50, y: 740, size: 18, font, color: rgb(0.13, 0.24, 0.43) })
+      page.drawText(title, { x: 50, y: 720, size: 14, font })
+      page.drawText(`School: ${data.schoolName}`, { x: 50, y: 700, size: 12, font })
+      page.drawText(`Contact: ${data.contactName} • ${data.email}`, { x: 50, y: 684, size: 12, font })
+      page.drawText(`Total: ${quote.currency} ${quote.total.toFixed(2)}`, { x: 50, y: 668, size: 12, font })
+      const pdfBytes = await pdfDoc.save()
+      attachments = [{ filename: `${invoiceNumber}.pdf`, content: Buffer.from(pdfBytes), contentType: 'application/pdf' }]
+    } catch (error) {
+      console.warn('Failed to create PDF attachment:', error)
+      // Continue without PDF attachment
+    }
   }
 
-  await sendMail({
-    to: adminTo,
-    subject,
-    text: `Quote total: ${quote.currency} ${quote.total.toFixed(2)} | From: ${data.contactName} <${data.email}>`,
-    html,
-    replyTo: data.email,
-    ...(attachments ? { attachments } : {}) as any
-  })
+  try {
+    await sendMail({
+      to: adminTo,
+      subject,
+      text: `Quote total: ${quote.currency} ${quote.total.toFixed(2)} | From: ${data.contactName} <${data.email}>`,
+      html,
+      replyTo: data.email,
+      ...(attachments ? { attachments } : {}) as any
+    })
 
-  // Send a copy to the requester
-  await sendMail({
-    to: data.email,
-    subject: `Your Quote — WeCodeZW — ${invoiceNumber}`,
-    text: `Thank you for your request. Total: ${quote.currency} ${quote.total.toFixed(2)}. Access your dashboard: ${dashLink}`,
-    html: `${html}<div style="margin-top:16px"><a href="${dashLink}">Access your dashboard</a></div>`,
-    ...(attachments ? { attachments } : {}) as any
-  })
+    // Send a copy to the requester
+    await sendMail({
+      to: data.email,
+      subject: `Your Quote — WeCodeZW — ${invoiceNumber}`,
+      text: `Thank you for your request. Total: ${quote.currency} ${quote.total.toFixed(2)}. Access your dashboard: ${dashLink}`,
+      html: `${html}<div style="margin-top:16px"><a href="${dashLink}">Access your dashboard</a></div>`,
+      ...(attachments ? { attachments } : {}) as any
+    })
+  } catch (error) {
+    console.error('Failed to send emails:', error)
+    // Don't fail the entire request if email fails
+    // The quote was still created successfully
+  }
 
   return { ok: true, invoiceNumber, total: quote.total, currency: quote.currency, quoteId: quoteRecord.id, invoiceId: invoiceRecord.id, requestId: requestRecord.id }
 })
