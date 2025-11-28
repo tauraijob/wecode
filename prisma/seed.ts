@@ -14,13 +14,16 @@ async function main() {
 
   const adminUser = await prisma.user.upsert({
     where: { email: adminEmail },
-    update: {},
+    update: {
+      emailVerified: true
+    },
     create: {
       email: adminEmail,
       name: 'E-Learning Admin',
       role: 'ADMIN',
       hashedPassword: hashedPassword,
-      phone: '+263 778 456 168'
+      phone: '+263 778 456 168',
+      emailVerified: true
     }
   })
 
@@ -38,13 +41,16 @@ async function main() {
 
   const regularUser = await prisma.user.upsert({
     where: { email: userEmail },
-    update: {},
+    update: {
+      emailVerified: true
+    },
     create: {
       email: userEmail,
       name: 'E-Learning Student',
       role: 'STUDENT',
       hashedPassword: userHashedPassword,
-      phone: '+263 777 123 456'
+      phone: '+263 777 123 456',
+      emailVerified: true
     }
   })
 
