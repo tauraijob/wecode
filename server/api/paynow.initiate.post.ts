@@ -19,9 +19,11 @@ export default defineEventHandler(async (event) => {
   const integrationId = process.env.PAYNOW_INTEGRATION_ID
   const integrationKey = process.env.PAYNOW_INTEGRATION_KEY
   // Ensure SITE_URL starts with http:// or https://
-  let siteUrl = process.env.SITE_URL || 'http://localhost:3000'
+  // Default to production URL if SITE_URL not set (production environment)
+  const isProduction = process.env.NODE_ENV === 'production' || !process.env.NODE_ENV
+  let siteUrl = process.env.SITE_URL || (isProduction ? 'https://wecode.co.zw' : 'http://localhost:3000')
   if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
-    siteUrl = `http://${siteUrl}`
+    siteUrl = `https://${siteUrl}`
   }
 
   if (!integrationId || !integrationKey) {

@@ -245,12 +245,13 @@ export default defineEventHandler(async (event) => {
   // For local development, use localhost. For production, use the actual domain
   // Note: Paynow webhooks require a publicly accessible URL, so for local testing
   // you may need to use ngrok or test on a staging server
-  const isLocal = process.env.NODE_ENV === 'development' || !process.env.SITE_URL || process.env.SITE_URL.includes('localhost')
-  let siteUrl = isLocal ? 'http://localhost:3000' : (process.env.SITE_URL || 'https://wecode.co.zw')
+  const isLocal = process.env.NODE_ENV === 'development' || (!process.env.SITE_URL && process.env.NODE_ENV !== 'production') || (process.env.SITE_URL && process.env.SITE_URL.includes('localhost'))
+  const isProduction = process.env.NODE_ENV === 'production' || (!process.env.NODE_ENV && !isLocal)
+  let siteUrl = process.env.SITE_URL || (isProduction ? 'https://wecode.co.zw' : 'http://localhost:3000')
   
   // Ensure SITE_URL starts with http:// or https://
   if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
-    siteUrl = `http://${siteUrl}`
+    siteUrl = `https://${siteUrl}`
   }
 
   if (!integrationId || !integrationKey) {
