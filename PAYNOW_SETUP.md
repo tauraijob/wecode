@@ -44,18 +44,20 @@ SITE_URL=http://localhost:3000
 
 ## Webhook Configuration
 
-In your Paynow dashboard, configure the following webhook URL:
+**IMPORTANT:** In your Paynow dashboard, configure the following webhook URL for production:
 
-**Result URL (Webhook):** `{SITE_URL}/api/paynow/result`
+**Result URL (Webhook):** `https://wecode.co.zw/api/paynow/result`
 
 This endpoint will be called by Paynow when payment status changes. It will:
 - Update the invoice status to `PAID`
 - Create a payment record
 - Activate the enrollment(s) linked to the invoice
 
-**Return URL:** `{SITE_URL}/pay/{invoiceNumber}`
+**Return URL:** `https://wecode.co.zw/dashboard/learn`
 
 This is where users are redirected after completing payment on Paynow.
+
+**Note:** The system automatically uses `https://wecode.co.zw` as the default production domain. Make sure `SITE_URL=https://wecode.co.zw` is set in your production environment variables.
 
 ## Testing
 

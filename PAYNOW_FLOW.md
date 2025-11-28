@@ -54,22 +54,35 @@
 
 ### Environment Variables Required:
 
+**For Production (wecode.co.zw):**
 ```env
 PAYNOW_INTEGRATION_ID=22658
 PAYNOW_INTEGRATION_KEY=a5651864-acc3-478f-b093-3a8e8c4f7dd7
-SITE_URL=http://localhost:3000  # or https://wecode.co.zw for production
+SITE_URL=https://wecode.co.zw
+# PAYNOW_TEST_EMAIL is NOT needed for live payments - system uses user's email
+```
+
+**For Local Development:**
+```env
+PAYNOW_INTEGRATION_ID=22658
+PAYNOW_INTEGRATION_KEY=a5651864-acc3-478f-b093-3a8e8c4f7dd7
+SITE_URL=http://localhost:3000
 PAYNOW_TEST_EMAIL=your-registered-email@example.com  # Required for test mode
 ```
 
 ### Paynow Dashboard Configuration:
 
-- **Result URL (Webhook):** `{SITE_URL}/api/paynow/result`
-  - This is where Paynow sends payment status updates
-  - Must be publicly accessible (use ngrok for local testing)
+**Production URLs (wecode.co.zw):**
 
-- **Return URL:** `{SITE_URL}/dashboard/learn`
+- **Result URL (Webhook):** `https://wecode.co.zw/api/paynow/result`
+  - This is where Paynow sends payment status updates
+  - Must be publicly accessible
+  - Configure this in your Paynow dashboard
+
+- **Return URL:** `https://wecode.co.zw/dashboard/learn`
   - This is where users are redirected after payment
   - Currently set to "My Courses" page
+  - Can also be invoice-specific: `https://wecode.co.zw/invoices/{invoiceId}`
 
 ## Flow Diagram
 

@@ -242,16 +242,17 @@ export default defineEventHandler(async (event) => {
   // For paid courses, initiate Paynow payment immediately
   const integrationId = process.env.PAYNOW_INTEGRATION_ID
   const integrationKey = process.env.PAYNOW_INTEGRATION_KEY
-  // For local development, use localhost. For production, use the actual domain
+  // Default to production URL (wecode.co.zw) if SITE_URL not set
+  // Only use localhost if explicitly in development mode with NODE_ENV=development
   // Note: Paynow webhooks require a publicly accessible URL, so for local testing
   // you may need to use ngrok or test on a staging server
-  const isLocal = process.env.NODE_ENV === 'development' || (!process.env.SITE_URL && process.env.NODE_ENV !== 'production') || (process.env.SITE_URL && process.env.SITE_URL.includes('localhost'))
-  const isProduction = process.env.NODE_ENV === 'production' || (!process.env.NODE_ENV && !isLocal)
-  let siteUrl = process.env.SITE_URL || (isProduction ? 'https://wecode.co.zw' : 'http://localhost:3000')
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  let siteUrl = process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
   
   // Ensure SITE_URL starts with http:// or https://
   if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
-    siteUrl = `https://${siteUrl}`
+    // Default to https for production domains
+    siteUrl = siteUrl.includes('localhost') ? `http://${siteUrl}` : `https://${siteUrl}`
   }
 
   if (!integrationId || !integrationKey) {
