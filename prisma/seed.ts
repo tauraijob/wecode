@@ -7,7 +7,7 @@ async function main() {
   console.log('🌱 Starting seed...')
 
   // Create admin user for E-LEARNING PLATFORM (different from general website)
-  const adminEmail = 'elearning-admin@wecode.co.zw'
+  const adminEmail = 'taujob1111@gmail.com'
   const adminPassword = 'ElearningAdmin@2024'
   
   const hashedPassword = await bcrypt.hash(adminPassword, 10)
@@ -31,7 +31,7 @@ async function main() {
   })
 
   // Create a regular user for courses (E-LEARNING PLATFORM)
-  const userEmail = 'elearning-student@wecode.co.zw'
+  const userEmail = 'info@wecode.co.zw'
   const userPassword = 'ElearningStudent@2024'
   
   const userHashedPassword = await bcrypt.hash(userPassword, 10)
