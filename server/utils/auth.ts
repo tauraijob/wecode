@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import type { H3Event } from 'h3'
-import prisma from '@/server/utils/db'
+import prisma from '~~/server/utils/db'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me'
 

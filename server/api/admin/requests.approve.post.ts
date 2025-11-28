@@ -1,7 +1,6 @@
 import { z } from 'zod'
-import prisma from '@/server/utils/db'
-import { getCurrentUser } from '@/server/utils/auth'
-import { Decimal } from '@prisma/client/runtime/library'
+import prisma, { Decimal } from '~~/server/utils/db'
+import { getCurrentUser } from '~~/server/utils/auth'
 
 const Schema = z.object({
   requestId: z.string(),

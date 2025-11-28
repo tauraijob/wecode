@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const id = event.context.params?.id as string
   const invoice = await prisma.invoice.findUnique({
     where: { id },
-    include: { user: true, payments: true, request: true }
+    include: { user: true, payments: true, request: true, school: true }
   })
   if (!invoice) throw createError({ statusCode: 404, statusMessage: 'Invoice not found' })
   const isOwner = invoice.userId === auth.userId

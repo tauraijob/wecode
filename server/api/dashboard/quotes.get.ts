@@ -1,5 +1,5 @@
-import prisma from '@/server/utils/db'
-import { verifySession } from '@/server/utils/auth'
+import prisma from '~~/server/utils/db'
+import { verifySession } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const token = getCookie(event, 'auth_token')

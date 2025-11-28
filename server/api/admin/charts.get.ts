@@ -1,4 +1,4 @@
-import prisma from '@/server/utils/db'
+import prisma from '~~/server/utils/db'
 
 function monthKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`

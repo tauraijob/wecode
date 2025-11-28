@@ -1,5 +1,5 @@
-import prisma from '@/server/utils/db'
-import { getCurrentUser } from '@/server/utils/auth'
+import prisma from '~~/server/utils/db'
+import { getCurrentUser } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const user = await getCurrentUser(event)

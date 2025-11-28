@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import prisma from '@/server/utils/db'
-import { getCurrentUser } from '@/server/utils/auth'
+import prisma from '~~/server/utils/db'
+import { getCurrentUser } from '~~/server/utils/auth'
 
 const Schema = z.object({ name: z.string().min(2), level: z.string(), planId: z.string(), students: z.number().int().positive() })
 

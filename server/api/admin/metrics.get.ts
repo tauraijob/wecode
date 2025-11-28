@@ -1,4 +1,4 @@
-import prisma from '@/server/utils/db'
+import prisma from '~~/server/utils/db'
 
 export default defineEventHandler(async () => {
   const [revenueAgg, schools, clubsActive, users, quotes, invoices, paymentsSuccess, requestsPending] = await Promise.all([

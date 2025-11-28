@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import prisma from '@/server/utils/db'
+import prisma from '~~/server/utils/db'
 
 const Schema = z.object({ clubId: z.string(), status: z.enum(['DRAFT','ACTIVE','PAUSED']) })
 

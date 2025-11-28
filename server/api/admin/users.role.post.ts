@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import prisma from '@/server/utils/db'
+import prisma from '~~/server/utils/db'
 
 const Schema = z.object({ userId: z.string(), role: z.enum(['INDIVIDUAL','STUDENT','CORPORATE','ADMIN']) })
 

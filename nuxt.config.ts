@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { join } from 'path'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -60,7 +62,7 @@ export default defineNuxtConfig({
   },
   shadcn: {
     prefix: '',
-    componentDir: './components/ui'
+    componentDir: 'components/ui'
   },
   runtimeConfig: {
     public: {
@@ -71,9 +73,50 @@ export default defineNuxtConfig({
   nitro: {
     experimental: {
       wasm: true
+    },
+    esbuild: {
+      options: {
+        target: 'node18',
+        platform: 'node'
+      }
+    },
+    // Help with circular dependency resolution
+    minify: false,
+    sourceMap: false,
+    // Exclude Prisma completely from bundling - must be external
+    // Prisma should not be bundled by Nitro
+    // Don't bundle node_modules - use them as externals
+    noExternals: false,
+    // Explicitly mark Prisma packages as external
+    externals: {
+      inline: []
+    },
+    // Preserve node_modules for Prisma
+    nodeModulesDirs: ['node_modules'],
+    // Ensure proper build output
+    prerender: {
+      crawlLinks: false
     }
   },
+  // Don't transpile Prisma - it should remain external
   build: {
-    transpile: ['@prisma/client']
+    transpile: []
+  },
+  vite: {
+    optimizeDeps: {
+      exclude: ['@prisma/client', '.prisma']
+    },
+    resolve: {
+      // Fix Windows path issues for shadcn components
+      alias: {
+        '@': process.cwd(),
+        // Resolve Prisma relative imports to actual paths
+        '.prisma/client/default': join(process.cwd(), 'node_modules/.prisma/client/default.js'),
+        '.prisma/client': join(process.cwd(), 'node_modules/.prisma/client')
+      }
+    },
+    ssr: {
+      noExternal: []
+    }
   }
 })

@@ -54,6 +54,7 @@ model User {
   role           Role      @default(INDIVIDUAL)
   hashedPassword String
   phone          String?
+  emailVerified  Boolean   @default(false)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -63,6 +64,10 @@ model User {
   schools        School[]
   magicLinks     MagicLink[]
   quotes         Quote[]
+  enrollments    Enrollment[]
+  quizAttempts   PracticeQuizAttempt[]
+  examAttempts   FinalExamAttempt[]
+  certificates   Certificate[]
 }
 
 model Request {
@@ -97,6 +102,7 @@ model Invoice {
   payments   Payment[]
   school     School?       @relation(fields: [schoolId], references: [id])
   schoolId   String?
+  enrollments Enrollment[]
 }
 
 model Payment {
@@ -192,4 +198,195 @@ model MagicLink {
 
   user   User   @relation(fields: [userId], references: [id])
   userId String
+}
+
+// E-Learning Models
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Course {
+  id              String        @id @default(cuid())
+  name            String
+  description     String        @db.Text
+  price           Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  status          CourseStatus  @default(DRAFT)
+  previewVideoUrl String?
+  thumbnailUrl    String?
+  prerequisites   String?       @db.Text
+  examConfig      Json?         // { questionCount, duration, passingScore }
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  topics             Topic[]
+  enrollments        Enrollment[]
+  certificates       Certificate[]
+  examTemplates      FinalExamTemplate[]
+  examAttempts       FinalExamAttempt[]
+  certificateTemplates CertificateTemplate[]
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  lessons  Lesson[]
+}
+
+model Lesson {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?  @db.Text
+  videoUrl      String
+  videoDuration Int?     // in seconds
+  transcript    String?  @db.Text // for AI quiz generation
+  notes         String?  @db.Text // for AI quiz generation
+  order         Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  topic         Topic            @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId       String
+  progress      LessonProgress[]
+  quizTemplates PracticeQuizTemplate[]
+  quizAttempts  PracticeQuizAttempt[]
+}
+
+enum EnrollmentStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Enrollment {
+  id              String           @id @default(cuid())
+  status          EnrollmentStatus @default(ACTIVE)
+  enrolledAt      DateTime         @default(now())
+  completedAt     DateTime?
+  progressPercent Decimal          @default(0) @db.Decimal(5, 2)
+
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String
+
+  invoice   Invoice?  @relation(fields: [invoiceId], references: [id])
+  invoiceId String?
+
+  progress      LessonProgress[]
+  examAttempts  FinalExamAttempt[]
+  certificates  Certificate[]
+
+  @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  completed   Boolean  @default(false)
+  watchedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId    String
+
+  @@unique([enrollmentId, lessonId])
+}
+
+model PracticeQuizTemplate {
+  id          String   @id @default(cuid())
+  difficulty  String?  // e.g., "easy", "medium", "hard"
+  questionCount Int    @default(10)
+  sourceMaterial Json?  // AI generation parameters
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId String
+}
+
+model PracticeQuizAttempt {
+  id          String   @id @default(cuid())
+  score       Decimal  @db.Decimal(5, 2) // percentage
+  questions   Json     // array of questions
+  answers     Json     // array of user answers
+  completedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId String
+}
+
+model FinalExamTemplate {
+  id           String   @id @default(cuid())
+  questionCount Int
+  duration     Int      // in minutes
+  passingScore Decimal  @db.Decimal(5, 2) // percentage
+  questions    Json?    // pre-generated questions
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+}
+
+model FinalExamAttempt {
+  id          String   @id @default(cuid())
+  score       Decimal  @db.Decimal(5, 2) // percentage
+  passed      Boolean
+  questions   Json     // array of questions
+  answers     Json     // array of user answers
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+}
+
+model CertificateTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  design      Json     // layout, fonts, colors, logo, etc.
+  variables   Json     // mapping of placeholders to data fields
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId String?
+  certificates Certificate[]
+}
+
+model Certificate {
+  id              String   @id @default(cuid())
+  certificateNumber String @unique
+  issuedAt        DateTime @default(now())
+  pdfUrl          String?
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  template    CertificateTemplate @relation(fields: [templateId], references: [id])
+  templateId  String
 }

@@ -1,4 +1,5 @@
 <template>
+  <!-- Hero Section -->
   <section class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_70%_-20%,rgba(46,81,141,0.35),rgba(17,28,54,0))]"></div>
     <div class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16 lg:py-24">
@@ -12,11 +13,21 @@
             Hands‑on training for individuals and teams, modern IT services, and innovative products for Zimbabwe's digital economy.
           </p>
           <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
-            <NuxtLink to="/request" class="rounded-md bg-navy-400 px-4 sm:px-5 py-3 font-medium text-navy-950 shadow-sm shadow-navy-900/30 hover:bg-navy-300 text-center">Request Training</NuxtLink>
-            <NuxtLink to="/services" class="rounded-md border border-navy-700 px-4 sm:px-5 py-3 font-medium hover:border-navy-500 text-center">IT Services</NuxtLink>
+            <template v-if="!me">
+              <NuxtLink to="/courses" class="rounded-md bg-gradient-to-r from-blue-500 to-purple-600 px-4 sm:px-5 py-3 font-medium text-white shadow-sm shadow-blue-900/30 hover:from-blue-600 hover:to-purple-700 text-center">Browse Courses</NuxtLink>
+              <NuxtLink to="/services" class="rounded-md border border-navy-700 px-4 sm:px-5 py-3 font-medium hover:border-navy-500 text-center">IT Services</NuxtLink>
+            </template>
+            <template v-else>
+              <NuxtLink v-if="me.role === 'STUDENT'" to="/courses" class="rounded-md bg-gradient-to-r from-blue-500 to-purple-600 px-4 sm:px-5 py-3 font-medium text-white shadow-sm shadow-blue-900/30 hover:from-blue-600 hover:to-purple-700 text-center">Browse Courses</NuxtLink>
+              <NuxtLink v-if="me.role === 'STUDENT'" to="/dashboard/learn" class="rounded-md border border-navy-700 bg-navy-800/50 px-4 sm:px-5 py-3 font-medium hover:border-navy-500 hover:bg-navy-700/50 text-center">My Learning</NuxtLink>
+              <NuxtLink to="/dashboard" class="rounded-md border border-navy-700 bg-navy-800/50 px-4 sm:px-5 py-3 font-medium hover:border-navy-500 hover:bg-navy-700/50 text-center">Dashboard</NuxtLink>
+            </template>
           </div>
-          <div class="mt-3 text-sm text-navy-300">
-            Looking for <NuxtLink to="/training" class="underline hover:text-navy-100">short computer courses in Harare</NuxtLink>?
+          <div v-if="!me" class="mt-3 text-sm text-navy-300">
+            New to WeCodeZW? <NuxtLink to="/auth/register" class="underline hover:text-navy-100">Sign up</NuxtLink> to enroll in courses
+          </div>
+          <div v-else-if="me.role === 'STUDENT'" class="mt-3 text-sm text-navy-300">
+            Continue your learning journey or <NuxtLink to="/courses" class="underline hover:text-navy-100">explore new courses</NuxtLink>
           </div>
           <div class="mt-4 sm:mt-6 text-sm text-navy-300">Pricing, invoices, and payments are in USD.</div>
         </div>
@@ -29,104 +40,164 @@
     </div>
   </section>
 
-  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16">
-    <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Who we serve</h2>
-    <div class="mt-6 sm:mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-6 hover:border-navy-600 transition-colors">
-        <div class="text-sm text-navy-300">Individuals & Students</div>
-        <div class="mt-1 text-lg sm:text-xl font-semibold">Digital Skills Training</div>
-        <p class="mt-3 text-sm sm:text-base text-navy-200">Programming, web, cybersecurity, and hands‑on learning paths tailored to you.</p>
-        <NuxtLink to="/training" class="mt-4 inline-block text-navy-300 underline hover:text-navy-200">Explore training →</NuxtLink>
+  <!-- Featured Courses Section - Main Focus -->
+  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16 lg:py-20">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+        Featured Courses
+      </h2>
+      <p class="mt-4 text-lg sm:text-xl text-navy-300 max-w-2xl mx-auto">
+        Start your learning journey with our hands-on courses designed for real-world skills
+      </p>
+    </div>
+
+    <div v-if="coursesLoading" class="mt-8 text-center py-20">
+      <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-navy-400 border-r-transparent"></div>
+      <p class="mt-4 text-navy-300">Loading courses...</p>
+    </div>
+    
+    <div v-else-if="courses && courses.length === 0" class="mt-8 text-center py-20">
+      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-navy-800/50">
+        <svg class="h-8 w-8 text-navy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
       </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-6 hover:border-navy-600 transition-colors">
-        <div class="text-sm text-navy-300">Schools</div>
-        <div class="mt-1 text-lg sm:text-xl font-semibold">Coding & Robotics Clubs</div>
-        <p class="mt-3 text-sm sm:text-base text-navy-200">Launch clubs that nurture the next generation of tech innovators in your school.</p>
-        <NuxtLink to="/schools" class="mt-4 inline-block text-navy-300 underline hover:text-navy-200">Start a club →</NuxtLink>
+      <h3 class="text-xl font-semibold text-white mb-2">No courses available</h3>
+      <p class="text-navy-300">Check back soon for new courses!</p>
+    </div>
+    
+    <div v-else-if="courses && courses.length > 0" class="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        v-for="course in courses.slice(0, 6)"
+        :key="course.id"
+        class="group relative overflow-hidden rounded-xl border border-navy-800 bg-gradient-to-br from-navy-900/60 to-navy-800/40 p-0 hover:border-navy-600 transition-all hover:shadow-xl"
+      >
+        <div v-if="course.thumbnailUrl" class="relative h-48 overflow-hidden bg-navy-800">
+          <img :src="course.thumbnailUrl" :alt="course.name" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent"></div>
+        </div>
+        <div v-else class="flex h-48 items-center justify-center bg-gradient-to-br from-navy-700 to-navy-800">
+          <svg class="h-12 w-12 text-navy-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        
+        <div class="p-6">
+          <h3 class="text-xl sm:text-2xl font-semibold text-white mb-2 line-clamp-1">{{ course.name }}</h3>
+          <p class="text-sm sm:text-base text-navy-300 line-clamp-2 mb-4">{{ course.description }}</p>
+          
+          <div class="flex items-center justify-between mt-6 pt-4 border-t border-navy-700/50">
+            <div>
+              <span class="text-2xl font-bold text-white">{{ course.currency }} {{ Number(course.price).toFixed(2) }}</span>
+            </div>
+            <NuxtLink
+              :to="`/courses/${course.id}`"
+              class="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-2.5 text-sm font-medium text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              View Details
+            </NuxtLink>
+          </div>
+        </div>
       </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-6 hover:border-navy-600 transition-colors sm:col-span-2 lg:col-span-1">
-        <div class="text-sm text-navy-300">Corporates & NGOs</div>
-        <div class="mt-1 text-lg sm:text-xl font-semibold">Tailored Upskilling</div>
-        <p class="mt-3 text-sm sm:text-base text-navy-200">Enhance staff capacity, efficiency, and competitiveness with tailored programs.</p>
-        <NuxtLink to="/corporate" class="mt-4 inline-block text-navy-300 underline hover:text-navy-200">Request workshop →</NuxtLink>
+    </div>
+
+    <!-- View More Courses CTA -->
+    <div v-if="courses && courses.length > 0" class="mt-12 text-center">
+      <NuxtLink
+        to="/courses"
+        class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-lg font-semibold text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+      >
+        View All Courses
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </NuxtLink>
+      <p v-if="!me" class="mt-4 text-sm text-navy-300">
+        <NuxtLink to="/auth/register" class="text-navy-400 underline hover:text-navy-300">Sign up</NuxtLink> to enroll in courses and start learning today
+      </p>
+      <p v-else-if="me.role === 'STUDENT'" class="mt-4 text-sm text-navy-300">
+        <NuxtLink to="/dashboard/learn" class="text-navy-400 underline hover:text-navy-300">View your enrolled courses</NuxtLink> or explore more
+      </p>
+    </div>
+  </section>
+
+  <!-- Other Services Section -->
+  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-transparent to-navy-900/20">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Other Services</h2>
+      <p class="mt-4 text-lg text-navy-300 max-w-2xl mx-auto">
+        Beyond courses, we offer comprehensive IT solutions for individuals, schools, and businesses
+      </p>
+    </div>
+    
+    <div class="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-6 sm:p-8 hover:border-navy-600 transition-all hover:shadow-lg">
+        <div class="text-sm text-navy-400 font-medium mb-2">For Individuals & Students</div>
+        <div class="text-xl sm:text-2xl font-semibold text-white mb-3">Digital Skills Training</div>
+        <p class="text-navy-300 mb-4">Programming, web development, cybersecurity, and hands‑on learning paths tailored to your goals.</p>
+        <NuxtLink to="/training" class="inline-flex items-center gap-2 text-navy-400 hover:text-navy-300 font-medium">
+          Explore training
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </NuxtLink>
+      </div>
+      
+      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-6 sm:p-8 hover:border-navy-600 transition-all hover:shadow-lg">
+        <div class="text-sm text-navy-400 font-medium mb-2">For Schools</div>
+        <div class="text-xl sm:text-2xl font-semibold text-white mb-3">Coding & Robotics Clubs</div>
+        <p class="text-navy-300 mb-4">Launch clubs that nurture the next generation of tech innovators in your school.</p>
+        <NuxtLink to="/schools" class="inline-flex items-center gap-2 text-navy-400 hover:text-navy-300 font-medium">
+          Start a club
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </NuxtLink>
+      </div>
+      
+      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-6 sm:p-8 hover:border-navy-600 transition-all hover:shadow-lg sm:col-span-2 lg:col-span-1">
+        <div class="text-sm text-navy-400 font-medium mb-2">For Corporates & NGOs</div>
+        <div class="text-xl sm:text-2xl font-semibold text-white mb-3">Tailored Upskilling</div>
+        <p class="text-navy-300 mb-4">Enhance staff capacity, efficiency, and competitiveness with tailored programs.</p>
+        <NuxtLink to="/corporate" class="inline-flex items-center gap-2 text-navy-400 hover:text-navy-300 font-medium">
+          Request workshop
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </NuxtLink>
       </div>
     </div>
   </section>
 
-  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16">
-    <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Capabilities</h2>
-    <p class="mt-2 max-w-2xl text-sm sm:text-base text-navy-300">From code to cloud, security to operations—WeCodeZW delivers end‑to‑end value.</p>
-    <div class="mt-6 sm:mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-5">
-        <img alt="Modern web apps" src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop" class="h-24 sm:h-28 w-full rounded object-cover opacity-85"/>
-        <div class="mt-3 text-base sm:text-lg font-semibold">Web & Apps</div>
-        <p class="mt-1 text-xs sm:text-sm text-navy-300">Design, build, and deploy modern, responsive products.</p>
-      </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-5">
-        <img alt="Cloud infrastructure" src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1200&auto=format&fit=crop" class="h-24 sm:h-28 w-full rounded object-cover opacity-85"/>
-        <div class="mt-3 text-base sm:text-lg font-semibold">Cloud & DevOps</div>
-        <p class="mt-1 text-xs sm:text-sm text-navy-300">Automation, CI/CD, observability, and reliable operations.</p>
-      </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-5">
-        <img alt="Cybersecurity" src="https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1200&auto=format&fit=crop" class="h-24 sm:h-28 w-full rounded object-cover opacity-85"/>
-        <div class="mt-3 text-base sm:text-lg font-semibold">Cybersecurity</div>
-        <p class="mt-1 text-xs sm:text-sm text-navy-300">Security reviews, hardening, and ongoing protection.</p>
-      </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-5">
-        <img alt="Dashboards and analytics" src="https://images.unsplash.com/photo-1551281044-8fb89f0747b1?q=80&w=1200&auto=format&fit=crop" class="h-24 sm:h-28 w-full rounded object-cover opacity-85"/>
-        <div class="mt-3 text-base sm:text-lg font-semibold">Data & Dashboards</div>
-        <p class="mt-1 text-xs sm:text-sm text-navy-300">Metrics that matter: clear, actionable insights.</p>
+  <!-- Request Training Section (Optional) -->
+  <section v-if="!me" class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16">
+    <div class="rounded-xl border border-navy-800 bg-gradient-to-br from-navy-900/60 to-navy-800/40 p-8 sm:p-12">
+      <div class="max-w-2xl">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Request Training or Workshops</h2>
+        <p class="mt-4 text-navy-300">Tell us about your goals. We'll craft a program that fits your schedule and outcomes.</p>
+        <div class="mt-6">
+          <RequestQuickForm />
+        </div>
       </div>
     </div>
   </section>
-
-  <section class="mx-auto max-w-7xl px-4 pb-20">
-    <div class="overflow-hidden rounded-xl border border-navy-800">
-      <img alt="Team dashboard overview" src="https://images.unsplash.com/photo-1543286386-2e659306cd6c?q=80&w=1600&auto=format&fit=crop" class="h-48 w-full object-cover opacity-90 sm:h-64 md:h-72"/>
+  
+  <section v-else class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16">
+    <div class="rounded-xl border border-navy-800 bg-gradient-to-br from-navy-900/60 to-navy-800/40 p-8 sm:p-12 text-center">
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Need More Training?</h2>
+      <p class="mt-4 text-navy-300 max-w-2xl mx-auto">Request additional training or workshops from your <NuxtLink to="/dashboard/requests" class="text-navy-400 underline hover:text-navy-300">dashboard</NuxtLink>.</p>
     </div>
-    <div class="mt-6 grid gap-6 md:grid-cols-3">
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-5">
-        <div class="text-lg font-semibold">Outcome‑driven</div>
-        <p class="mt-2 text-navy-300">We align programs and services to measurable business outcomes.</p>
-      </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-5">
-        <div class="text-lg font-semibold">Hands‑on learning</div>
-        <p class="mt-2 text-navy-300">Build real projects, not just slides. Learn by doing with expert guidance.</p>
-      </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-5">
-        <div class="text-lg font-semibold">Secure by design</div>
-        <p class="mt-2 text-navy-300">We bake security into products, processes, and training.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="mx-auto max-w-7xl px-4 py-16">
-    <h2 class="text-2xl font-bold tracking-tight">Showcase</h2>
-    <p class="mt-2 max-w-2xl text-navy-300">A snapshot of what we build and teach—code, cloud, robotics, and analytics.</p>
-    <div class="mt-8 grid gap-4 md:grid-cols-4">
-      <div class="group overflow-hidden rounded-xl border border-navy-800 bg-navy-900/40">
-        <img alt="Code editors and components" src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop" class="h-40 w-full object-cover transition-all duration-500 group-hover:scale-105" />
-      </div>
-      <div class="group overflow-hidden rounded-xl border border-navy-800 bg-navy-900/40">
-        <img alt="Cloud and infrastructure" src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1200&auto=format&fit=crop" class="h-40 w-full object-cover transition-all duration-500 group-hover:scale-105" />
-      </div>
-      <div class="group overflow-hidden rounded-xl border border-navy-800 bg-navy-900/40">
-        <img alt="Robotics and STEM" src="https://images.unsplash.com/photo-1529101091764-c3526daf38fe?q=80&w=1200&auto=format&fit=crop" class="h-40 w-full object-cover transition-all duration-500 group-hover:scale-105" />
-      </div>
-      <div class="group overflow-hidden rounded-xl border border-navy-800 bg-navy-900/40">
-        <img alt="Dashboards and insights" src="https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1200&auto=format&fit=crop" class="h-40 w-full object-cover transition-all duration-500 group-hover:scale-105" />
-      </div>
-    </div>
-  </section>
-
-  <section class="mx-auto max-w-7xl px-4 py-16">
-    <h2 class="text-2xl font-bold tracking-tight">Request training or workshops</h2>
-    <p class="mt-2 max-w-2xl text-navy-300">Tell us about your goals. We’ll craft a program that fits your schedule and outcomes.</p>
-    <RequestQuickForm />
   </section>
 </template>
 
 <script setup lang="ts">
 import RequestQuickForm from '@/components/requests/RequestQuickForm.vue'
-</script>
 
+// Get auth state
+const { user: me } = useAuth()
+
+// Fetch featured courses
+const { data: courses, pending: coursesLoading } = await useFetch('/api/courses', {
+  query: { status: 'PUBLISHED' }
+})
+</script>

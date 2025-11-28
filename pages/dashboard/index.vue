@@ -1,68 +1,142 @@
 <template>
-  <section class="mx-auto max-w-5xl px-3 sm:px-4 py-16">
-    <h1 class="text-3xl font-extrabold tracking-tight xs:text-4xl">School Dashboard</h1>
-    <p class="mt-2 text-navy-300">Welcome. View your activity and manage invoices and clubs.</p>
-    <div class="mt-6 grid gap-6 md:grid-cols-4">
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4">
-        <div class="text-sm text-navy-300">Quotes</div>
-        <div class="mt-1 text-2xl font-bold">{{ summary.quotes }}</div>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+        Dashboard
+      </h1>
+      <p class="mt-2 text-navy-300">Welcome back! View your activity and manage invoices and clubs.</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid gap-6 md:grid-cols-4 mb-8">
+      <div class="group relative overflow-hidden rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6 hover:border-blue-500/50 transition-all hover:shadow-lg">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="rounded-lg bg-blue-500/20 p-2.5 border border-blue-500/30">
+              <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-navy-300 mb-1">Quotes</div>
+          <div class="text-3xl font-bold text-white">{{ summary.quotes }}</div>
+        </div>
       </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4">
-        <div class="text-sm text-navy-300">Invoices</div>
-        <div class="mt-1 text-2xl font-bold">{{ summary.invoices }}</div>
+
+      <div class="group relative overflow-hidden rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6 hover:border-purple-500/50 transition-all hover:shadow-lg">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="rounded-lg bg-purple-500/20 p-2.5 border border-purple-500/30">
+              <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-navy-300 mb-1">Invoices</div>
+          <div class="text-3xl font-bold text-white">{{ summary.invoices }}</div>
+        </div>
       </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4">
-        <div class="text-sm text-navy-300">Paid</div>
-        <div class="mt-1 text-2xl font-bold">{{ summary.invoicesPaid }}</div>
+
+      <div class="group relative overflow-hidden rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6 hover:border-emerald-500/50 transition-all hover:shadow-lg">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="rounded-lg bg-emerald-500/20 p-2.5 border border-emerald-500/30">
+              <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-navy-300 mb-1">Paid</div>
+          <div class="text-3xl font-bold text-white">{{ summary.invoicesPaid }}</div>
+        </div>
       </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-4">
-        <div class="text-sm text-navy-300">Clubs</div>
-        <div class="mt-1 text-2xl font-bold">{{ summary.clubs }}</div>
+
+      <div class="group relative overflow-hidden rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6 hover:border-amber-500/50 transition-all hover:shadow-lg">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="rounded-lg bg-amber-500/20 p-2.5 border border-amber-500/30">
+              <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+          </div>
+          <div class="text-sm font-medium text-navy-300 mb-1">Clubs</div>
+          <div class="text-3xl font-bold text-white">{{ summary.clubs }}</div>
+        </div>
       </div>
     </div>
 
     <!-- Charts Section -->
-    <div class="mt-8 grid gap-6 lg:grid-cols-2">
-      <!-- Payments Over Time Chart -->
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-6">
+    <div class="grid gap-6 lg:grid-cols-2 mb-8">
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
         <h3 class="text-lg font-semibold text-white mb-4">Payments Over Time</h3>
         <div class="h-64">
           <canvas ref="paymentsChart"></canvas>
         </div>
       </div>
-
-      <!-- Club Growth Chart -->
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-6">
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
         <h3 class="text-lg font-semibold text-white mb-4">Club Growth</h3>
         <div class="h-64">
           <canvas ref="clubsChart"></canvas>
         </div>
       </div>
     </div>
-    <div class="mt-8 grid gap-6 md:grid-cols-2">
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-5">
-        <h2 class="text-lg font-semibold">Recent Quotes</h2>
-        <ul class="mt-3 space-y-2">
-          <li v-for="q in quotes" :key="q.id" class="flex items-center justify-between text-sm">
-            <span>{{ q.number }}</span>
-            <span class="text-navy-300">USD {{ q.totalUsd.toFixed(2) }}</span>
+
+    <!-- Recent Activity -->
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Recent Quotes</h2>
+        <div v-if="quotes.length === 0" class="text-center text-navy-400 py-8 text-sm">No quotes yet</div>
+        <ul v-else class="space-y-3">
+          <li
+            v-for="q in quotes"
+            :key="q.id"
+            class="flex items-center justify-between rounded-lg border border-navy-700/50 bg-navy-800/30 p-3 hover:bg-navy-800/50 transition-colors"
+          >
+            <span class="text-sm text-white font-medium">{{ q.number }}</span>
+            <span class="text-sm text-navy-300">USD {{ q.totalUsd.toFixed(2) }}</span>
           </li>
         </ul>
       </div>
-      <div class="rounded-xl border border-navy-800 bg-navy-900/40 p-5">
-        <h2 class="text-lg font-semibold">Invoices</h2>
-        <ul class="mt-3 space-y-2">
-          <li v-for="i in invoices" :key="i.number" class="flex items-center justify-between text-sm">
-            <span>{{ i.number }} — USD {{ Number(i.amountUsd).toFixed(2) }}</span>
-            <NuxtLink :to="`/pay/${i.number}?amount=${i.amountUsd}`" class="rounded-md border border-navy-700 px-3 py-1 hover:border-navy-500">Pay</NuxtLink>
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Invoices</h2>
+        <div v-if="invoices.length === 0" class="text-center text-navy-400 py-8 text-sm">No invoices yet</div>
+        <ul v-else class="space-y-3">
+          <li
+            v-for="i in invoices"
+            :key="i.number"
+            class="flex items-center justify-between rounded-lg border border-navy-700/50 bg-navy-800/30 p-3 hover:bg-navy-800/50 transition-colors"
+          >
+            <div>
+              <span class="text-sm text-white font-medium">{{ i.number }}</span>
+              <span class="text-sm text-navy-300 ml-2">USD {{ Number(i.amountUsd).toFixed(2) }}</span>
+            </div>
+            <NuxtLink
+              :to="`/pay/${i.number}?amount=${i.amountUsd}`"
+              class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-1.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+            >
+              Pay
+            </NuxtLink>
           </li>
         </ul>
       </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: 'dashboard' })
+
+// Redirect admins to admin dashboard
+const { user: me } = useAuth()
+if (me.value && me.value.role === 'ADMIN') {
+  await navigateTo('/admin')
+}
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -104,17 +178,20 @@ const initCharts = () => {
   if (!paymentsChart.value || !clubsChart.value) return
 
   // Payments chart
-  new Chart(paymentsChart.value, {
+  new ChartJS(paymentsChart.value, {
     type: 'line',
     data: {
       labels: chartsData.value.payments.map((p: any) => p.month),
       datasets: [{
         label: 'Payments (USD)',
         data: chartsData.value.payments.map((p: any) => p.amount),
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: '#60a5fa',
+        backgroundColor: 'rgba(96,165,250,0.1)',
         tension: 0.4,
-        fill: true
+        fill: true,
+        pointBackgroundColor: '#60a5fa',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
       }]
     },
     options: {
@@ -122,7 +199,12 @@ const initCharts = () => {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: { color: '#94a3b8' }
+          labels: { color: '#94a3b8', font: { size: 12 } }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          titleColor: '#fff',
+          bodyColor: '#cbd5e1'
         }
       },
       scales: {
@@ -139,7 +221,7 @@ const initCharts = () => {
   })
 
   // Clubs chart
-  new Chart(clubsChart.value, {
+  new ChartJS(clubsChart.value, {
     type: 'bar',
     data: {
       labels: chartsData.value.clubs.map((c: any) => c.month),
@@ -154,8 +236,8 @@ const initCharts = () => {
         {
           label: 'Active Clubs',
           data: chartsData.value.clubs.map((c: any) => c.active),
-          backgroundColor: 'rgba(59, 130, 246, 0.6)',
-          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(96,165,250,0.6)',
+          borderColor: '#60a5fa',
           borderWidth: 1
         }
       ]
@@ -165,7 +247,12 @@ const initCharts = () => {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: { color: '#94a3b8' }
+          labels: { color: '#94a3b8', font: { size: 12 } }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          titleColor: '#fff',
+          bodyColor: '#cbd5e1'
         }
       },
       scales: {
@@ -182,4 +269,3 @@ const initCharts = () => {
   })
 }
 </script>
-

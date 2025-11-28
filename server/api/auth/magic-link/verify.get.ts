@@ -1,5 +1,5 @@
-import prisma from '@/server/utils/db'
-import { signSession, setSessionCookie } from '@/server/utils/auth'
+import prisma from '~~/server/utils/db'
+import { signSession, setSessionCookie } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const token = getQuery(event).token as string

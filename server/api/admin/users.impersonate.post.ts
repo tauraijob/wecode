@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import prisma from '@/server/utils/db'
-import { signSession, setSessionCookie } from '@/server/utils/auth'
+import prisma from '~~/server/utils/db'
+import { signSession, setSessionCookie } from '~~/server/utils/auth'
 
 const Schema = z.object({ userId: z.string() })
 

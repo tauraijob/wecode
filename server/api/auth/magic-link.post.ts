@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import prisma from '@/server/utils/db'
-import { sendMail } from '@/server/utils/mailer'
+import prisma from '~~/server/utils/db'
+import { sendMail } from '~~/server/utils/mailer'
 
 const Schema = z.object({ email: z.string().email(), userId: z.string().optional() })
 

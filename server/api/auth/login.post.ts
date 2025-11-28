@@ -1,4 +1,4 @@
-import prisma from '~~/server/utils/db'
+import prismaModule from '~~/server/utils/db'
 import { verifyPassword } from '~~/server/utils/password'
 import { z } from 'zod'
 import { setCookie } from 'h3'
@@ -10,6 +10,7 @@ const LoginSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  const prisma = await prismaModule
   if (!prisma) {
     throw createError({ statusCode: 503, statusMessage: 'Database not available' })
   }
@@ -25,6 +26,14 @@ export default defineEventHandler(async (event) => {
 
   const ok = await verifyPassword(password, user.hashedPassword)
   if (!ok) throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
+
+  // Check if email is verified
+  if (!user.emailVerified) {
+    throw createError({ 
+      statusCode: 403, 
+      statusMessage: 'Please verify your email address before logging in. Check your inbox for the verification link.' 
+    })
+  }
 
   const token = signJwt({ userId: user.id, role: user.role })
   setCookie(event, 'token', token, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 * 7 })
