@@ -245,13 +245,19 @@ export default defineEventHandler(async (event) => {
   
   // Determine site URL - prioritize SITE_URL env var, then check if we're in development
   // Default to production domain (wecode.co.zw) for safety
+  const isDevelopment = process.env.NODE_ENV === 'development'
   let siteUrl = process.env.SITE_URL
   
   // If SITE_URL is not set, determine based on environment
   if (!siteUrl) {
     // Only use localhost if explicitly in development mode
-    const isDevelopment = process.env.NODE_ENV === 'development'
     siteUrl = isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw'
+  }
+  
+  // CRITICAL: In production, NEVER allow localhost URLs (even if SITE_URL is incorrectly set)
+  if (!isDevelopment && siteUrl.includes('localhost')) {
+    console.warn(`Warning: SITE_URL contains localhost in production. Forcing https://wecode.co.zw`)
+    siteUrl = 'https://wecode.co.zw'
   }
   
   // Ensure URL has protocol
@@ -261,7 +267,7 @@ export default defineEventHandler(async (event) => {
   }
   
   // Force production domain if not localhost (safety check)
-  if (!siteUrl.includes('localhost') && !siteUrl.includes('wecode.co.zw')) {
+  if (!isDevelopment && !siteUrl.includes('localhost') && !siteUrl.includes('wecode.co.zw')) {
     console.warn(`Warning: SITE_URL (${siteUrl}) doesn't match production domain. Using https://wecode.co.zw`)
     siteUrl = 'https://wecode.co.zw'
   }
