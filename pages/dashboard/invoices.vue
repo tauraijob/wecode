@@ -111,7 +111,14 @@
               </button>
             </div>
             <NuxtLink
-              v-if="i.status !== 'PAID'"
+              v-if="i.status !== 'PAID' && i.firstCourseId"
+              :to="`/checkout/${i.firstCourseId}`"
+              class="rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2 text-sm font-medium text-white hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl text-center"
+            >
+              Pay Now
+            </NuxtLink>
+            <NuxtLink
+              v-else-if="i.status !== 'PAID'"
               :to="`/pay/${i.number}`"
               class="rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2 text-sm font-medium text-white hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl text-center"
             >

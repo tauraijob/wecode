@@ -38,8 +38,7 @@
             </button>
             <template v-for="enrollment in pendingEnrollmentsList" :key="enrollment.id">
               <NuxtLink
-                v-if="enrollment.invoice?.number"
-                :to="`/pay/${enrollment.invoice.number}`"
+                :to="`/checkout/${enrollment.course.id}`"
                 class="rounded-lg bg-blue-500/20 border border-blue-500/50 px-4 py-2 text-sm font-medium text-blue-300 hover:bg-blue-500/30 transition-all flex items-center gap-2"
               >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,7 +153,7 @@
             </NuxtLink>
             <div v-else-if="enrollment.status === 'PENDING' && enrollment.invoiceId" class="flex-1 flex gap-2">
               <NuxtLink
-                :to="`/pay/${enrollment.invoice?.number || ''}`"
+                :to="`/checkout/${enrollment.course.id}`"
                 class="flex-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
               >
                 Complete Payment
@@ -273,6 +272,12 @@
       onMounted(async () => {
         await refresh()
         
+        // Always check payment status when page loads (user might have just returned from Paynow)
+        // This ensures enrollments are activated even if webhook hasn't fired yet
+        setTimeout(async () => {
+          await checkAllPayments()
+        }, 500)
+        
         // Check URL parameters for payment status (PayNow might include these)
         const paymentStatus = route.query.status as string
         const reference = route.query.reference as string
@@ -288,19 +293,16 @@
                 queryParams: route.query
               }
             })
+            // Refresh enrollments after processing
+            await refresh()
             // Clear query parameters from URL after processing
             await navigateTo(route.path, { replace: true })
           } catch (error) {
             console.error('Error processing PayNow return:', error)
           }
-          // Also check all payments
-          setTimeout(() => {
-            checkAllPayments()
-          }, 500)
-        } else {
-          // Check payment status when page loads (user might have just returned from Paynow)
-          setTimeout(() => {
-            checkAllPayments()
+          // Also check all payments again after processing
+          setTimeout(async () => {
+            await checkAllPayments()
           }, 1000)
         }
         

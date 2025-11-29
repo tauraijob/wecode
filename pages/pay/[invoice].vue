@@ -494,13 +494,43 @@ onMounted(async () => {
 async function payNow() {
   if (paying.value) return
   
+  // Ensure invoice is loaded
+  if (!invoice.value) {
+    // Try to fetch invoice first
+    try {
+      await refresh()
+      if (!invoice.value) {
+        alert('Invoice not found. Please check the invoice number and try again.')
+        return
+      }
+    } catch (err: any) {
+      alert('Failed to load invoice. Please try again or contact support.')
+      return
+    }
+  }
+  
   try {
     paying.value = true
+    
+    // Get invoice amount - use invoice from database or fallback
+    const amount = invoice.value?.amountUsd 
+      ? Number(invoice.value.amountUsd) 
+      : (invoice.value?.enrollments?.[0]?.course?.price 
+          ? Number(invoice.value.enrollments[0].course.price) 
+          : 0)
+    
+    if (amount <= 0) {
+      alert('Invalid invoice amount. Please contact support.')
+      paying.value = false
+      return
+    }
+    
     const res = await $fetch('/api/paynow/initiate', {
       method: 'POST',
       body: {
         invoiceNumber: invoiceId.value,
-        amount: Number(invoice.value?.amountUsd || 0)
+        email: invoice.value?.user?.email,
+        amount: amount
       }
     })
     const redirectUrl = (res as any)?.redirectUrl
@@ -513,7 +543,8 @@ async function payNow() {
       alert('Payment initiation failed. Please try again or contact us.')
     }
   } catch (e: any) {
-    alert(e.data?.message || 'Failed to initiate payment. Please try again or contact us.')
+    console.error('PayNow initiation error:', e)
+    alert(e.data?.message || e.message || 'Failed to initiate payment. Please try again or contact us.')
   } finally {
     paying.value = false
   }

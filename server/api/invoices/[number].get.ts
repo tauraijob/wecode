@@ -17,8 +17,38 @@ export default defineEventHandler(async (event) => {
   console.log('Invoice API called with number:', invoiceNumber, {
     type: typeof invoiceNumber,
     length: invoiceNumber?.length,
-    url: event.node.req.url
+    url: event.node.req.url,
+    userId: auth?.userId
   })
+  
+  // Debug: Check all invoices for this user
+  const allUserInvoicesDebug = await prisma.invoice.findMany({
+    where: { userId: auth.userId },
+    select: { number: true, id: true, status: true, createdAt: true },
+    orderBy: { createdAt: 'desc' },
+    take: 10
+  })
+  console.log('All invoices for user (debug):', allUserInvoicesDebug.map(inv => ({ number: inv.number, status: inv.status, createdAt: inv.createdAt })))
+  
+  // Debug: Check all enrollments for this user
+  const allUserEnrollmentsDebug = await prisma.enrollment.findMany({
+    where: { userId: auth.userId },
+    select: { id: true, status: true, invoiceId: true, enrolledAt: true },
+    include: {
+      invoice: {
+        select: { number: true, status: true }
+      }
+    },
+    orderBy: { enrolledAt: 'desc' },
+    take: 10
+  })
+  console.log('All enrollments for user (debug):', allUserEnrollmentsDebug.map(e => ({ 
+    id: e.id, 
+    status: e.status, 
+    invoiceId: e.invoiceId, 
+    invoiceNumber: e.invoice?.number,
+    enrolledAt: e.enrolledAt
+  })))
 
   const token = getCookie(event, 'token')
   const auth = token ? verifyJwt(token) : null
@@ -41,248 +71,49 @@ export default defineEventHandler(async (event) => {
   // Add a delay to ensure any recent invoice creation is committed
   // This helps with race conditions when redirecting immediately after enrollment
   await new Promise(resolve => setTimeout(resolve, 200))
-  
-  // First, let's check all invoices for this user to see what we have
-  const allUserInvoices = await prisma.invoice.findMany({
-    where: { userId: auth.userId },
-    select: { number: true, id: true },
-    orderBy: { createdAt: 'desc' },
-    take: 10
-  })
-  console.log('All invoices for user:', allUserInvoices.map(inv => inv.number))
-  console.log('Looking for invoice number:', normalizedInvoiceNumber)
-  console.log('Invoice exists in user list?', allUserInvoices.some(inv => inv.number === normalizedInvoiceNumber))
-  
-  // Check if invoice exists at all (any user) for debugging
-  const anyInvoiceCheck = await prisma.invoice.findUnique({
+
+  // First, try direct lookup by invoice number (fastest and most reliable)
+  let invoice = await prisma.invoice.findUnique({
     where: { number: normalizedInvoiceNumber },
-    select: { id: true, number: true, userId: true }
-  })
-  console.log('Invoice exists in database?', anyInvoiceCheck ? { 
-    id: anyInvoiceCheck.id, 
-    number: anyInvoiceCheck.number, 
-    userId: anyInvoiceCheck.userId, 
-    matchesRequestingUser: anyInvoiceCheck.userId === auth.userId 
-  } : 'not found')
-
-  // First, try to find invoice through enrollment (most reliable for course enrollments)
-  // This is the primary method since enrollments are directly linked to invoices
-  // BUT: Also check cancelled enrollments to find invoices even if enrollment was cancelled
-  let invoice = null
-  const enrollmentWithInvoice = await prisma.enrollment.findFirst({
-    where: {
-      userId: auth.userId,
-      invoice: {
-        number: normalizedInvoiceNumber
-      }
-      // Don't filter by status - include cancelled enrollments too so we can find the invoice
-    },
     include: {
-      invoice: {
+      user: {
+        select: {
+          name: true,
+          email: true
+        }
+      },
+      enrollments: {
         include: {
-          user: {
+          course: {
             select: {
+              id: true,
               name: true,
-              email: true
-            }
-          },
-          enrollments: {
-            include: {
-              course: {
-                select: {
-                  id: true,
-                  name: true,
-                  description: true,
-                  thumbnailUrl: true,
-                  price: true,
-                  currency: true
-                }
-              }
+              description: true,
+              thumbnailUrl: true,
+              price: true,
+              currency: true
             }
           }
         }
       }
     }
   })
-  
-  if (enrollmentWithInvoice?.invoice) {
-    invoice = enrollmentWithInvoice.invoice
-    console.log('Invoice found through enrollment (primary method):', { id: invoice.id, number: invoice.number, userId: invoice.userId, enrollmentStatus: enrollmentWithInvoice.status })
-  }
-  
-  // If not found through enrollment, try direct lookup with retry logic
-  let retries = 5
-  let retryDelay = 300
-  
-  while (!invoice && retries > 0) {
-    // Try findUnique first (most efficient and uses index)
-    const foundInvoice = await prisma.invoice.findUnique({
-      where: { number: normalizedInvoiceNumber },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        enrollments: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                thumbnailUrl: true,
-                price: true,
-                currency: true
-              }
-            }
-          }
-        }
-      }
-    })
-    
-    // If found, verify access
-    if (foundInvoice) {
-      if (foundInvoice.userId !== auth.userId && auth.role !== 'ADMIN') {
-        console.log('Invoice found but belongs to different user:', { invoiceUserId: foundInvoice.userId, requestingUserId: auth.userId })
-        throw createError({ 
-          statusCode: 403, 
-          statusMessage: 'This invoice belongs to a different account.' 
-        })
-      }
-      // Invoice found and access verified - assign and break out of retry loop
-      invoice = foundInvoice
-      console.log('Invoice found and verified:', { id: invoice.id, number: invoice.number, userId: invoice.userId })
-      break
-    }
-    
-    if (retries > 1) {
-      console.log(`Invoice not found, retrying in ${retryDelay}ms... (${retries - 1} retries left)`)
-      await new Promise(resolve => setTimeout(resolve, retryDelay))
-      retryDelay *= 2 // Exponential backoff
-    }
-    retries--
-  }
 
-  console.log('Invoice lookup result (by number):', invoice ? { id: invoice.id, number: invoice.number, userId: invoice.userId } : 'not found')
-  
-  // If still not found, try a more aggressive search through all user invoices
-  if (!invoice) {
-    console.log('Trying to find invoice in all user invoices...')
-    const allInvoices = await prisma.invoice.findMany({
-      where: { userId: auth.userId },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        enrollments: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                thumbnailUrl: true,
-                price: true,
-                currency: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 20
-    })
-    
-    // Try exact match first
-    invoice = allInvoices.find(inv => inv.number === normalizedInvoiceNumber)
-    
-    // If still not found, try partial match (in case of encoding issues)
-    if (!invoice) {
-      invoice = allInvoices.find(inv => 
-        inv.number.includes(normalizedInvoiceNumber.replace('COURSE-', '')) ||
-        normalizedInvoiceNumber.includes(inv.number.replace('COURSE-', ''))
-      )
+  // If found, verify access
+  if (invoice) {
+    if (invoice.userId !== auth.userId && auth.role !== 'ADMIN') {
+      throw createError({ 
+        statusCode: 403, 
+        statusMessage: 'This invoice belongs to a different account.' 
+      })
     }
-    
-    console.log('Invoice lookup result (from all user invoices):', invoice ? { id: invoice.id, number: invoice.number, userId: invoice.userId } : 'not found')
+    console.log('Invoice found by number:', { id: invoice.id, number: invoice.number, userId: invoice.userId })
   }
   
-  // If still not found, try findFirst with user filter as final fallback
+  // If not found, try through enrollment (fallback) - check by invoiceId first
   if (!invoice) {
-    console.log('Trying findFirst with user filter as final fallback...')
-    // Try exact match first
-    invoice = await prisma.invoice.findFirst({
-      where: {
-        userId: auth.userId,
-        number: normalizedInvoiceNumber
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        enrollments: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                thumbnailUrl: true,
-                price: true,
-                currency: true
-              }
-            }
-          }
-        }
-      }
-    })
-    console.log('Invoice lookup result (by number - any user):', invoice ? { id: invoice.id, number: invoice.number, userId: invoice.userId } : 'not found')
-  }
-
-  // If not found, try to find by ID (in case number format changed)
-  if (!invoice) {
-    console.log('Trying to find invoice by ID...')
-    invoice = await prisma.invoice.findUnique({
-      where: { id: normalizedInvoiceNumber },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        enrollments: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                thumbnailUrl: true,
-                price: true,
-                currency: true
-              }
-            }
-          }
-        }
-      }
-    })
-    console.log('Invoice lookup result (by ID):', invoice ? { id: invoice.id, number: invoice.number, userId: invoice.userId } : 'not found')
-  }
-
-  // If still not found, try to find by searching enrollments (fallback)
-  if (!invoice) {
-    console.log('Trying to find invoice through enrollments...')
-    // Find enrollment that might have this invoice
-    const enrollment = await prisma.enrollment.findFirst({
+    // Try to find enrollment that might have this invoice number
+    const enrollmentWithInvoice = await prisma.enrollment.findFirst({
       where: {
         userId: auth.userId,
         invoice: {
@@ -316,123 +147,67 @@ export default defineEventHandler(async (event) => {
         }
       }
     })
-
-    if (enrollment?.invoice) {
-      console.log('Found invoice through enrollment:', { id: enrollment.invoice.id, number: enrollment.invoice.number })
-      invoice = enrollment.invoice
+    
+    if (enrollmentWithInvoice?.invoice) {
+      invoice = enrollmentWithInvoice.invoice
+      console.log('Invoice found through enrollment:', { id: invoice.id, number: invoice.number, userId: invoice.userId })
     } else {
-      console.log('No enrollment found with this invoice')
-    }
-  }
-
-  // Last resort: search all invoices for this user
-  if (!invoice) {
-    const allInvoices = await prisma.invoice.findMany({
-      where: {
-        userId: auth.userId
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        enrollments: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                thumbnailUrl: true,
-                price: true,
-                currency: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 5
-    })
-
-    // Try to find by partial match
-    const matchingInvoice = allInvoices.find(inv => 
-      inv.number.includes(normalizedInvoiceNumber.replace('COURSE-', '')) ||
-      normalizedInvoiceNumber.includes(inv.number.replace('COURSE-', '')) ||
-      inv.number === normalizedInvoiceNumber
-    )
-
-    if (matchingInvoice) {
-      invoice = matchingInvoice
-    } else if (allInvoices.length > 0) {
-      // Return the most recent invoice as fallback
-      console.warn(`Invoice ${invoiceNumber} not found, returning most recent invoice for user`)
-      invoice = allInvoices[0]
-    }
-  }
-
-  if (!invoice) {
-    // Get recent invoices for debugging
-    const recentInvoices = await prisma.invoice.findMany({
-      where: { userId: auth.userId },
-      select: { number: true, createdAt: true, userId: true },
-      orderBy: { createdAt: 'desc' },
-      take: 10
-    })
-    
-    // Also check if invoice exists for any user (raw query to check exact match)
-    const anyInvoice = await prisma.invoice.findUnique({
-      where: { number: normalizedInvoiceNumber },
-      select: { id: true, number: true, userId: true }
-    })
-    
-    // Try to find with findFirst in case of encoding issues
-    const invoiceByFindFirst = await prisma.invoice.findFirst({
-      where: {
-        number: {
-          equals: normalizedInvoiceNumber
-        }
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        enrollments: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                thumbnailUrl: true,
-                price: true,
-                currency: true
-              }
-            }
-          }
-        }
-      }
-    })
-    
-    if (invoiceByFindFirst) {
-      console.log('Found invoice using findFirst:', { id: invoiceByFindFirst.id, number: invoiceByFindFirst.number, userId: invoiceByFindFirst.userId })
-      invoice = invoiceByFindFirst
-    }
-    
-    if (!invoice) {
-      // Final attempt: Check if invoice exists with exact match including user filter
-      const finalAttempt = await prisma.invoice.findFirst({
+      // Also try finding any pending enrollment for this user and check if invoice number matches
+      const pendingEnrollments = await prisma.enrollment.findMany({
         where: {
           userId: auth.userId,
-          number: normalizedInvoiceNumber
+          status: 'PENDING',
+          invoiceId: { not: null }
         },
+        include: {
+          invoice: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true
+                }
+              },
+              enrollments: {
+                include: {
+                  course: {
+                    select: {
+                      id: true,
+                      name: true,
+                      description: true,
+                      thumbnailUrl: true,
+                      price: true,
+                      currency: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        orderBy: { enrolledAt: 'desc' },
+        take: 5
+      })
+      
+      // Check if any of these invoices match the requested number
+      for (const enrollment of pendingEnrollments) {
+        if (enrollment.invoice && enrollment.invoice.number === normalizedInvoiceNumber) {
+          invoice = enrollment.invoice
+          console.log('Invoice found through pending enrollment search:', { id: invoice.id, number: invoice.number })
+          break
+        }
+      }
+    }
+  }
+  
+  // If still not found, try with retry logic (for race conditions)
+  if (!invoice) {
+    let retries = 3
+    let retryDelay = 200
+    
+    while (!invoice && retries > 0) {
+      invoice = await prisma.invoice.findUnique({
+        where: { number: normalizedInvoiceNumber },
         include: {
           user: {
             select: {
@@ -457,64 +232,157 @@ export default defineEventHandler(async (event) => {
         }
       })
       
-      if (finalAttempt) {
-        invoice = finalAttempt
-        console.log('Invoice found in final attempt:', { id: invoice.id, number: invoice.number })
+      if (invoice) {
+        if (invoice.userId !== auth.userId && auth.role !== 'ADMIN') {
+          throw createError({ 
+            statusCode: 403, 
+            statusMessage: 'This invoice belongs to a different account.' 
+          })
+        }
+        console.log('Invoice found on retry:', { id: invoice.id, number: invoice.number })
+        break
       }
+      
+      if (retries > 1) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+        retryDelay *= 2
+      }
+      retries--
+    }
+  }
+
+  // If still not found, try findFirst as final fallback
+  if (!invoice) {
+    invoice = await prisma.invoice.findFirst({
+      where: {
+        userId: auth.userId,
+        number: normalizedInvoiceNumber
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        enrollments: {
+          include: {
+            course: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                thumbnailUrl: true,
+                price: true,
+                currency: true
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  if (!invoice) {
+    // Before throwing error, check if there's a pending enrollment that should have this invoice
+    // This handles cases where invoice creation failed but enrollment exists
+    const pendingEnrollment = await prisma.enrollment.findFirst({
+      where: {
+        userId: auth.userId,
+        status: 'PENDING',
+        invoiceId: null // No invoice linked yet
+      },
+      include: {
+        course: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            currency: true
+          }
+        }
+      },
+      orderBy: { enrolledAt: 'desc' }
+    })
+    
+    // If we found a pending enrollment without an invoice, and the invoice number format matches,
+    // it's possible the invoice creation failed. Log this for debugging.
+    if (pendingEnrollment && normalizedInvoiceNumber.startsWith('COURSE-')) {
+      console.warn('Invoice not found but pending enrollment exists:', {
+        enrollmentId: pendingEnrollment.id,
+        courseId: pendingEnrollment.courseId,
+        courseName: pendingEnrollment.course.name,
+        requestedInvoice: normalizedInvoiceNumber,
+        userId: auth.userId
+      })
     }
     
-    if (!invoice) {
-      console.error(`Invoice not found: ${normalizedInvoiceNumber}`, {
+    // Get user's recent invoices for helpful error message
+    const userRecentInvoices = await prisma.invoice.findMany({
+      where: { userId: auth.userId },
+      select: { number: true, status: true, amountUsd: true, currency: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 10
+    })
+    
+    // Also get enrollments with invoices to show what's available
+    const enrollmentsWithInvoices = await prisma.enrollment.findMany({
+      where: {
         userId: auth.userId,
-        userRole: auth.role,
-        searchedNumber: normalizedInvoiceNumber,
-        searchedNumberLength: normalizedInvoiceNumber.length,
-        allUserInvoices: allUserInvoices.map(inv => inv.number),
-        recentInvoices: recentInvoices.map(inv => ({ 
-          number: inv.number, 
-          userId: inv.userId 
-        })),
-        invoiceExistsForOtherUser: anyInvoice ? { 
-          userId: anyInvoice.userId,
-          number: anyInvoice.number
-        } : null
-      })
-      
-      // If invoice exists but for different user, provide helpful message
-      if (anyInvoice && anyInvoice.userId !== auth.userId) {
-        throw createError({ 
-          statusCode: 403, 
-          statusMessage: 'This invoice belongs to a different account.' 
-        })
-      }
-      
-      // Get user's recent invoices for helpful error message
-      const userRecentInvoices = await prisma.invoice.findMany({
-        where: { userId: auth.userId },
-        select: { number: true, status: true, amountUsd: true, currency: true, createdAt: true },
-        orderBy: { createdAt: 'desc' },
-        take: 10
-      })
-      
-      const invoiceList = userRecentInvoices.length > 0 
-        ? userRecentInvoices.map(inv => `${inv.number} (${inv.status})`).join(', ')
-        : 'No invoices found'
-      
-      throw createError({ 
-        statusCode: 404, 
-        statusMessage: `Invoice "${normalizedInvoiceNumber}" not found. Your recent invoices: ${invoiceList}`,
-        data: {
-          requestedInvoice: normalizedInvoiceNumber,
-          userInvoices: userRecentInvoices.map(inv => ({
-            number: inv.number,
-            status: inv.status,
-            amountUsd: inv.amountUsd,
-            currency: inv.currency,
-            createdAt: inv.createdAt
-          }))
+        status: 'PENDING',
+        invoiceId: { not: null }
+      },
+      include: {
+        invoice: {
+          select: {
+            number: true,
+            status: true,
+            amountUsd: true,
+            currency: true
+          }
+        },
+        course: {
+          select: {
+            name: true
+          }
         }
-      })
-    }
+      },
+      orderBy: { enrolledAt: 'desc' },
+      take: 5
+    })
+    
+    const invoiceList = userRecentInvoices.length > 0 
+      ? userRecentInvoices.map(inv => `${inv.number} (${inv.status})`).join(', ')
+      : 'No invoices found'
+    
+    const enrollmentInvoiceList = enrollmentsWithInvoices
+      .filter(e => e.invoice)
+      .map(e => `${e.invoice!.number} (${e.course.name})`)
+      .join(', ')
+    
+    const errorMessage = enrollmentInvoiceList
+      ? `Invoice "${normalizedInvoiceNumber}" not found. Available invoices: ${enrollmentInvoiceList || invoiceList}`
+      : `Invoice "${normalizedInvoiceNumber}" not found. Your recent invoices: ${invoiceList}`
+    
+    throw createError({ 
+      statusCode: 404, 
+      statusMessage: errorMessage,
+      data: {
+        requestedInvoice: normalizedInvoiceNumber,
+        userInvoices: userRecentInvoices.map(inv => ({
+          number: inv.number,
+          status: inv.status,
+          amountUsd: inv.amountUsd,
+          currency: inv.currency,
+          createdAt: inv.createdAt
+        })),
+        pendingEnrollments: enrollmentsWithInvoices.map(e => ({
+          courseName: e.course.name,
+          invoiceNumber: e.invoice?.number,
+          invoiceStatus: e.invoice?.status
+        }))
+      }
+    })
   }
   
   console.log('Invoice found:', { id: invoice.id, number: invoice.number, userId: invoice.userId, invoiceNumberLength: invoice.number.length })

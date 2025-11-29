@@ -234,7 +234,17 @@ async function payNow() {
   try {
     paying.value = true
     
-    // Get user email from invoice
+    // Check if invoice has enrollments with courses - redirect to checkout if available
+    if (invoice.enrollments && invoice.enrollments.length > 0) {
+      const activeEnrollment = invoice.enrollments.find((e: any) => e.status !== 'CANCELLED')
+      if (activeEnrollment && activeEnrollment.course?.id) {
+        // Redirect to checkout page for the course
+        navigateTo(`/checkout/${activeEnrollment.course.id}`)
+        return
+      }
+    }
+    
+    // Fallback: If no course found, use old payment flow
     const userEmail = invoice.user?.email
     
     // Construct return URL to redirect back to this invoice page after payment

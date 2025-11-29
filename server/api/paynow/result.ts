@@ -122,13 +122,20 @@ export default defineEventHandler(async (event) => {
       })
 
       for (const enrollment of enrollments) {
-        await prisma.enrollment.update({
-          where: { id: enrollment.id },
-          data: { status: 'ACTIVE' }
-        })
+        if (enrollment.status !== 'ACTIVE') {
+          await prisma.enrollment.update({
+            where: { id: enrollment.id },
+            data: { status: 'ACTIVE' }
+          })
+          console.log('PayNow webhook: Activated enrollment', { enrollmentId: enrollment.id, courseId: enrollment.courseId })
+        }
       }
 
-      console.log('PayNow webhook: Successfully processed payment', { invoiceId: invoice.id, enrollmentsUpdated: enrollments.length })
+      console.log('PayNow webhook: Successfully processed payment', { 
+        invoiceId: invoice.id, 
+        enrollmentsUpdated: enrollments.length,
+        enrollments: enrollments.map(e => ({ id: e.id, status: e.status }))
+      })
     } else {
       console.log('PayNow webhook: Payment not yet paid', { invoiceNumber, status: statusData.status })
     }

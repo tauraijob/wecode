@@ -93,8 +93,7 @@
               </div>
               <div class="flex gap-3">
                 <NuxtLink
-                  v-if="course.enrollment.invoice && course.enrollment.invoice.number"
-                  :to="`/pay/${course.enrollment.invoice.number}`"
+                  :to="`/checkout/${course.id}`"
                   class="flex-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-3 text-center text-sm font-medium text-white hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
                 >
                   Complete Payment

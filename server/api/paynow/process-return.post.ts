@@ -56,11 +56,17 @@ export default defineEventHandler(async (event) => {
 
     console.log('PayNow return processed:', { invoiceNumber, paid: statusData.paid, status: statusData.status })
 
-    // Find invoice
+    // Find invoice with enrollments
     const invoice = await prisma.invoice.findUnique({
       where: { number: invoiceNumber },
       include: {
-        enrollments: true
+        enrollments: {
+          select: {
+            id: true,
+            courseId: true,
+            status: true
+          }
+        }
       }
     })
 
@@ -110,14 +116,25 @@ export default defineEventHandler(async (event) => {
       }
 
       // Activate enrollments linked to this invoice
-      for (const enrollment of invoice.enrollments) {
-        await prisma.enrollment.update({
-          where: { id: enrollment.id },
-          data: { status: 'ACTIVE' }
-        })
+      const enrollments = await prisma.enrollment.findMany({
+        where: { invoiceId: invoice.id }
+      })
+
+      for (const enrollment of enrollments) {
+        if (enrollment.status !== 'ACTIVE') {
+          await prisma.enrollment.update({
+            where: { id: enrollment.id },
+            data: { status: 'ACTIVE' }
+          })
+          console.log('PayNow return: Activated enrollment', { enrollmentId: enrollment.id, courseId: enrollment.courseId })
+        }
       }
 
-      console.log('PayNow return: Successfully processed payment', { invoiceId: invoice.id, enrollmentsUpdated: invoice.enrollments.length })
+      console.log('PayNow return: Successfully processed payment', { 
+        invoiceId: invoice.id, 
+        enrollmentsUpdated: enrollments.length,
+        enrollments: enrollments.map(e => ({ id: e.id, status: e.status }))
+      })
       
       return {
         ok: true,

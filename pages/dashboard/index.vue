@@ -117,6 +117,14 @@
               <span class="text-sm text-navy-300 ml-2">USD {{ Number(i.amountUsd).toFixed(2) }}</span>
             </div>
             <NuxtLink
+              v-if="i.firstCourseId"
+              :to="`/checkout/${i.firstCourseId}`"
+              class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-1.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+            >
+              Pay
+            </NuxtLink>
+            <NuxtLink
+              v-else
               :to="`/pay/${i.number}?amount=${i.amountUsd}`"
               class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-1.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
             >

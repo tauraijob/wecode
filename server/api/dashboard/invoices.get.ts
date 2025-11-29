@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
     return activeEnrollments.length > 0
   })
   
-  // Format invoices with course names (only from active enrollments)
+  // Format invoices with course names and IDs (only from active enrollments)
   const formattedInvoices = activeInvoices.map(invoice => {
     const activeEnrollments = invoice.enrollments.filter(
       e => e.status !== 'CANCELLED'
@@ -58,7 +58,10 @@ export default defineEventHandler(async (event) => {
       currency: invoice.currency,
       status: invoice.status,
       createdAt: invoice.createdAt,
-      courses: activeEnrollments.map(e => e.course.name)
+      courses: activeEnrollments.map(e => e.course.name),
+      courseIds: activeEnrollments.map(e => e.course.id),
+      // Get first course ID for checkout link (most invoices have one course)
+      firstCourseId: activeEnrollments.length > 0 ? activeEnrollments[0].course.id : null
     }
   })
   
