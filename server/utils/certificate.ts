@@ -25,21 +25,22 @@ export async function generateCertificate(enrollment: any): Promise<any> {
   })
 
   if (!template) {
-    // Create default template if none exists
+    // Create premium default template if none exists
     const defaultTemplate = await prisma.certificateTemplate.create({
       data: {
-        name: 'Default Certificate',
+        name: 'Premium Certificate Template',
         courseId: enrollment.courseId,
         design: {
-          backgroundColor: '#ffffff',
-          textColor: '#000000',
+          backgroundColor: '#fcf9f2', // Cream
+          textColor: '#1a3a5c', // Navy
           titleFont: 'Helvetica-Bold',
-          titleSize: 24,
+          titleSize: 36,
           bodyFont: 'Helvetica',
-          bodySize: 14,
+          bodySize: 16,
           logoUrl: null,
-          borderColor: '#1a3a5c',
-          borderWidth: 3
+          borderColor: '#d9a520', // Gold
+          borderWidth: 8,
+          style: 'premium'
         },
         variables: {
           studentName: '$student_name$',
@@ -70,7 +71,8 @@ async function generateCertificateWithTemplate(enrollment: any, template: any) {
       course: {
         select: {
           id: true,
-          name: true
+          name: true,
+          description: true
         }
       }
     }
@@ -81,102 +83,367 @@ async function generateCertificateWithTemplate(enrollment: any, template: any) {
   }
 
   const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([612, 792]) // Letter size
+  // Use A4 size (595 x 842 points) for better proportions
+  const page = pdfDoc.addPage([595, 842])
 
-  const design = template.design as any
-  const variables = template.variables as any
-
-  // Set background color
-  if (design.backgroundColor) {
-    page.drawRectangle({
-      x: 0,
-      y: 0,
-      width: page.getWidth(),
-      height: page.getHeight(),
-      color: rgb(
-        hexToRgb(design.backgroundColor).r,
-        hexToRgb(design.backgroundColor).g,
-        hexToRgb(design.backgroundColor).b
-      )
-    })
-  }
+  // Premium color scheme
+  const goldColor = rgb(0.85, 0.65, 0.13) // Gold accent
+  const navyBlue = rgb(0.1, 0.23, 0.36) // #1a3a5c
+  const darkGray = rgb(0.2, 0.2, 0.2)
+  const lightGray = rgb(0.6, 0.6, 0.6)
+  const creamColor = rgb(0.99, 0.98, 0.95) // Cream background
 
   // Load fonts
   const titleFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique)
 
-  // Draw border if specified
-  if (design.borderColor && design.borderWidth) {
-    const borderColor = hexToRgb(design.borderColor)
-    page.drawRectangle({
-      x: design.borderWidth,
-      y: design.borderWidth,
-      width: page.getWidth() - (design.borderWidth * 2),
-      height: page.getHeight() - (design.borderWidth * 2),
-      borderColor: rgb(borderColor.r, borderColor.g, borderColor.b),
-      borderWidth: design.borderWidth
-    })
-  }
+  // Draw cream background
+  page.drawRectangle({
+    x: 0,
+    y: 0,
+    width: page.getWidth(),
+    height: page.getHeight(),
+    color: creamColor
+  })
 
-  // Certificate title
-  const titleText = 'Certificate of Completion'
-  const titleSize = design.titleSize || 24
+  // Premium decorative border - outer gold border
+  const borderWidth = 8
+  const borderMargin = 40
+  
+  // Outer gold border
+  page.drawRectangle({
+    x: borderMargin,
+    y: borderMargin,
+    width: page.getWidth() - (borderMargin * 2),
+    height: page.getHeight() - (borderMargin * 2),
+    borderColor: goldColor,
+    borderWidth: borderWidth
+  })
+
+  // Inner navy border
+  const innerMargin = borderMargin + borderWidth + 5
+  page.drawRectangle({
+    x: innerMargin,
+    y: innerMargin,
+    width: page.getWidth() - (innerMargin * 2),
+    height: page.getHeight() - (innerMargin * 2),
+    borderColor: navyBlue,
+    borderWidth: 3
+  })
+
+  // Decorative corner elements
+  const cornerSize = 30
+  const cornerThickness = 2
+  
+  // Top-left corner
+  page.drawLine({
+    start: { x: innerMargin + 20, y: innerMargin + 20 },
+    end: { x: innerMargin + 20 + cornerSize, y: innerMargin + 20 },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+  page.drawLine({
+    start: { x: innerMargin + 20, y: innerMargin + 20 },
+    end: { x: innerMargin + 20, y: innerMargin + 20 + cornerSize },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+
+  // Top-right corner
+  page.drawLine({
+    start: { x: page.getWidth() - innerMargin - 20, y: innerMargin + 20 },
+    end: { x: page.getWidth() - innerMargin - 20 - cornerSize, y: innerMargin + 20 },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+  page.drawLine({
+    start: { x: page.getWidth() - innerMargin - 20, y: innerMargin + 20 },
+    end: { x: page.getWidth() - innerMargin - 20, y: innerMargin + 20 + cornerSize },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+
+  // Bottom-left corner
+  page.drawLine({
+    start: { x: innerMargin + 20, y: page.getHeight() - innerMargin - 20 },
+    end: { x: innerMargin + 20 + cornerSize, y: page.getHeight() - innerMargin - 20 },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+  page.drawLine({
+    start: { x: innerMargin + 20, y: page.getHeight() - innerMargin - 20 },
+    end: { x: innerMargin + 20, y: page.getHeight() - innerMargin - 20 - cornerSize },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+
+  // Bottom-right corner
+  page.drawLine({
+    start: { x: page.getWidth() - innerMargin - 20, y: page.getHeight() - innerMargin - 20 },
+    end: { x: page.getWidth() - innerMargin - 20 - cornerSize, y: page.getHeight() - innerMargin - 20 },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+  page.drawLine({
+    start: { x: page.getWidth() - innerMargin - 20, y: page.getHeight() - innerMargin - 20 },
+    end: { x: page.getWidth() - innerMargin - 20, y: page.getHeight() - innerMargin - 20 - cornerSize },
+    thickness: cornerThickness,
+    color: goldColor
+  })
+
+  // Decorative line under header
+  const headerY = page.getHeight() - 120
+  page.drawLine({
+    start: { x: innerMargin + 50, y: headerY },
+    end: { x: page.getWidth() - innerMargin - 50, y: headerY },
+    thickness: 1,
+    color: goldColor
+  })
+
+  // Certificate Title - Large and elegant
+  const titleText = 'CERTIFICATE OF COMPLETION'
+  const titleSize = 36
   const titleWidth = titleFont.widthOfTextAtSize(titleText, titleSize)
   page.drawText(titleText, {
     x: (page.getWidth() - titleWidth) / 2,
     y: page.getHeight() - 100,
     size: titleSize,
     font: titleFont,
-    color: rgb(0.13, 0.24, 0.43)
+    color: navyBlue
   })
 
-  // Certificate body
-  const bodySize = design.bodySize || 14
-  const bodyY = page.getHeight() - 200
+  // Subtitle
+  const subtitleText = 'This is to certify that'
+  const subtitleSize = 14
+  const subtitleWidth = italicFont.widthOfTextAtSize(subtitleText, subtitleSize)
+  page.drawText(subtitleText, {
+    x: (page.getWidth() - subtitleWidth) / 2,
+    y: page.getHeight() - 180,
+    size: subtitleSize,
+    font: italicFont,
+    color: darkGray
+  })
 
-  // Student name
+  // Student Name - Prominently displayed
   const studentName = fullEnrollment.user?.name || 'Student'
-  const nameText = `This is to certify that ${studentName}`
-  const nameWidth = bodyFont.widthOfTextAtSize(nameText, bodySize)
-  page.drawText(nameText, {
+  const nameSize = 28
+  const nameWidth = titleFont.widthOfTextAtSize(studentName, nameSize)
+  page.drawText(studentName, {
     x: (page.getWidth() - nameWidth) / 2,
-    y: bodyY,
-    size: bodySize,
-    font: bodyFont
+    y: page.getHeight() - 240,
+    size: nameSize,
+    font: titleFont,
+    color: navyBlue
   })
 
-  // Course title
+  // Decorative line under name
+  page.drawLine({
+    start: { x: (page.getWidth() - nameWidth) / 2 - 20, y: page.getHeight() - 260 },
+    end: { x: (page.getWidth() + nameWidth) / 2 + 20, y: page.getHeight() - 260 },
+    thickness: 2,
+    color: goldColor
+  })
+
+  // Course completion text
   const courseTitle = fullEnrollment.course?.name || 'Course'
-  const courseText = `has successfully completed the course: ${courseTitle}`
-  const courseWidth = bodyFont.widthOfTextAtSize(courseText, bodySize)
-  page.drawText(courseText, {
-    x: (page.getWidth() - courseWidth) / 2,
-    y: bodyY - 40,
+  const bodyText = `has successfully completed the course`
+  const bodySize = 16
+  const bodyWidth = bodyFont.widthOfTextAtSize(bodyText, bodySize)
+  page.drawText(bodyText, {
+    x: (page.getWidth() - bodyWidth) / 2,
+    y: page.getHeight() - 310,
     size: bodySize,
-    font: bodyFont
+    font: bodyFont,
+    color: darkGray
   })
 
-  // Date
+  // Course Title - Highlighted
+  const courseSize = 20
+  const courseWidth = titleFont.widthOfTextAtSize(courseTitle, courseSize)
+  page.drawText(courseTitle, {
+    x: (page.getWidth() - courseWidth) / 2,
+    y: page.getHeight() - 350,
+    size: courseSize,
+    font: titleFont,
+    color: navyBlue
+  })
+
+  // Date section
   const completionDate = fullEnrollment.completedAt || new Date()
-  const dateText = `Date of Completion: ${completionDate.toLocaleDateString()}`
-  const dateWidth = bodyFont.widthOfTextAtSize(dateText, bodySize)
+  const formattedDate = completionDate.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })
+  const dateText = `Completed on ${formattedDate}`
+  const dateSize = 14
+  const dateWidth = bodyFont.widthOfTextAtSize(dateText, dateSize)
   page.drawText(dateText, {
     x: (page.getWidth() - dateWidth) / 2,
-    y: bodyY - 80,
-    size: bodySize,
-    font: bodyFont
+    y: page.getHeight() - 420,
+    size: dateSize,
+    font: bodyFont,
+    color: darkGray
   })
 
-  // Certificate number
-  const certNumber = `CERT-${Date.now()}`
+  // Certificate number - smaller, at bottom
+  const certNumber = `CERT-${fullEnrollment.id.substring(0, 8).toUpperCase()}-${Date.now().toString().slice(-6)}`
   const certText = `Certificate Number: ${certNumber}`
-  const certWidth = bodyFont.widthOfTextAtSize(certText, bodySize - 2)
+  const certSize = 10
+  const certWidth = bodyFont.widthOfTextAtSize(certText, certSize)
   page.drawText(certText, {
     x: (page.getWidth() - certWidth) / 2,
-    y: bodyY - 120,
-    size: bodySize - 2,
+    y: page.getHeight() - 500,
+    size: certSize,
     font: bodyFont,
-    color: rgb(0.5, 0.5, 0.5)
+    color: lightGray
+  })
+
+  // Company branding section at bottom
+  const companyY = 150
+  
+  // Company name
+  const companyName = 'WeCodeZW'
+  const companySize = 18
+  const companyWidth = titleFont.widthOfTextAtSize(companyName, companySize)
+  page.drawText(companyName, {
+    x: (page.getWidth() - companyWidth) / 2,
+    y: companyY,
+    size: companySize,
+    font: titleFont,
+    color: navyBlue
+  })
+
+  // Company details
+  const companyDetails = '194 Baines Ave, Harare | +263 778 456 168 | info@wecode.co.zw'
+  const detailsSize = 9
+  const detailsWidth = bodyFont.widthOfTextAtSize(companyDetails, detailsSize)
+  page.drawText(companyDetails, {
+    x: (page.getWidth() - detailsWidth) / 2,
+    y: companyY - 25,
+    size: detailsSize,
+    font: bodyFont,
+    color: lightGray
+  })
+
+  // Signature lines
+  const signatureY = 220
+  const signatureWidth = 150
+  
+  // Left signature (Instructor/Issuer)
+  page.drawLine({
+    start: { x: innerMargin + 80, y: signatureY },
+    end: { x: innerMargin + 80 + signatureWidth, y: signatureY },
+    thickness: 1,
+    color: darkGray
+  })
+  page.drawText('Authorized Signature', {
+    x: innerMargin + 80 + (signatureWidth / 2) - 60,
+    y: signatureY - 15,
+    size: 9,
+    font: bodyFont,
+    color: lightGray
+  })
+
+  // Right signature (Date)
+  page.drawLine({
+    start: { x: page.getWidth() - innerMargin - 80 - signatureWidth, y: signatureY },
+    end: { x: page.getWidth() - innerMargin - 80, y: signatureY },
+    thickness: 1,
+    color: darkGray
+  })
+  page.drawText('Date', {
+    x: page.getWidth() - innerMargin - 80 - (signatureWidth / 2) - 15,
+    y: signatureY - 15,
+    size: 9,
+    font: bodyFont,
+    color: lightGray
+  })
+
+  // Decorative seal/emblem area (diamond shape for elegance)
+  const sealCenterX = page.getWidth() / 2
+  const sealCenterY = 350
+  const sealSize = 50
+  
+  // Draw diamond shape using lines
+  const diamondPoints = [
+    { x: sealCenterX, y: sealCenterY + sealSize / 2 }, // Top
+    { x: sealCenterX + sealSize / 2, y: sealCenterY }, // Right
+    { x: sealCenterX, y: sealCenterY - sealSize / 2 }, // Bottom
+    { x: sealCenterX - sealSize / 2, y: sealCenterY }  // Left
+  ]
+  
+  // Outer diamond
+  page.drawLine({
+    start: diamondPoints[0],
+    end: diamondPoints[1],
+    thickness: 2,
+    color: goldColor
+  })
+  page.drawLine({
+    start: diamondPoints[1],
+    end: diamondPoints[2],
+    thickness: 2,
+    color: goldColor
+  })
+  page.drawLine({
+    start: diamondPoints[2],
+    end: diamondPoints[3],
+    thickness: 2,
+    color: goldColor
+  })
+  page.drawLine({
+    start: diamondPoints[3],
+    end: diamondPoints[0],
+    thickness: 2,
+    color: goldColor
+  })
+  
+  // Inner diamond
+  const innerSize = sealSize - 15
+  const innerDiamondPoints = [
+    { x: sealCenterX, y: sealCenterY + innerSize / 2 },
+    { x: sealCenterX + innerSize / 2, y: sealCenterY },
+    { x: sealCenterX, y: sealCenterY - innerSize / 2 },
+    { x: sealCenterX - innerSize / 2, y: sealCenterY }
+  ]
+  
+  page.drawLine({
+    start: innerDiamondPoints[0],
+    end: innerDiamondPoints[1],
+    thickness: 1,
+    color: navyBlue
+  })
+  page.drawLine({
+    start: innerDiamondPoints[1],
+    end: innerDiamondPoints[2],
+    thickness: 1,
+    color: navyBlue
+  })
+  page.drawLine({
+    start: innerDiamondPoints[2],
+    end: innerDiamondPoints[3],
+    thickness: 1,
+    color: navyBlue
+  })
+  page.drawLine({
+    start: innerDiamondPoints[3],
+    end: innerDiamondPoints[0],
+    thickness: 1,
+    color: navyBlue
+  })
+
+  // Seal text
+  const sealText = 'SEAL'
+  const sealTextSize = 9
+  const sealTextWidth = titleFont.widthOfTextAtSize(sealText, sealTextSize)
+  page.drawText(sealText, {
+    x: sealCenterX - (sealTextWidth / 2),
+    y: sealCenterY - 4,
+    size: sealTextSize,
+    font: titleFont,
+    color: navyBlue
   })
 
   // Save PDF

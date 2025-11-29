@@ -97,7 +97,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Course content not available for exam generation' })
   }
 
-  const questions = await generateQuizQuestions(allContent, template.questionCount, 'hard')
+  const questions = await generateQuizQuestions(
+    allContent, 
+    template.questionCount, 
+    'hard',
+    enrollment.course.name
+  )
 
   // Create exam attempt
   const attempt = await prisma.finalExamAttempt.create({

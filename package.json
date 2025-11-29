@@ -13,6 +13,7 @@
     "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@nuxtjs/sitemap": "^7.4.3",
     "@prisma/client": "^6.19.0",
     "bcryptjs": "^2.4.3",

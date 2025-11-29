@@ -160,6 +160,18 @@
               </div>
               <div class="flex gap-2">
                 <button
+                  @click="generateQuiz(lesson)"
+                  :disabled="generatingQuiz === lesson.id"
+                  class="rounded-lg border border-green-600/50 bg-green-500/10 px-3 py-1.5 text-xs font-medium text-green-400 hover:bg-green-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                  title="Generate AI Quiz"
+                >
+                  <span v-if="generatingQuiz === lesson.id" class="h-3 w-3 animate-spin rounded-full border-2 border-green-400 border-t-transparent"></span>
+                  <svg v-else class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  Quiz
+                </button>
+                <button
                   @click="editLesson(lesson, topic.id)"
                   class="rounded-lg border border-navy-600 bg-navy-800/50 px-3 py-1.5 text-xs font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
                 >
@@ -500,6 +512,104 @@
         </form>
       </div>
     </div>
+
+    <!-- Quiz Preview Modal -->
+    <div
+      v-if="showQuizModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      @click.self="showQuizModal = false"
+    >
+      <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/90 to-navy-900/90 p-6">
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-white">Generated Quiz Preview</h2>
+            <p class="text-sm text-navy-300 mt-1">
+              {{ quizPreview.lesson?.title }} • {{ quizPreview.questions?.length || 0 }} questions
+            </p>
+          </div>
+          <button
+            @click="showQuizModal = false"
+            class="rounded-lg border border-navy-700 bg-navy-800/50 p-2 text-navy-400 hover:bg-navy-700/50 transition-all"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div v-if="quizPreview.questions && quizPreview.questions.length > 0" class="space-y-4">
+          <div
+            v-for="(question, index) in quizPreview.questions"
+            :key="question.id || index"
+            class="rounded-lg border border-navy-700/50 bg-navy-800/40 p-4"
+          >
+            <div class="mb-3 flex items-start gap-2">
+              <span class="flex h-6 w-6 items-center justify-center rounded bg-blue-500/20 text-xs font-semibold text-blue-400">
+                {{ index + 1 }}
+              </span>
+              <div class="flex-1">
+                <p class="font-medium text-white">{{ question.question }}</p>
+                <span class="mt-1 inline-block rounded bg-navy-700/50 px-2 py-0.5 text-xs text-navy-300">
+                  {{ question.type === 'multiple-choice' ? 'Multiple Choice' : 'True/False' }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="question.type === 'multiple-choice' && question.options" class="ml-8 space-y-2">
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                :class="{
+                  'border-green-500/50 bg-green-500/10': option === question.correctAnswer,
+                  'border-navy-700/50 bg-navy-800/30': option !== question.correctAnswer
+                }"
+                class="rounded border p-2 text-sm"
+              >
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-navy-300">{{ String.fromCharCode(65 + optIndex) }}.</span>
+                  <span :class="option === question.correctAnswer ? 'text-green-400 font-semibold' : 'text-navy-200'">
+                    {{ option }}
+                  </span>
+                  <span v-if="option === question.correctAnswer" class="ml-auto text-xs text-green-400">✓ Correct</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="ml-8">
+              <div
+                :class="{
+                  'border-green-500/50 bg-green-500/10': question.correctAnswer === true,
+                  'border-navy-700/50 bg-navy-800/30': question.correctAnswer !== true
+                }"
+                class="rounded border p-2 text-sm"
+              >
+                <span :class="question.correctAnswer === true ? 'text-green-400 font-semibold' : 'text-navy-200'">
+                  {{ question.correctAnswer === true ? 'True' : 'False' }}
+                </span>
+                <span class="ml-2 text-xs text-green-400">✓ Correct Answer</span>
+              </div>
+            </div>
+
+            <div v-if="question.explanation" class="mt-3 ml-8 rounded bg-navy-900/50 p-2 text-xs text-navy-300">
+              <span class="font-medium text-navy-400">Explanation:</span> {{ question.explanation }}
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-8 text-navy-300">
+          No questions generated. Please check that the lesson has transcript, notes, or description.
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3 border-t border-navy-700/50 pt-4">
+          <button
+            @click="showQuizModal = false"
+            class="rounded-lg border border-navy-700 bg-navy-800/50 px-5 py-2.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -515,12 +625,15 @@ const { data: course, refresh, pending: loading } = await useFetch(`/api/courses
 const showEditModal = ref(false)
 const showTopicModal = ref(false)
 const showLessonModal = ref(false)
+const showQuizModal = ref(false)
 const saving = ref(false)
 const savingTopic = ref(false)
 const savingLesson = ref(false)
+const generatingQuiz = ref<string | null>(null)
 const editingTopic = ref<any>(null)
 const editingLesson = ref<any>(null)
 const selectedTopicId = ref<string | null>(null)
+const quizPreview = ref<any>({ questions: [], lesson: null })
 
 const editForm = ref({
   name: '',
@@ -724,6 +837,32 @@ const editLesson = (lesson: any, topicId: string) => {
     order: lesson.order
   }
   showLessonModal.value = true
+}
+
+const generateQuiz = async (lesson: any) => {
+  if (!lesson.transcript && !lesson.notes && !lesson.description) {
+    alert('Please add transcript, notes, or description to the lesson before generating a quiz.')
+    return
+  }
+
+  try {
+    generatingQuiz.value = lesson.id
+    const result = await $fetch(`/api/admin/lessons/${lesson.id}/quiz/generate`, {
+      method: 'POST',
+      body: {
+        questionCount: 10,
+        difficulty: 'medium'
+      }
+    })
+    
+    quizPreview.value = result
+    showQuizModal.value = true
+  } catch (error: any) {
+    console.error('Error generating quiz:', error)
+    alert(error.data?.message || 'Failed to generate quiz. Please check your GEMINI_API_KEY environment variable.')
+  } finally {
+    generatingQuiz.value = null
+  }
 }
 
 const deleteLesson = async (lessonId: string) => {

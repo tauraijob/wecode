@@ -21,10 +21,8 @@ export default defineEventHandler(async (event) => {
 
   const normalizedInvoiceNumber = invoiceNumber.trim()
   
-  // Add a small delay to ensure any recent invoice creation is committed
   await new Promise(resolve => setTimeout(resolve, 50))
   
-  // Try to find invoice with retry logic
   let invoice = null
   let retries = 3
   let retryDelay = 100
@@ -59,12 +57,11 @@ export default defineEventHandler(async (event) => {
     
     if (!invoice && retries > 1) {
       await new Promise(resolve => setTimeout(resolve, retryDelay))
-      retryDelay *= 2 // Exponential backoff
+      retryDelay *= 2
     }
     retries--
   }
   
-  // Fallback: try findUnique
   if (!invoice) {
     invoice = await prisma.invoice.findUnique({
       where: { number: normalizedInvoiceNumber },
@@ -95,300 +92,346 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Invoice not found' })
   }
 
-  // Only allow users to view their own invoices, unless admin
   if (invoice.userId !== auth.userId && auth.role !== 'ADMIN') {
     throw createError({ statusCode: 403, statusMessage: 'Access denied' })
   }
 
-  // Generate PDF
+  // Simple Invoice
   const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([612, 792]) // Letter size (8.5 x 11 inches)
+  const page = pdfDoc.addPage([612, 792])
 
-  // Load fonts
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
-  // Colors
-  const navyBlue = rgb(0.1, 0.23, 0.36) // #1a3a5c
+  const black = rgb(0, 0, 0)
   const darkGray = rgb(0.3, 0.3, 0.3)
-  const lightGray = rgb(0.7, 0.7, 0.7)
+  const gray = rgb(0.5, 0.5, 0.5)
 
-  let yPosition = 750
-  const leftColumn = 50
-  const rightColumn = 350
+  const margin = 50
+  let yPos = 750
 
-  // Header - Company Info
+  // Company Info
   page.drawText('WeCodeZW', {
-    x: leftColumn,
-    y: yPosition,
-    size: 28,
+    x: margin,
+    y: yPos,
+    size: 24,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
 
-  yPosition -= 25
-  page.drawText('Bridging knowledge, technology, and innovation', {
-    x: leftColumn,
-    y: yPosition,
+  yPos -= 20
+  page.drawText('194 Baines Ave, Harare', {
+    x: margin,
+    y: yPos,
     size: 10,
     font: regularFont,
     color: darkGray
   })
 
-  yPosition -= 15
-  page.drawText('Email: info@wecode.co.zw | Phone: +263 778 456 168', {
-    x: leftColumn,
-    y: yPosition,
-    size: 9,
+  yPos -= 15
+  page.drawText('Phone: +263 778 456 168', {
+    x: margin,
+    y: yPos,
+    size: 10,
     font: regularFont,
-    color: lightGray
+    color: darkGray
+  })
+
+  yPos -= 15
+  page.drawText('Email: info@wecode.co.zw', {
+    x: margin,
+    y: yPos,
+    size: 10,
+    font: regularFont,
+    color: darkGray
   })
 
   // Invoice Title
-  yPosition -= 40
+  yPos -= 40
   page.drawText('INVOICE', {
-    x: leftColumn,
-    y: yPosition,
-    size: 24,
+    x: margin,
+    y: yPos,
+    size: 20,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
 
-  // Invoice Details Section
-  yPosition -= 50
-
-  // Invoice Number
+  // Invoice Details
+  yPos -= 40
   page.drawText('Invoice Number:', {
-    x: leftColumn,
-    y: yPosition,
+    x: margin,
+    y: yPos,
     size: 10,
     font: regularFont,
     color: darkGray
   })
   page.drawText(invoice.number, {
-    x: rightColumn,
-    y: yPosition,
+    x: margin + 100,
+    y: yPos,
     size: 10,
-    font: boldFont,
-    color: navyBlue
+    font: regularFont,
+    color: black
   })
 
-  yPosition -= 20
-  // Invoice Date
-  const invoiceDate = invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : new Date().toLocaleDateString()
-  page.drawText('Invoice Date:', {
-    x: leftColumn,
-    y: yPosition,
+  yPos -= 20
+  const invoiceDate = invoice.createdAt 
+    ? new Date(invoice.createdAt).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+    : new Date().toLocaleDateString()
+  page.drawText('Date:', {
+    x: margin,
+    y: yPos,
     size: 10,
     font: regularFont,
     color: darkGray
   })
   page.drawText(invoiceDate, {
-    x: rightColumn,
-    y: yPosition,
+    x: margin + 100,
+    y: yPos,
     size: 10,
     font: regularFont,
-    color: darkGray
+    color: black
   })
 
-  yPosition -= 20
-  // Status
+  yPos -= 20
   page.drawText('Status:', {
-    x: leftColumn,
-    y: yPosition,
+    x: margin,
+    y: yPos,
     size: 10,
     font: regularFont,
     color: darkGray
   })
-  const statusColor = invoice.status === 'PAID' ? rgb(0, 0.6, 0.3) : rgb(0.9, 0.6, 0)
   page.drawText(invoice.status, {
-    x: rightColumn,
-    y: yPosition,
+    x: margin + 100,
+    y: yPos,
     size: 10,
     font: boldFont,
-    color: statusColor
+    color: black
   })
 
-  // Bill To Section
-  yPosition -= 50
+  // Bill To
+  yPos -= 40
   page.drawText('Bill To:', {
-    x: leftColumn,
-    y: yPosition,
-    size: 12,
+    x: margin,
+    y: yPos,
+    size: 11,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
 
-  yPosition -= 20
+  yPos -= 20
   if (invoice.user) {
     page.drawText(invoice.user.name || 'Customer', {
-      x: leftColumn,
-      y: yPosition,
+      x: margin,
+      y: yPos,
       size: 10,
       font: regularFont,
-      color: darkGray
+      color: black
     })
 
-    yPosition -= 15
+    yPos -= 15
     if (invoice.user.email) {
       page.drawText(invoice.user.email, {
-        x: leftColumn,
-        y: yPosition,
+        x: margin,
+        y: yPos,
         size: 10,
         font: regularFont,
         color: darkGray
       })
-      yPosition -= 15
+      yPos -= 30
     }
   }
 
-  // Items Section
-  yPosition -= 30
+  // Items
+  yPos -= 10
   page.drawText('Items:', {
-    x: leftColumn,
-    y: yPosition,
-    size: 12,
+    x: margin,
+    y: yPos,
+    size: 11,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
 
-  yPosition -= 25
-  // Table Header
-  page.drawRectangle({
-    x: leftColumn,
-    y: yPosition - 15,
-    width: 512,
-    height: 20,
-    color: rgb(0.95, 0.95, 0.95)
-  })
-
+  yPos -= 25
+  // Simple table header
   page.drawText('Description', {
-    x: leftColumn + 5,
-    y: yPosition,
+    x: margin,
+    y: yPos,
     size: 10,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
-
   page.drawText('Amount', {
-    x: rightColumn + 200,
-    y: yPosition,
+    x: 450,
+    y: yPos,
     size: 10,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
 
-  yPosition -= 30
+  yPos -= 20
+  page.drawLine({
+    start: { x: margin, y: yPos },
+    end: { x: 550, y: yPos },
+    thickness: 0.5,
+    color: gray
+  })
 
-  // Course Items
+  yPos -= 20
+
+  // Items list
+  let subtotal = 0
+  const currency = invoice.currency || 'USD'
+  
   if (invoice.enrollments && invoice.enrollments.length > 0) {
     for (const enrollment of invoice.enrollments) {
       const courseName = enrollment.course.name
-      const amount = Number(enrollment.course.price).toFixed(2)
-      const currency = enrollment.course.currency || 'USD'
+      const price = Number(enrollment.course.price)
+      subtotal += price
 
-      // Wrap long course names
-      const maxWidth = 300
-      const courseNameLines = wrapText(courseName, maxWidth, regularFont, 10)
+      const maxWidth = 350
+      const courseLines = wrapText(courseName, maxWidth, regularFont, 10)
       
-      for (const line of courseNameLines) {
+      for (const line of courseLines) {
         page.drawText(line, {
-          x: leftColumn + 5,
-          y: yPosition,
+          x: margin,
+          y: yPos,
           size: 10,
           font: regularFont,
-          color: darkGray
+          color: black
         })
-        yPosition -= 15
+        yPos -= 15
       }
 
-      page.drawText(`${currency} ${amount}`, {
-        x: rightColumn + 200,
-        y: yPosition + (courseNameLines.length - 1) * 15,
+      const amountText = `${currency} ${price.toFixed(2)}`
+      const amountWidth = regularFont.widthOfTextAtSize(amountText, 10)
+      page.drawText(amountText, {
+        x: 550 - amountWidth,
+        y: yPos + (courseLines.length - 1) * 15,
         size: 10,
         font: regularFont,
-        color: darkGray
+        color: black
       })
 
-      yPosition -= 10
+      yPos -= 10
     }
   } else {
-    // Fallback if no enrollments
+    const price = Number(invoice.amountUsd)
+    subtotal = price
     page.drawText('Course Enrollment', {
-      x: leftColumn + 5,
-      y: yPosition,
+      x: margin,
+      y: yPos,
       size: 10,
       font: regularFont,
-      color: darkGray
+      color: black
     })
-    page.drawText(`${invoice.currency || 'USD'} ${Number(invoice.amountUsd).toFixed(2)}`, {
-      x: rightColumn + 200,
-      y: yPosition,
+    const amountText = `${currency} ${price.toFixed(2)}`
+    const amountWidth = regularFont.widthOfTextAtSize(amountText, 10)
+    page.drawText(amountText, {
+      x: 550 - amountWidth,
+      y: yPos,
       size: 10,
       font: regularFont,
-      color: darkGray
+      color: black
     })
-    yPosition -= 25
+    yPos -= 20
   }
 
-  // Total Section
-  yPosition -= 20
+  // Total
+  yPos -= 20
   page.drawLine({
-    start: { x: leftColumn, y: yPosition },
-    end: { x: leftColumn + 512, y: yPosition },
-    thickness: 1,
-    color: lightGray
+    start: { x: margin, y: yPos },
+    end: { x: 550, y: yPos },
+    thickness: 0.5,
+    color: gray
   })
 
-  yPosition -= 30
-  page.drawText('Total Amount:', {
-    x: rightColumn + 100,
-    y: yPosition,
+  yPos -= 25
+  page.drawText('Total:', {
+    x: margin,
+    y: yPos,
     size: 12,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
 
-  const totalAmount = `${invoice.currency || 'USD'} ${Number(invoice.amountUsd).toFixed(2)}`
-  const totalWidth = boldFont.widthOfTextAtSize(totalAmount, 14)
-  page.drawText(totalAmount, {
-    x: rightColumn + 300 - totalWidth,
-    y: yPosition,
-    size: 14,
+  const totalText = `${currency} ${subtotal.toFixed(2)}`
+  const totalWidth = boldFont.widthOfTextAtSize(totalText, 12)
+  page.drawText(totalText, {
+    x: 550 - totalWidth,
+    y: yPos,
+    size: 12,
     font: boldFont,
-    color: navyBlue
+    color: black
   })
+
+  // Payment Options (if unpaid)
+  if (invoice.status !== 'PAID') {
+    yPos -= 50
+    page.drawText('Payment Options:', {
+      x: margin,
+      y: yPos,
+      size: 11,
+      font: boldFont,
+      color: black
+    })
+
+    yPos -= 25
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    let siteUrl = process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
+    if (!isDevelopment && siteUrl.includes('localhost')) {
+      siteUrl = 'https://wecode.co.zw'
+    }
+    const paymentUrl = `${siteUrl}/pay/${invoice.number}`
+
+    page.drawText('1. Pay Online: ' + paymentUrl, {
+      x: margin,
+      y: yPos,
+      size: 9,
+      font: regularFont,
+      color: black
+    })
+
+    yPos -= 20
+    page.drawText('2. Bank Transfer: Account 1234567890', {
+      x: margin,
+      y: yPos,
+      size: 9,
+      font: regularFont,
+      color: black
+    })
+
+    yPos -= 20
+    page.drawText('3. Mobile Money: Ecocash 0778456168', {
+      x: margin,
+      y: yPos,
+      size: 9,
+      font: regularFont,
+      color: black
+    })
+  }
 
   // Footer
-  yPosition = 100
+  yPos = 80
   page.drawText('Thank you for your business!', {
-    x: leftColumn,
-    y: yPosition,
-    size: 10,
-    font: regularFont,
-    color: lightGray
-  })
-
-  yPosition -= 20
-  page.drawText('For payment inquiries, contact us at info@wecode.co.zw or +263 778 456 168', {
-    x: leftColumn,
-    y: yPosition,
+    x: margin,
+    y: yPos,
     size: 9,
     font: regularFont,
-    color: lightGray
+    color: gray
   })
 
-  // Generate PDF bytes
   const pdfBytes = await pdfDoc.save()
 
-  // Set response headers
   setHeader(event, 'Content-Type', 'application/pdf')
   setHeader(event, 'Content-Disposition', `inline; filename="invoice-${invoice.number}.pdf"`)
 
   return pdfBytes
 })
 
-// Helper function to wrap text
 function wrapText(text: string, maxWidth: number, font: any, fontSize: number): string[] {
   const words = text.split(' ')
   const lines: string[] = []
@@ -412,6 +455,3 @@ function wrapText(text: string, maxWidth: number, font: any, fontSize: number): 
 
   return lines
 }
-
-
-

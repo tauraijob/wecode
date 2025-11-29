@@ -12,6 +12,10 @@ PAYNOW_INTEGRATION_ID=22658
 PAYNOW_INTEGRATION_KEY=a5651864-acc3-478f-b093-3a8e8c4f7dd7
 SITE_URL=https://wecode.co.zw
 
+# AI Quiz Generation (Google Gemini)
+GEMINI_API_KEY=your_gemini_api_key_here
+# Get your free API key at: https://aistudio.google.com/app/apikey
+
 # Email Configuration (Brevo)
 BREVO_SMTP_USER=your_brevo_smtp_user
 BREVO_SMTP_KEY=your_brevo_smtp_key

@@ -215,6 +215,7 @@ export default defineEventHandler(async (event) => {
   // If still not found, try findFirst with user filter as final fallback
   if (!invoice) {
     console.log('Trying findFirst with user filter as final fallback...')
+    // Try exact match first
     invoice = await prisma.invoice.findFirst({
       where: {
         userId: auth.userId,
@@ -426,25 +427,57 @@ export default defineEventHandler(async (event) => {
     }
     
     if (!invoice) {
+      // Final attempt: Check if invoice exists with exact match including user filter
+      const finalAttempt = await prisma.invoice.findFirst({
+        where: {
+          userId: auth.userId,
+          number: normalizedInvoiceNumber
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true
+            }
+          },
+          enrollments: {
+            include: {
+              course: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  thumbnailUrl: true,
+                  price: true,
+                  currency: true
+                }
+              }
+            }
+          }
+        }
+      })
+      
+      if (finalAttempt) {
+        invoice = finalAttempt
+        console.log('Invoice found in final attempt:', { id: invoice.id, number: invoice.number })
+      }
+    }
+    
+    if (!invoice) {
       console.error(`Invoice not found: ${normalizedInvoiceNumber}`, {
         userId: auth.userId,
         userRole: auth.role,
         searchedNumber: normalizedInvoiceNumber,
         searchedNumberLength: normalizedInvoiceNumber.length,
-        searchedNumberBytes: Buffer.from(normalizedInvoiceNumber).toString('hex'),
         allUserInvoices: allUserInvoices.map(inv => inv.number),
         recentInvoices: recentInvoices.map(inv => ({ 
           number: inv.number, 
-          numberLength: inv.number.length,
-          numberBytes: Buffer.from(inv.number).toString('hex'),
           userId: inv.userId 
         })),
         invoiceExistsForOtherUser: anyInvoice ? { 
           userId: anyInvoice.userId,
-          number: anyInvoice.number,
-          numberLength: anyInvoice.number.length
-        } : null,
-        searchedBy: ['number', 'id', 'enrollment', 'contains', 'findFirst']
+          number: anyInvoice.number
+        } : null
       })
       
       // If invoice exists but for different user, provide helpful message
@@ -458,9 +491,9 @@ export default defineEventHandler(async (event) => {
       // Get user's recent invoices for helpful error message
       const userRecentInvoices = await prisma.invoice.findMany({
         where: { userId: auth.userId },
-        select: { number: true, status: true, createdAt: true },
+        select: { number: true, status: true, amountUsd: true, currency: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
-        take: 5
+        take: 10
       })
       
       const invoiceList = userRecentInvoices.length > 0 
@@ -475,6 +508,8 @@ export default defineEventHandler(async (event) => {
           userInvoices: userRecentInvoices.map(inv => ({
             number: inv.number,
             status: inv.status,
+            amountUsd: inv.amountUsd,
+            currency: inv.currency,
             createdAt: inv.createdAt
           }))
         }

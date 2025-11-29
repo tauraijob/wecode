@@ -72,13 +72,35 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // Get course and topic context for better quiz generation
+  const lessonWithContext = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    include: {
+      topic: {
+        include: {
+          course: {
+            select: {
+              name: true
+            }
+          }
+        }
+      }
+    }
+  })
+
   // Generate quiz questions using AI
   const sourceMaterial = lesson.transcript || lesson.notes || lesson.description || ''
   if (!sourceMaterial) {
     throw createError({ statusCode: 400, statusMessage: 'Lesson content not available for quiz generation' })
   }
 
-  const questions = await generateQuizQuestions(sourceMaterial, template.questionCount, template.difficulty || 'medium')
+  const questions = await generateQuizQuestions(
+    sourceMaterial,
+    template.questionCount,
+    template.difficulty || 'medium',
+    lessonWithContext?.topic?.course?.name,
+    lessonWithContext?.topic?.name
+  )
 
   return {
     questions,

@@ -119,13 +119,13 @@ export default defineEventHandler(async (event) => {
   page.drawText('WeCodeZW', {
     x: 50,
     y: yPosition,
-    size: 28,
+    size: 32,
     font: boldFont,
     color: navyBlue
   })
 
-  yPosition -= 25
-  page.drawText('Bridging knowledge, technology, and innovation', {
+  yPosition -= 20
+  page.drawText('194 Baines Ave, Harare', {
     x: 50,
     y: yPosition,
     size: 10,
@@ -134,7 +134,7 @@ export default defineEventHandler(async (event) => {
   })
 
   yPosition -= 15
-  page.drawText('Email: info@wecode.co.zw | Phone: +263 778 456 168', {
+  page.drawText('Phone: +263 778 456 168 | Email: info@wecode.co.zw', {
     x: 50,
     y: yPosition,
     size: 9,
@@ -370,7 +370,7 @@ export default defineEventHandler(async (event) => {
   })
 
   yPosition -= 20
-  page.drawText('For payment inquiries, contact us at info@wecode.co.zw or +263 778 456 168', {
+  page.drawText('194 Baines Ave, Harare | Phone: +263 778 456 168 | Email: info@wecode.co.zw', {
     x: leftColumn,
     y: yPosition,
     size: 9,

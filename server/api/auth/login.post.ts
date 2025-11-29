@@ -27,8 +27,9 @@ export default defineEventHandler(async (event) => {
   const ok = await verifyPassword(password, user.hashedPassword)
   if (!ok) throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
 
-  // Check if email is verified
-  if (!user.emailVerified) {
+  // Check if email is verified (skip for admin users and specific test accounts)
+  const skipVerification = user.role === 'ADMIN' || user.email === 'elearning-student@wecode.co.zw'
+  if (!user.emailVerified && !skipVerification) {
     throw createError({ 
       statusCode: 403, 
       statusMessage: 'Please verify your email address before logging in. Check your inbox for the verification link.' 
