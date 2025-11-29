@@ -242,17 +242,28 @@ export default defineEventHandler(async (event) => {
   // For paid courses, initiate Paynow payment immediately
   const integrationId = process.env.PAYNOW_INTEGRATION_ID
   const integrationKey = process.env.PAYNOW_INTEGRATION_KEY
-  // Default to production URL (wecode.co.zw) if SITE_URL not set
-  // Only use localhost if explicitly in development mode with NODE_ENV=development
-  // Note: Paynow webhooks require a publicly accessible URL, so for local testing
-  // you may need to use ngrok or test on a staging server
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  let siteUrl = process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
   
-  // Ensure SITE_URL starts with http:// or https://
+  // Determine site URL - prioritize SITE_URL env var, then check if we're in development
+  // Default to production domain (wecode.co.zw) for safety
+  let siteUrl = process.env.SITE_URL
+  
+  // If SITE_URL is not set, determine based on environment
+  if (!siteUrl) {
+    // Only use localhost if explicitly in development mode
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    siteUrl = isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw'
+  }
+  
+  // Ensure URL has protocol
   if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
-    // Default to https for production domains
+    // Default to https for production domains, http for localhost
     siteUrl = siteUrl.includes('localhost') ? `http://${siteUrl}` : `https://${siteUrl}`
+  }
+  
+  // Force production domain if not localhost (safety check)
+  if (!siteUrl.includes('localhost') && !siteUrl.includes('wecode.co.zw')) {
+    console.warn(`Warning: SITE_URL (${siteUrl}) doesn't match production domain. Using https://wecode.co.zw`)
+    siteUrl = 'https://wecode.co.zw'
   }
 
   if (!integrationId || !integrationKey) {
@@ -280,7 +291,14 @@ export default defineEventHandler(async (event) => {
     const resultUrl = `${siteUrl.replace(/\/$/, '')}/api/paynow/result`
     const returnUrl = `${siteUrl.replace(/\/$/, '')}/dashboard/learn` // Redirect to "My Courses" page after payment
     
-    console.log('Paynow URLs:', { resultUrl, returnUrl, siteUrl })
+    // Log for debugging
+    console.log('PayNow Configuration:', {
+      SITE_URL: process.env.SITE_URL,
+      NODE_ENV: process.env.NODE_ENV,
+      computedSiteUrl: siteUrl,
+      resultUrl,
+      returnUrl
+    })
 
     // In production, use the user's email. In test mode, Paynow requires the email 
     // to match the merchant's registered email, so use PAYNOW_TEST_EMAIL if set
