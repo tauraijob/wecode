@@ -87,19 +87,28 @@ export default defineEventHandler(async (event) => {
                 method: 'PAYNOW'
               }
             })
-          } else if (existingPayment.status === 'PENDING') {
-            await prisma.payment.update({
-              where: { id: existingPayment.id },
-              data: { status: 'SUCCESS' }
-            })
+          } else {
+            // Update existing payment to ensure it's marked as SUCCESS with correct method
+            if (existingPayment.status !== 'SUCCESS' || !existingPayment.method) {
+              await prisma.payment.update({
+                where: { id: existingPayment.id },
+                data: { 
+                  status: 'SUCCESS',
+                  method: existingPayment.method || 'PAYNOW'
+                }
+              })
+            }
           }
 
-          // Activate enrollments
+          // Activate enrollments linked to this invoice
           for (const enrollment of invoice.enrollments) {
-            await prisma.enrollment.update({
-              where: { id: enrollment.id },
-              data: { status: 'ACTIVE' }
-            })
+            if (enrollment.status !== 'ACTIVE') {
+              await prisma.enrollment.update({
+                where: { id: enrollment.id },
+                data: { status: 'ACTIVE' }
+              })
+              console.log('Payment check: Activated enrollment', { enrollmentId: enrollment.id, courseId: enrollment.courseId })
+            }
           }
 
           return {

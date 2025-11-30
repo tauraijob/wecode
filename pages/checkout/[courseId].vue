@@ -58,12 +58,30 @@
             <h2 class="text-xl font-semibold text-white mb-4">Payment Method</h2>
             
             <div class="space-y-3">
-              <div class="rounded-lg border-2 border-blue-500 bg-blue-500/10 p-4">
+              <!-- PayNow Option -->
+              <div 
+                @click="selectedPaymentMethod = 'paynow'"
+                :class="[
+                  'rounded-lg border-2 p-4 cursor-pointer transition-all',
+                  selectedPaymentMethod === 'paynow' 
+                    ? 'border-blue-500 bg-blue-500/10' 
+                    : 'border-navy-600 bg-navy-800/30 hover:border-navy-500'
+                ]"
+              >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
-                    <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
+                    <div class="flex items-center gap-2">
+                      <input 
+                        type="radio" 
+                        name="paymentMethod" 
+                        value="paynow" 
+                        v-model="selectedPaymentMethod"
+                        class="w-4 h-4 text-blue-600"
+                      />
+                      <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                    </div>
                     <div>
                       <p class="font-medium text-white">PayNow</p>
                       <p class="text-sm text-navy-300">Pay via Ecocash, OneMoney, Bank Transfer, or Card</p>
@@ -71,6 +89,42 @@
                   </div>
                   <div class="flex items-center gap-2">
                     <img src="https://www.paynow.co.zw/Content/landing/images/paynow-logo-blue.svg" alt="PayNow" class="h-6" />
+                    <span class="text-xs text-navy-400">Secure Payment</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PayPal Option -->
+              <div 
+                @click="selectedPaymentMethod = 'paypal'"
+                :class="[
+                  'rounded-lg border-2 p-4 cursor-pointer transition-all',
+                  selectedPaymentMethod === 'paypal' 
+                    ? 'border-blue-500 bg-blue-500/10' 
+                    : 'border-navy-600 bg-navy-800/30 hover:border-navy-500'
+                ]"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                      <input 
+                        type="radio" 
+                        name="paymentMethod" 
+                        value="paypal" 
+                        v-model="selectedPaymentMethod"
+                        class="w-4 h-4 text-blue-600"
+                      />
+                      <svg class="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.386zm4.6-14.4l-1.598 10.536h2.19c4.298 0 7.664-1.748 8.647-6.797.03-.15.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287-1.112-1.267-3.12-1.81-5.69-1.81H5.998l-1.465 9.636h5.143z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="font-medium text-white">PayPal</p>
+                      <p class="text-sm text-navy-300">Pay securely with your PayPal account or card</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" alt="PayPal" class="h-6" />
                     <span class="text-xs text-navy-400">Secure Payment</span>
                   </div>
                 </div>
@@ -161,6 +215,7 @@ const course = ref<any>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 const processing = ref(false)
+const selectedPaymentMethod = ref('paynow') // Default to PayNow
 
 // Fetch course details
 onMounted(async () => {
@@ -241,38 +296,55 @@ const proceedToPayment = async () => {
         }
       }
       
-      // If we have an invoice number, use it
-      if (invoiceNumber) {
-        const paymentResponse = await $fetch('/api/paynow/initiate', {
-          method: 'POST',
-          body: {
-            invoiceNumber: invoiceNumber,
-            amount: Number(course.value.price),
-            email: undefined // Will use user's email from auth
-          }
-        })
-        
-        if (paymentResponse.redirectUrl) {
-          window.location.href = paymentResponse.redirectUrl
-          return
-        }
-      } else {
-        // Create enrollment and get redirect URL
+      // If no invoice number, create enrollment to get one
+      if (!invoiceNumber) {
         const enrollResponse = await $fetch(`/api/courses/${courseId.value}/enroll`, {
           method: 'POST'
         })
         
-        if (enrollResponse.redirectUrl) {
+        if (enrollResponse.invoice?.number) {
+          invoiceNumber = enrollResponse.invoice.number
+        } else if (enrollResponse.redirectUrl) {
+          // If PayNow redirect URL is provided, use it
           window.location.href = enrollResponse.redirectUrl
           return
-        } else if (enrollResponse.invoice?.number) {
-          // Try to initiate payment with the invoice
+        }
+      }
+      
+      // Handle payment based on selected method
+      if (selectedPaymentMethod.value === 'paypal') {
+        // PayPal payment
+        if (!invoiceNumber) {
+          error.value = 'Invoice not found. Please try again.'
+          return
+        }
+        
+        const paypalResponse = await $fetch('/api/paypal/initiate', {
+          method: 'POST',
+          body: {
+            invoiceNumber: invoiceNumber,
+            amount: Number(course.value.price),
+            courseName: course.value.name,
+            courseId: courseId.value
+          }
+        })
+        
+        if (paypalResponse.paymentUrl) {
+          window.location.href = paypalResponse.paymentUrl
+          return
+        } else {
+          error.value = 'Failed to create PayPal payment link. Please try again.'
+          return
+        }
+      } else {
+        // PayNow payment (default)
+        if (invoiceNumber) {
           const paymentResponse = await $fetch('/api/paynow/initiate', {
             method: 'POST',
             body: {
-              invoiceNumber: enrollResponse.invoice.number,
+              invoiceNumber: invoiceNumber,
               amount: Number(course.value.price),
-              email: undefined
+              email: undefined // Will use user's email from auth
             }
           })
           

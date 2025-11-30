@@ -107,11 +107,14 @@ export default defineEventHandler(async (event) => {
           }
         })
       } else {
-        // Update existing payment if it was pending
-        if (existingPayment.status === 'PENDING') {
+        // Update existing payment to ensure it's marked as SUCCESS with correct method
+        if (existingPayment.status !== 'SUCCESS' || !existingPayment.method) {
           await prisma.payment.update({
             where: { id: existingPayment.id },
-            data: { status: 'SUCCESS' }
+            data: { 
+              status: 'SUCCESS',
+              method: existingPayment.method || 'PAYNOW'
+            }
           })
         }
       }
