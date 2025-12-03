@@ -502,7 +502,9 @@ const notificationsLoading = ref(false)
 const recentNotifications = ref<any[]>([])
 
 function formatNotificationTime(date: string | Date) {
+  if (!date) return 'Unknown'
   const d = new Date(date)
+  if (isNaN(d.getTime())) return 'Invalid date'
   const now = new Date()
   const diff = now.getTime() - d.getTime()
   const minutes = Math.floor(diff / 60000)
@@ -551,41 +553,86 @@ async function loadNotifications() {
 }
 
 onMounted(async () => {
-  const m = await $fetch('/api/admin/metrics').catch(() => ({ revenue: 0, schools: 0, clubs: 0 }))
-  Object.assign(metrics, m as any)
-  schools.value = (await $fetch('/api/admin/schools').catch(() => [])) as any[]
-  clubs.value = (await $fetch('/api/admin/clubs').catch(() => [])) as any[]
-  invoices.value = (await $fetch('/api/admin/invoices').catch(() => [])) as any[]
-  requests.value = (await $fetch('/api/admin/requests').catch(() => [])) as any[]
-  const c = await $fetch('/api/admin/charts').catch(() => ({ revenue: [], clubs: [], schools: [] }))
-  Object.assign(charts, c as any)
-  
-  // Load e-learning metrics
-  const courses = await $fetch('/api/admin/courses').catch(() => []) as any[]
-  recentCourses.value = courses
-  elearningMetrics.courses = courses.length
-  elearningMetrics.publishedCourses = courses.filter((c: any) => c.status === 'PUBLISHED').length
-  elearningMetrics.enrollments = courses.reduce((sum: number, c: any) => sum + (c._count?.enrollments || 0), 0)
-  
-  // Get unique students from enrollments
-  const enrollments = await $fetch('/api/admin/enrollments').catch(() => []) as any[]
-  const uniqueStudents = new Set(enrollments.map((e: any) => e.user?.id).filter(Boolean))
-  elearningMetrics.activeStudents = uniqueStudents.size
-  
-  // Load notifications
-  await loadNotifications()
-  
-  nextTick(() => initCharts())
+  try {
+    const m = await $fetch('/api/admin/metrics').catch((err) => {
+      console.error('Failed to load metrics:', err)
+      return { revenue: 0, schools: 0, clubs: 0, users: 0, quotes: 0, invoices: 0, payments: 0, pendingRequests: 0 }
+    })
+    Object.assign(metrics, m as any)
+    
+    schools.value = (await $fetch('/api/admin/schools').catch((err) => {
+      console.error('Failed to load schools:', err)
+      return []
+    })) as any[]
+    
+    clubs.value = (await $fetch('/api/admin/clubs').catch((err) => {
+      console.error('Failed to load clubs:', err)
+      return []
+    })) as any[]
+    
+    invoices.value = (await $fetch('/api/admin/invoices').catch((err) => {
+      console.error('Failed to load invoices:', err)
+      return []
+    })) as any[]
+    
+    requests.value = (await $fetch('/api/admin/requests').catch((err) => {
+      console.error('Failed to load requests:', err)
+      return []
+    })) as any[]
+    
+    const c = await $fetch('/api/admin/charts').catch((err) => {
+      console.error('Failed to load charts:', err)
+      return { revenue: [], clubs: [], schools: [] }
+    })
+    Object.assign(charts, c as any)
+    
+    // Load e-learning metrics
+    const courses = await $fetch('/api/admin/courses').catch((err) => {
+      console.error('Failed to load courses:', err)
+      return []
+    }) as any[]
+    recentCourses.value = courses || []
+    elearningMetrics.courses = courses.length
+    elearningMetrics.publishedCourses = courses.filter((c: any) => c?.status === 'PUBLISHED').length
+    elearningMetrics.enrollments = courses.reduce((sum: number, c: any) => sum + (c?._count?.enrollments || 0), 0)
+    
+    // Get unique students from enrollments
+    const enrollments = await $fetch('/api/admin/enrollments').catch((err) => {
+      console.error('Failed to load enrollments:', err)
+      return []
+    }) as any[]
+    const uniqueStudents = new Set(enrollments.map((e: any) => e?.user?.id).filter(Boolean))
+    elearningMetrics.activeStudents = uniqueStudents.size
+    
+    // Load notifications
+    await loadNotifications()
+    
+    nextTick(() => {
+      try {
+        initCharts()
+      } catch (err) {
+        console.error('Failed to initialize charts:', err)
+      }
+    })
+  } catch (error) {
+    console.error('Error loading admin dashboard:', error)
+  }
 })
 
 function initCharts() {
   if (!revenueCanvas.value || !clubsCanvas.value || !schoolsCanvas.value) return
+  
+  // Ensure charts data exists
+  if (!charts.revenue || !Array.isArray(charts.revenue)) charts.revenue = []
+  if (!charts.clubs || !Array.isArray(charts.clubs)) charts.clubs = []
+  if (!charts.schools || !Array.isArray(charts.schools)) charts.schools = []
+  
   // Revenue
   new ChartJS(revenueCanvas.value, {
     type: 'line',
     data: {
-      labels: charts.revenue.map(p => p.m),
-      datasets: [{ label: 'Revenue (USD)', data: charts.revenue.map(p => p.v), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#60a5fa', pointBorderColor: '#fff', pointBorderWidth: 2 }]
+      labels: charts.revenue.map((p: any) => p?.m || ''),
+      datasets: [{ label: 'Revenue (USD)', data: charts.revenue.map((p: any) => p?.v || 0), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#60a5fa', pointBorderColor: '#fff', pointBorderWidth: 2 }]
     },
     options: { 
       responsive: true, 
@@ -604,8 +651,8 @@ function initCharts() {
   new ChartJS(clubsCanvas.value, {
     type: 'line',
     data: {
-      labels: charts.clubs.map(p => p.m),
-      datasets: [{ label: 'New Clubs', data: charts.clubs.map(p => p.v), borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#a78bfa', pointBorderColor: '#fff', pointBorderWidth: 2 }]
+      labels: charts.clubs.map((p: any) => p?.m || ''),
+      datasets: [{ label: 'New Clubs', data: charts.clubs.map((p: any) => p?.v || 0), borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#a78bfa', pointBorderColor: '#fff', pointBorderWidth: 2 }]
     },
     options: { 
       responsive: true, 
@@ -624,8 +671,8 @@ function initCharts() {
   new ChartJS(schoolsCanvas.value, {
     type: 'line',
     data: {
-      labels: charts.schools.map(p => p.m),
-      datasets: [{ label: 'New Schools', data: charts.schools.map(p => p.v), borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#34d399', pointBorderColor: '#fff', pointBorderWidth: 2 }]
+      labels: charts.schools.map((p: any) => p?.m || ''),
+      datasets: [{ label: 'New Schools', data: charts.schools.map((p: any) => p?.v || 0), borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#34d399', pointBorderColor: '#fff', pointBorderWidth: 2 }]
     },
     options: { 
       responsive: true, 

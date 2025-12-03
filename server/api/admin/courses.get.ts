@@ -1,15 +1,10 @@
 import prisma from '~~/server/utils/db'
-import { verifyJwt } from '~~/server/utils/jwt'
+import { getCurrentUser } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  if (!prisma) {
-    throw createError({ statusCode: 503, statusMessage: 'Database not available' })
-  }
-
-  const token = getCookie(event, 'token')
-  const auth = token ? verifyJwt(token) : null
-  if (!auth || auth.role !== 'ADMIN') {
-    throw createError({ statusCode: 403, statusMessage: 'Admin access required' })
+  const user = await getCurrentUser(event)
+  if (!user || user.role !== 'ADMIN') {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
   const courses = await prisma.course.findMany({

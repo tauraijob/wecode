@@ -1,6 +1,11 @@
 import prisma from '~~/server/utils/db'
+import { getCurrentUser } from '~~/server/utils/auth'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  const user = await getCurrentUser(event)
+  if (!user || user.role !== 'ADMIN') {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
   const [revenueAgg, schools, clubsActive, users, quotes, invoices, paymentsSuccess, requestsPending] = await Promise.all([
     prisma.payment.aggregate({ _sum: { amountUsd: true }, where: { status: 'SUCCESS' as any } }),
     prisma.school.count(),

@@ -1,10 +1,15 @@
 import prisma from '~~/server/utils/db'
+import { getCurrentUser } from '~~/server/utils/auth'
 
 function monthKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  const user = await getCurrentUser(event)
+  if (!user || user.role !== 'ADMIN') {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
   const now = new Date()
   const months: string[] = []
   for (let i = 5; i >= 0; i--) {
