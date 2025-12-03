@@ -1,6 +1,15 @@
 <template>
   <section class="mx-auto max-w-4xl px-4 py-16">
-    <h1 class="text-4xl font-extrabold tracking-tight mb-8">Checkout</h1>
+    <div class="mb-6">
+      <NuxtLink to="/cart" class="inline-flex items-center text-navy-300 hover:text-white transition-colors mb-4">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Cart
+      </NuxtLink>
+      <h1 class="text-4xl font-extrabold tracking-tight mb-2">Product Checkout</h1>
+      <p class="text-navy-300">Complete your product order</p>
+    </div>
 
     <div v-if="loading" class="text-center py-20">
       <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-navy-400 border-r-transparent"></div>
@@ -142,8 +151,26 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
+// Ensure this is only for products, not courses
+const route = useRoute()
+if (route.params.courseId) {
+  // If courseId is present, this shouldn't be the product checkout
+  throw createError({ statusCode: 404, statusMessage: 'Page not found' })
+}
+
 const { data: cart, pending: loading } = await useFetch('/api/cart')
 const placingOrder = ref(false)
+
+// Validate that cart contains only products, not courses
+watch(cart, (newCart) => {
+  if (newCart && newCart.items.length > 0) {
+    // Ensure all items are products
+    const hasNonProducts = newCart.items.some(item => !item.product)
+    if (hasNonProducts) {
+      throw createError({ statusCode: 400, statusMessage: 'Invalid cart items. This checkout is for products only.' })
+    }
+  }
+}, { immediate: true })
 
 const form = reactive({
   shippingAddress: {
@@ -181,6 +208,13 @@ async function placeOrder() {
     placingOrder.value = false
   }
 }
+
+useHead({
+  title: 'Product Checkout | WeCodeZW',
+  meta: [
+    { name: 'description', content: 'Complete your product order securely' }
+  ]
+})
 </script>
 
 

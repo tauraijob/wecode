@@ -9,8 +9,8 @@
           </svg>
           Back to My Courses
         </NuxtLink>
-        <h1 class="text-3xl font-bold text-white">Complete Your Purchase</h1>
-        <p class="text-navy-300 mt-2">Review your order and complete payment to access the course</p>
+        <h1 class="text-3xl font-bold text-white">Course Checkout</h1>
+        <p class="text-navy-300 mt-2">Review your course and complete payment to access the course</p>
       </div>
 
       <div v-if="loading" class="flex items-center justify-center py-20">
@@ -208,8 +208,15 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'auth' })
+
 const route = useRoute()
 const courseId = computed(() => route.params.courseId as string)
+
+// Validate this is a course checkout, not product checkout
+if (!courseId.value || courseId.value === 'undefined') {
+  throw createError({ statusCode: 400, statusMessage: 'Course ID is required' })
+}
 
 const course = ref<any>(null)
 const loading = ref(true)
@@ -366,7 +373,7 @@ const proceedToPayment = async () => {
 }
 
 useHead({
-  title: `Checkout - ${course.value?.name || 'Course'} | WeCodeZW`,
+  title: `Course Checkout - ${course.value?.name || 'Course'} | WeCodeZW`,
   meta: [
     { name: 'description', content: 'Complete your course purchase securely' }
   ]
