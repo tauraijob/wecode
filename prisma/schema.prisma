@@ -12,6 +12,7 @@ enum Role {
   STUDENT
   CORPORATE
   ADMIN
+  INSTRUCTOR
 }
 
 enum RequestCategory {
@@ -68,6 +69,16 @@ model User {
   quizAttempts   PracticeQuizAttempt[]
   examAttempts   FinalExamAttempt[]
   certificates   Certificate[]
+  courses        Course[]
+  notifications  Notification[]
+  courseReviews  CourseReview[]
+  reviewedCourses Course[] @relation("CourseReviewer")
+  cart           Cart?
+  orders         Order[]
+  courseRatings  CourseRating[]
+  instructorEarnings InstructorEarning[]
+  payouts            Payout[]
+  processedPayouts   Payout[] @relation("PayoutProcessor")
 }
 
 model Request {
@@ -208,6 +219,12 @@ enum CourseStatus {
   ARCHIVED
 }
 
+enum CourseReviewStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
 model Course {
   id              String        @id @default(cuid())
   name            String
@@ -215,12 +232,22 @@ model Course {
   price           Decimal       @db.Decimal(10, 2)
   currency        String        @default("USD")
   status          CourseStatus  @default(DRAFT)
+  reviewStatus    CourseReviewStatus @default(PENDING_REVIEW)
+  rejectionReason String?      @db.Text
+  platformCommissionPercentage Decimal @default(30) @db.Decimal(5, 2) // Default 30%
   previewVideoUrl String?
   thumbnailUrl    String?
   prerequisites   String?       @db.Text
   examConfig      Json?         // { questionCount, duration, passingScore }
+  submittedForReviewAt DateTime?
+  reviewedAt     DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+
+  instructor      User?         @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+  instructorId    String?
+  reviewer        User?         @relation("CourseReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedById    String?
 
   topics             Topic[]
   enrollments        Enrollment[]
@@ -228,6 +255,9 @@ model Course {
   examTemplates      FinalExamTemplate[]
   examAttempts       FinalExamAttempt[]
   certificateTemplates CertificateTemplate[]
+  reviews            CourseReview[]
+  ratings            CourseRating[]
+  instructorEarnings InstructorEarning[]
 }
 
 model Topic {
@@ -287,6 +317,7 @@ model Enrollment {
   progress      LessonProgress[]
   examAttempts  FinalExamAttempt[]
   certificates  Certificate[]
+  instructorEarning InstructorEarning?
 
   @@unique([userId, courseId])
 }
@@ -389,4 +420,188 @@ model Certificate {
   courseId    String
   template    CertificateTemplate @relation(fields: [templateId], references: [id])
   templateId  String
+}
+
+// Instructor & Review Models
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // e.g., 'COURSE_SUBMITTED', 'COURSE_APPROVED', 'COURSE_REJECTED', 'ENROLLMENT', 'PAYMENT'
+  title     String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  metadata  Json?    // Additional data (courseId, enrollmentId, etc.)
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
+
+model CourseReview {
+  id          String   @id @default(cuid())
+  action      String   // 'SUBMITTED', 'APPROVED', 'REJECTED'
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  reviewer User?  @relation(fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewerId String?
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model InstructorEarning {
+  id              String   @id @default(cuid())
+  amount          Decimal  @db.Decimal(10, 2)
+  currency        String   @default("USD")
+  commissionRate Decimal   @db.Decimal(5, 2) // Instructor's percentage
+  status          String   @default("PENDING") // PENDING, PAID, CANCELLED
+  earnedAt        DateTime @default(now())
+  paidAt          DateTime?
+  
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  instructor  User      @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId String
+  payout      Payout?   @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+  payoutId    String?
+
+  @@unique([enrollmentId])
+}
+
+model Payout {
+  id          String       @id @default(cuid())
+  amount      Decimal      @db.Decimal(10, 2)
+  currency    String       @default("USD")
+  status      PayoutStatus @default(PENDING)
+  requestedAt DateTime     @default(now())
+  processedAt DateTime?
+  method      String?      // BANK_TRANSFER, PAYPAL, etc.
+  reference   String?      // Transaction reference
+  notes       String?      @db.Text
+  
+  instructor User              @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId String
+  earnings   InstructorEarning[]
+  processedBy User?            @relation("PayoutProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+  processedById String?
+}
+
+model CourseRating {
+  id          String   @id @default(cuid())
+  rating      Int      // 1-5 stars
+  review      String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+
+  @@unique([userId, courseId])
+}
+
+// E-Commerce Models
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  name        String
+  description String        @db.Text
+  slug        String        @unique
+  price       Decimal       @db.Decimal(10, 2)
+  currency    String        @default("USD")
+  status      ProductStatus @default(DRAFT)
+  stock       Int           @default(0)
+  sku         String?       @unique
+  category    String?
+  tags        String?       // Comma-separated tags
+  images      Json?         // Array of image URLs
+  featured    Boolean       @default(false)
+  weight      Decimal?      @db.Decimal(10, 2) // in kg
+  dimensions  String?       // e.g., "10x5x2"
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String    @unique
+  items  CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId  String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  status          OrderStatus @default(PENDING)
+  total           Decimal     @db.Decimal(10, 2)
+  currency        String      @default("USD")
+  shippingAddress Json        // { name, phone, address, city, country, postalCode }
+  billingAddress  Json?       // Same structure as shipping
+  paymentMethod   String?     // 'PAYNOW', 'PAYPAL', 'CASH', etc.
+  paymentStatus   PaymentStatus @default(PENDING)
+  notes           String?     @db.Text
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  items  OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2) // Price at time of order
+  createdAt DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
 }

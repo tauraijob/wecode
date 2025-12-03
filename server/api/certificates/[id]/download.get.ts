@@ -39,13 +39,30 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Access denied' })
   }
 
-  // If PDF exists, return it; otherwise generate it
+  // If PDF exists in storage, serve it directly
   if (certificate.pdfUrl) {
-    // In production, fetch from storage
-    throw createError({ statusCode: 501, statusMessage: 'PDF storage not implemented' })
+    // For local server storage, read and serve the file
+    if (certificate.pdfUrl.startsWith('/uploads/')) {
+      try {
+        const fs = await import('fs/promises')
+        const path = await import('path')
+        const filePath = path.join(process.cwd(), 'public', certificate.pdfUrl)
+        const pdfBuffer = await fs.readFile(filePath)
+        
+        setHeader(event, 'Content-Type', 'application/pdf')
+        setHeader(event, 'Content-Disposition', `attachment; filename="certificate-${certificate.certificateNumber}.pdf"`)
+        return pdfBuffer
+      } catch (error) {
+        console.error('Failed to read certificate file from storage:', error)
+        // Fall through to regenerate if file not found
+      }
+    } else {
+      // If it's a full URL (shouldn't happen with local storage), redirect
+      return sendRedirect(event, certificate.pdfUrl, 302)
+    }
   }
 
-  // Generate certificate
+  // Generate certificate if not in storage
   const result = await generateCertificate(certificate.enrollment)
   const pdfBuffer = Buffer.from(result.pdfBytes, 'base64')
 

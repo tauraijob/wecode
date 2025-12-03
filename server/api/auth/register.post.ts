@@ -2,12 +2,13 @@ import prismaModule from '~~/server/utils/db'
 import { hashPassword } from '~~/server/utils/password'
 import { z } from 'zod'
 import { sendMail } from '~~/server/utils/mailer'
+import { notifyAdmins } from '~~/server/utils/notifications'
 
 const RegisterSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['INDIVIDUAL', 'STUDENT', 'CORPORATE']).optional()
+  role: z.enum(['INDIVIDUAL', 'STUDENT', 'CORPORATE', 'INSTRUCTOR']).optional()
 })
 
 export default defineEventHandler(async (event) => {
@@ -84,6 +85,17 @@ export default defineEventHandler(async (event) => {
     console.error('Failed to send verification email:', mailError)
     // Don't fail registration if email fails, but log it
   }
+
+  // Notify admins about new user registration
+  await notifyAdmins({
+    type: 'USER_REGISTERED',
+    metadata: { 
+      userId: user.id, 
+      email: user.email, 
+      userName: user.name, 
+      role: user.role 
+    }
+  })
 
   // Don't auto-login - user must verify email first
   return { 

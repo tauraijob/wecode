@@ -9,25 +9,42 @@ export default defineEventHandler(async (event) => {
   const sixMonthsAgo = new Date()
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
-  const payments = await prisma.invoice.findMany({
+  // Get invoices with payments to determine when they were paid
+  const invoices = await prisma.invoice.findMany({
     where: {
       userId: user.id,
       status: 'PAID',
-      paidAt: { gte: sixMonthsAgo }
+      payments: {
+        some: {
+          status: 'SUCCESS',
+          createdAt: { gte: sixMonthsAgo }
+        }
+      }
     },
     select: {
-      paidAt: true,
-      totalUsd: true
-    },
-    orderBy: { paidAt: 'asc' }
+      amountUsd: true,
+      payments: {
+        where: {
+          status: 'SUCCESS'
+        },
+        select: {
+          createdAt: true
+        },
+        orderBy: {
+          createdAt: 'asc'
+        },
+        take: 1
+      }
+    }
   })
 
   // Group payments by month
-  const monthlyPayments = payments.reduce((acc, payment) => {
-    if (!payment.paidAt) return acc
-    const month = payment.paidAt.toISOString().slice(0, 7) // YYYY-MM
+  const monthlyPayments = invoices.reduce((acc, invoice) => {
+    const firstPayment = invoice.payments[0]
+    if (!firstPayment) return acc
+    const month = firstPayment.createdAt.toISOString().slice(0, 7) // YYYY-MM
     if (!acc[month]) acc[month] = 0
-    acc[month] += Number(payment.totalUsd)
+    acc[month] += Number(invoice.amountUsd)
     return acc
   }, {} as Record<string, number>)
 

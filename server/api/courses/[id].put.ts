@@ -1,6 +1,7 @@
 import prisma from '~~/server/utils/db'
 import { verifyJwt } from '~~/server/utils/jwt'
 import { z } from 'zod'
+import { Decimal } from '@prisma/client/runtime/library'
 
 const CourseUpdateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -11,6 +12,7 @@ const CourseUpdateSchema = z.object({
   previewVideoUrl: z.string().url().optional().nullable(),
   thumbnailUrl: z.string().url().optional().nullable(),
   prerequisites: z.string().optional().nullable(),
+  platformCommissionPercentage: z.coerce.number().min(0).max(100).optional(), // Admin can set commission percentage
   examConfig: z.object({
     questionCount: z.number().int().positive(),
     duration: z.number().int().positive(),
@@ -40,10 +42,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid input', data: parsed.error })
   }
 
-  const { examConfig, ...data } = parsed.data
+  const { examConfig, platformCommissionPercentage, ...data } = parsed.data
   const updateData: any = { ...data }
   if (examConfig !== undefined) {
     updateData.examConfig = examConfig as any
+  }
+  if (platformCommissionPercentage !== undefined) {
+    updateData.platformCommissionPercentage = new Decimal(platformCommissionPercentage)
   }
 
   const course = await prisma.course.update({

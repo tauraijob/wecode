@@ -57,12 +57,44 @@
             <h2 class="text-xl font-semibold text-white mb-2">Prerequisites</h2>
             <p class="text-sm text-navy-300">{{ course.prerequisites }}</p>
           </div>
+
+          <!-- Reviews Section -->
+          <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
+            <h2 class="text-xl font-semibold text-white mb-4">Reviews & Ratings</h2>
+            
+            <!-- Review Form (only if enrolled) -->
+            <div v-if="course.enrollment && course.enrollment.status === 'ACTIVE'" class="mb-6">
+              <ReviewForm
+                :course-id="courseId"
+                :existing-rating="userRating"
+                @submitted="handleReviewSubmitted"
+                @deleted="handleReviewDeleted"
+              />
+            </div>
+            
+            <!-- Reviews List -->
+            <CourseReviews
+              ref="reviewsRef"
+              :course-id="courseId"
+            />
+          </div>
         </div>
 
         <!-- Sidebar -->
         <div class="lg:col-span-1">
           <!-- Enrollment Card -->
           <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6 sticky top-4">
+            <!-- Rating Display -->
+            <div v-if="course.averageRating && course.averageRating > 0" class="mb-4">
+              <RatingStars
+                :model-value="course.averageRating"
+                :readonly="true"
+                :show-value="true"
+                :show-count="true"
+                :total-ratings="course.totalRatings || 0"
+              />
+            </div>
+            
             <div class="text-3xl font-bold text-white mb-2">
               {{ course.currency }} {{ Number(course.price).toFixed(2) }}
             </div>
@@ -145,6 +177,35 @@ const { data: course, refresh, pending: loading } = await useFetch(`/api/courses
 
 const enrolling = ref(false)
 const cancelling = ref(false)
+const reviewsRef = ref<any>(null)
+const userRating = ref<any>(null)
+
+// Fetch user's rating
+const { data: ratingsData } = await useFetch(`/api/courses/${courseId}/ratings`, {
+  query: { page: 1, limit: 10 }
+})
+
+if (ratingsData.value?.userRating) {
+  userRating.value = ratingsData.value.userRating
+}
+
+const handleReviewSubmitted = async () => {
+  if (reviewsRef.value) {
+    await reviewsRef.value.refresh()
+  }
+  // Reload user rating
+  const updated = await $fetch(`/api/courses/${courseId}/ratings`, {
+    query: { page: 1, limit: 10 }
+  })
+  userRating.value = updated.userRating || null
+}
+
+const handleReviewDeleted = async () => {
+  userRating.value = null
+  if (reviewsRef.value) {
+    await reviewsRef.value.refresh()
+  }
+}
 
 const formatDuration = (seconds: number) => {
   const mins = Math.floor(seconds / 60)

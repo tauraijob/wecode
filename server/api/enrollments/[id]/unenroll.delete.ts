@@ -1,5 +1,6 @@
 import prismaModule from '~~/server/utils/db'
 import { verifyJwt } from '~~/server/utils/jwt'
+import { notifyAdmins, createNotification } from '~~/server/utils/notifications'
 
 export default defineEventHandler(async (event) => {
   const prisma = await prismaModule
@@ -25,7 +26,8 @@ export default defineEventHandler(async (event) => {
       course: {
         select: {
           id: true,
-          name: true
+          name: true,
+          instructorId: true
         }
       },
       invoice: {
@@ -42,6 +44,13 @@ export default defineEventHandler(async (event) => {
               status: true
             }
           }
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true
         }
       }
     }
@@ -101,6 +110,50 @@ export default defineEventHandler(async (event) => {
       where: { id: enrollment.invoice.id }
     })
     console.log(`Invoice ${enrollment.invoice.number} deleted successfully`)
+  }
+
+  // Notify admins about enrollment cancellation
+  await notifyAdmins({
+    type: 'ENROLLMENT_CANCELLED',
+    title: 'Enrollment Cancelled',
+    message: `${enrollment.user?.name || 'A user'} has cancelled their enrollment in course "${enrollment.course.name}".`,
+    metadata: { 
+      enrollmentId: enrollment.id, 
+      courseId: enrollment.course.id, 
+      courseName: enrollment.course.name,
+      userId: enrollment.userId,
+      userName: enrollment.user?.name
+    }
+  })
+
+  // Notify user about cancellation
+  await createNotification({
+    userId: enrollment.userId,
+    type: 'ENROLLMENT_CANCELLED',
+    title: 'Enrollment Cancelled',
+    message: `Your enrollment in "${enrollment.course.name}" has been cancelled.`,
+    metadata: { 
+      enrollmentId: enrollment.id, 
+      courseId: enrollment.course.id, 
+      courseName: enrollment.course.name
+    }
+  })
+
+  // Notify instructor if course has one
+  if (enrollment.course.instructorId) {
+    await createNotification({
+      userId: enrollment.course.instructorId,
+      type: 'ENROLLMENT_CANCELLED',
+      title: 'Student Cancelled Enrollment',
+      message: `${enrollment.user?.name || 'A student'} has cancelled their enrollment in your course "${enrollment.course.name}".`,
+      metadata: { 
+        enrollmentId: enrollment.id, 
+        courseId: enrollment.course.id, 
+        courseName: enrollment.course.name,
+        userId: enrollment.userId,
+        userName: enrollment.user?.name
+      }
+    })
   }
 
   return {

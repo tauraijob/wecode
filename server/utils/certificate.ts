@@ -449,6 +449,19 @@ async function generateCertificateWithTemplate(enrollment: any, template: any) {
   // Save PDF
   const pdfBytes = await pdfDoc.save()
 
+  // Upload PDF to cloud storage
+  let pdfUrl: string | null = null
+  try {
+    const { uploadFile } = await import('./storage')
+    const pdfBuffer = Buffer.from(pdfBytes)
+    const filename = `certificate-${certNumber}.pdf`
+    pdfUrl = await uploadFile(pdfBuffer, filename, 'certificates')
+    console.log('Certificate uploaded to storage:', pdfUrl)
+  } catch (error) {
+    console.error('Failed to upload certificate to storage:', error)
+    // Continue without storage URL - will use base64 fallback
+  }
+
   // Save certificate record
   const certificate = await prisma.certificate.create({
     data: {
@@ -457,14 +470,15 @@ async function generateCertificateWithTemplate(enrollment: any, template: any) {
       courseId: fullEnrollment.courseId,
       templateId: template.id,
       certificateNumber: certNumber,
-      pdfUrl: null // In production, upload to storage and save URL
+      pdfUrl: pdfUrl
     }
   })
 
   return {
     certificate,
     pdfBytes: Buffer.from(pdfBytes).toString('base64'),
-    certificateNumber: certNumber
+    certificateNumber: certNumber,
+    pdfUrl: pdfUrl
   }
 }
 

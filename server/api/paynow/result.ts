@@ -131,6 +131,15 @@ export default defineEventHandler(async (event) => {
             data: { status: 'ACTIVE' }
           })
           console.log('PayNow webhook: Activated enrollment', { enrollmentId: enrollment.id, courseId: enrollment.courseId })
+          
+          // Create instructor earning
+          try {
+            const { createInstructorEarning } = await import('~~/server/utils/instructor-earnings')
+            await createInstructorEarning(enrollment.id)
+          } catch (earningError) {
+            console.error('Failed to create instructor earning:', earningError)
+            // Don't fail the payment if earning creation fails
+          }
         }
       }
 

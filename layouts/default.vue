@@ -3,8 +3,23 @@
     <header class="sticky top-0 z-40 border-b border-navy-800 bg-navy-950/60 backdrop-blur supports-[backdrop-filter]:bg-navy-950/50">
       <div class="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4 py-3">
         <NuxtLink to="/" class="flex items-center gap-2 font-semibold tracking-tight">
-          <span class="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-navy-700 text-sm sm:text-base">WZ</span>
-          <span class="hidden xs:inline">WeCodeZW</span>
+          <!-- Logo Image (if exists) -->
+          <div
+            v-if="logoUrl"
+            class="inline-flex items-center justify-center rounded-xl bg-white px-3 sm:px-4 py-1.5 sm:py-2 shadow-2xl border-2 border-white/50 ring-2 ring-white/30"
+          >
+            <img
+              :src="logoUrl"
+              alt="WeCodeZW Logo"
+              class="h-10 sm:h-12 md:h-14 w-auto object-contain"
+              @error="logoUrl = null"
+            />
+          </div>
+          <!-- Fallback Text Logo -->
+          <template v-else>
+            <span class="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-navy-700 text-sm sm:text-base">WZ</span>
+            <span class="hidden xs:inline">WeCodeZW</span>
+          </template>
         </NuxtLink>
         <nav class="hidden items-center gap-2 lg:gap-3 xl:flex">
           <NuxtLink 
@@ -277,7 +292,19 @@
     <footer class="mt-16 border-t border-navy-800 bg-navy-900/30">
       <div class="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-3 sm:px-4 py-8 sm:py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div class="sm:col-span-2 lg:col-span-1">
-          <div class="mb-3 text-lg font-semibold">WeCodeZW</div>
+          <div class="mb-3 flex items-center gap-2">
+            <div
+              v-if="logoUrl"
+              class="inline-flex items-center justify-center rounded-xl bg-white px-3 py-1.5 shadow-xl border-2 border-white/50 ring-2 ring-white/30"
+            >
+              <img
+                :src="logoUrl"
+                alt="WeCodeZW Logo"
+                class="h-12 w-auto object-contain"
+              />
+            </div>
+            <div v-else class="text-lg font-semibold">WeCodeZW</div>
+          </div>
           <p class="text-navy-200 text-sm sm:text-base">Bridging knowledge, technology, and innovation for a digital-first world.</p>
           <div class="mt-4 text-sm text-navy-300">WhatsApp: +263 778 456 168</div>
         </div>
@@ -298,6 +325,13 @@
             <li><a href="https://wa.me/263778456168" target="_blank" class="underline hover:text-navy-100">WhatsApp</a></li>
           </ul>
         </div>
+        <div>
+          <div class="mb-3 font-semibold text-sm sm:text-base">Legal</div>
+          <ul class="space-y-2 text-navy-200 text-sm sm:text-base">
+            <li><NuxtLink to="/privacy-policy" class="hover:text-navy-100">Privacy Policy</NuxtLink></li>
+            <li><NuxtLink to="/terms-and-conditions" class="hover:text-navy-100">Terms & Conditions</NuxtLink></li>
+          </ul>
+        </div>
         <div class="sm:col-span-2 lg:col-span-1">
           <div class="mb-3 font-semibold text-sm sm:text-base">Newsletter</div>
           <form class="flex flex-col gap-2 sm:flex-row">
@@ -306,7 +340,16 @@
           </form>
         </div>
       </div>
-      <div class="border-t border-navy-800 py-4 sm:py-6 text-center text-xs sm:text-sm text-navy-300">© {{ new Date().getFullYear() }} WeCodeZW. All rights reserved.</div>
+      <div class="border-t border-navy-800 py-4 sm:py-6">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs sm:text-sm text-navy-300">
+          <span>© {{ new Date().getFullYear() }} WeCodeZW. All rights reserved.</span>
+          <div class="flex items-center gap-4">
+            <NuxtLink to="/privacy-policy" class="hover:text-navy-100">Privacy Policy</NuxtLink>
+            <span>•</span>
+            <NuxtLink to="/terms-and-conditions" class="hover:text-navy-100">Terms & Conditions</NuxtLink>
+          </div>
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -318,6 +361,7 @@ import UiButton from '@/components/ui/Button.vue'
 // Use reactive auth composable
 const { user: me, refresh: refreshAuth } = useAuth()
 const route = useRoute()
+const { logoUrl } = useLogo()
 
 const menuOpen = ref(false)
 const mobileOpen = ref(false)
@@ -363,11 +407,11 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      children: JSON.stringify(organizationSchema)
+      innerHTML: JSON.stringify(organizationSchema)
     },
     {
       type: 'application/ld+json',
-      children: JSON.stringify(websiteSchema)
+      innerHTML: JSON.stringify(websiteSchema)
     }
   ]
 })

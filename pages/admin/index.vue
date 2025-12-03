@@ -144,6 +144,97 @@
       </div>
     </div>
 
+    <!-- Notifications Section -->
+    <div class="mb-8 rounded-2xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 via-navy-900/60 to-navy-800/40 p-8 shadow-xl backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/20 p-3 border border-amber-500/30">
+            <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-white">Recent Notifications</h2>
+            <p class="text-sm text-navy-300">Stay updated with platform activities</p>
+          </div>
+        </div>
+        <NuxtLink
+          to="/admin/notifications"
+          class="rounded-lg border border-navy-600 bg-navy-800/50 px-5 py-2.5 font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+        >
+          View All
+        </NuxtLink>
+      </div>
+
+      <div v-if="notificationsLoading" class="text-center py-8">
+        <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-navy-400 border-r-transparent"></div>
+      </div>
+      <div v-else-if="recentNotifications.length === 0" class="text-center py-8 text-navy-400">
+        <p>No notifications</p>
+      </div>
+      <div v-else class="space-y-3">
+        <div
+          v-for="notification in recentNotifications"
+          :key="notification.id"
+          @click="handleNotificationClick(notification)"
+          :class="{
+            'border-blue-500/50 bg-blue-500/10': !notification.read,
+            'border-navy-700/50 bg-navy-800/40': notification.read
+          }"
+          class="rounded-lg border p-4 cursor-pointer hover:bg-navy-800/60 transition-colors"
+        >
+          <div class="flex items-start gap-3">
+            <div
+              :class="{
+                'bg-blue-500/20': notification.type === 'COURSE_SUBMITTED',
+                'bg-green-500/20': notification.type === 'COURSE_APPROVED',
+                'bg-red-500/20': notification.type === 'COURSE_REJECTED'
+              }"
+              class="rounded-lg p-2"
+            >
+              <svg
+                v-if="notification.type === 'COURSE_SUBMITTED'"
+                class="h-5 w-5 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <svg
+                v-else-if="notification.type === 'COURSE_APPROVED'"
+                class="h-5 w-5 text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <svg
+                v-else-if="notification.type === 'COURSE_REJECTED'"
+                class="h-5 w-5 text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p :class="{ 'font-semibold': !notification.read }" class="text-sm text-white">
+                {{ notification.title }}
+              </p>
+              <p class="mt-1 text-xs text-navy-400 line-clamp-2">{{ notification.message }}</p>
+              <p class="mt-1 text-xs text-navy-500">
+                {{ formatNotificationTime(notification.createdAt) }}
+              </p>
+            </div>
+            <div v-if="!notification.read" class="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="mb-8 grid gap-4 md:grid-cols-4">
       <NuxtLink
@@ -406,6 +497,58 @@ const revenueCanvas = ref<HTMLCanvasElement>()
 const clubsCanvas = ref<HTMLCanvasElement>()
 const schoolsCanvas = ref<HTMLCanvasElement>()
 
+const notificationsLoading = ref(false)
+const recentNotifications = ref<any[]>([])
+
+function formatNotificationTime(date: string | Date) {
+  const d = new Date(date)
+  const now = new Date()
+  const diff = now.getTime() - d.getTime()
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes}m ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days < 7) return `${days}d ago`
+  return d.toLocaleDateString()
+}
+
+async function handleNotificationClick(notification: any) {
+  if (!notification.read) {
+    try {
+      await $fetch(`/api/admin/notifications/${notification.id}/read`, {
+        method: 'POST'
+      })
+      await loadNotifications()
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
+    }
+  }
+
+  // Navigate based on notification type
+  if (notification.type === 'COURSE_SUBMITTED' && notification.metadata?.courseId) {
+    await navigateTo(`/admin/courses/review`)
+  } else if (notification.type === 'COURSE_APPROVED' || notification.type === 'COURSE_REJECTED') {
+    await navigateTo(`/admin/courses`)
+  }
+}
+
+async function loadNotifications() {
+  try {
+    notificationsLoading.value = true
+    const data = await $fetch('/api/admin/notifications', {
+      query: { limit: 5 }
+    }) as any
+    recentNotifications.value = data.notifications || []
+  } catch (error) {
+    console.error('Failed to load notifications:', error)
+  } finally {
+    notificationsLoading.value = false
+  }
+}
+
 onMounted(async () => {
   const m = await $fetch('/api/admin/metrics').catch(() => ({ revenue: 0, schools: 0, clubs: 0 }))
   Object.assign(metrics, m as any)
@@ -427,6 +570,9 @@ onMounted(async () => {
   const enrollments = await $fetch('/api/admin/enrollments').catch(() => []) as any[]
   const uniqueStudents = new Set(enrollments.map((e: any) => e.user?.id).filter(Boolean))
   elearningMetrics.activeStudents = uniqueStudents.size
+  
+  // Load notifications
+  await loadNotifications()
   
   nextTick(() => initCharts())
 })

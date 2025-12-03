@@ -14,10 +14,16 @@ export default defineEventHandler(async (event) => {
       name: true, 
       email: true, 
       role: true, 
+      phone: true,
+      emailVerified: true,
       createdAt: true,
-      school: {
+      updatedAt: true,
+      _count: {
         select: {
-          name: true
+          enrollments: true,
+          courses: true,
+          invoices: true,
+          orders: true
         }
       }
     } 

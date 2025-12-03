@@ -60,6 +60,33 @@ async function main() {
     role: regularUser.role
   })
 
+  // Create instructor user for E-LEARNING PLATFORM
+  const instructorEmail = 'mtauraij@gmail.com'
+  const instructorPassword = 'ElearningInstructor@2024'
+  
+  const instructorHashedPassword = await bcrypt.hash(instructorPassword, 10)
+
+  const instructorUser = await prisma.user.upsert({
+    where: { email: instructorEmail },
+    update: {
+      emailVerified: true
+    },
+    create: {
+      email: instructorEmail,
+      name: 'E-Learning Instructor',
+      role: 'INSTRUCTOR',
+      hashedPassword: instructorHashedPassword,
+      phone: '+263 777 789 012',
+      emailVerified: true
+    }
+  })
+
+  console.log('✅ E-Learning Instructor user created:', {
+    email: instructorUser.email,
+    name: instructorUser.name,
+    role: instructorUser.role
+  })
+
   // Create dummy courses with topics and lessons
   const courses = [
     {
@@ -351,12 +378,206 @@ async function main() {
   console.log(`   Password: ${userPassword}`)
   console.log('   Role:     STUDENT')
   console.log('   Access:   Course catalog, enrollment, learning progress')
+  console.log('')
+  console.log('👤 E-LEARNING INSTRUCTOR ACCOUNT:')
+  console.log(`   Email:    ${instructorEmail}`)
+  console.log(`   Password: ${instructorPassword}`)
+  console.log('   Role:     INSTRUCTOR')
+  console.log('   Access:   Create courses, manage content, submit for review')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+  // Create products
+  console.log('\n🛍️  Creating products...')
+  
+  const products = [
+    {
+      name: 'Touchpad Gel Cleaner & Protector',
+      description: 'Premium gel-based cleaner specifically designed for laptop touchpads. Removes fingerprints, smudges, and maintains smooth surface. Contains anti-static properties to prevent dust accumulation. Safe for all touchpad surfaces.',
+      slug: 'touchpad-gel-cleaner-protector',
+      price: new Prisma.Decimal('12.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 50,
+      sku: 'ACC-TPCL-001',
+      category: 'Cleaning & Maintenance',
+      tags: 'cleaner, touchpad, gel, protector, laptop',
+      images: ['https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800&h=800&fit=crop&auto=format'],
+      featured: true,
+      weight: new Prisma.Decimal('0.15'),
+      dimensions: '10x5x3'
+    },
+    {
+      name: 'Programming Sticker Pack - Developer Edition',
+      description: 'Premium vinyl sticker pack featuring popular programming languages, frameworks, and developer quotes. Waterproof, fade-resistant, and perfect for laptops, water bottles, and notebooks. Includes 25 unique designs.',
+      slug: 'programming-sticker-pack-developer',
+      price: new Prisma.Decimal('8.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 100,
+      sku: 'ACC-STK-001',
+      category: 'Accessories',
+      tags: 'stickers, programming, developer, vinyl, laptop',
+      images: ['https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=800&h=800&fit=crop&auto=format'],
+      featured: true,
+      weight: new Prisma.Decimal('0.05'),
+      dimensions: '15x10x1'
+    },
+    {
+      name: 'RGB Gaming Mouse - Pro Edition',
+      description: 'High-precision gaming mouse with customizable RGB lighting, 12,000 DPI sensor, and ergonomic design. Features programmable buttons, smooth gliding feet, and braided cable. Perfect for gaming and professional work.',
+      slug: 'rgb-gaming-mouse-pro',
+      price: new Prisma.Decimal('45.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 30,
+      sku: 'ACC-MSE-GM-001',
+      category: 'Gaming Accessories',
+      tags: 'mouse, gaming, rgb, wireless, ergonomic',
+      images: ['https://images.unsplash.com/photo-1527814050087-3793815479db?w=800&h=800&fit=crop&auto=format'],
+      featured: true,
+      weight: new Prisma.Decimal('0.12'),
+      dimensions: '12x6x4'
+    },
+    {
+      name: 'Mechanical Keyboard Wrist Rest - Ergonomic',
+      description: 'Premium memory foam wrist rest designed for mechanical keyboards. Reduces wrist strain during long coding sessions. Breathable fabric cover, non-slip base, and perfect height alignment for comfortable typing.',
+      slug: 'mechanical-keyboard-wrist-rest',
+      price: new Prisma.Decimal('18.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 40,
+      sku: 'ACC-WR-KB-001',
+      category: 'Ergonomic Accessories',
+      tags: 'wrist rest, keyboard, ergonomic, comfort, memory foam',
+      images: ['https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&h=800&fit=crop&auto=format'],
+      featured: false,
+      weight: new Prisma.Decimal('0.25'),
+      dimensions: '35x8x3'
+    },
+    {
+      name: 'USB-C Hub with 8 Ports',
+      description: 'Multi-port USB-C hub featuring HDMI 4K, USB 3.0 ports, SD/TF card readers, and PD charging. Compact design perfect for MacBook and Windows laptops. Supports simultaneous data transfer and charging.',
+      slug: 'usb-c-hub-8-ports',
+      price: new Prisma.Decimal('32.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 25,
+      sku: 'ACC-HUB-UC-001',
+      category: 'Connectivity',
+      tags: 'usb-c, hub, adapter, hdmi, charging',
+      images: ['https://images.unsplash.com/photo-1555617766-bfa3f9822c4d?w=800&h=800&fit=crop&auto=format'],
+      featured: true,
+      weight: new Prisma.Decimal('0.08'),
+      dimensions: '10x3x1'
+    },
+    {
+      name: 'Blue Light Blocking Glasses - Developer Edition',
+      description: 'Stylish blue light filtering glasses designed for developers and programmers. Reduces eye strain from extended screen time. Lightweight frame, anti-glare coating, and UV protection. Available in multiple frame colors.',
+      slug: 'blue-light-blocking-glasses-developer',
+      price: new Prisma.Decimal('24.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 60,
+      sku: 'ACC-GLS-BL-001',
+      category: 'Eye Care',
+      tags: 'glasses, blue light, eye care, developer, protection',
+      images: ['https://images.unsplash.com/photo-1512314889357-e157c22f938d?w=800&h=800&fit=crop&auto=format'],
+      featured: false,
+      weight: new Prisma.Decimal('0.03'),
+      dimensions: '15x5x2'
+    },
+    {
+      name: 'Laptop Stand - Aluminum Adjustable',
+      description: 'Premium aluminum laptop stand with adjustable height and angle. Improves ergonomics and airflow. Fits laptops from 10" to 17". Foldable design for easy portability. Non-slip rubber pads protect your device.',
+      slug: 'laptop-stand-aluminum-adjustable',
+      price: new Prisma.Decimal('28.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 35,
+      sku: 'ACC-STD-LP-001',
+      category: 'Ergonomic Accessories',
+      tags: 'laptop stand, ergonomic, adjustable, aluminum, portable',
+      images: ['https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&h=800&fit=crop&auto=format'],
+      featured: false,
+      weight: new Prisma.Decimal('0.6'),
+      dimensions: '30x25x5'
+    },
+    {
+      name: 'Cable Management Sleeve - Tech Organizer',
+      description: 'Neoprene cable management sleeve to organize and protect your laptop charger and cables. Stretchable design fits various cable sizes. Keeps your workspace clean and professional. Available in multiple colors.',
+      slug: 'cable-management-sleeve',
+      price: new Prisma.Decimal('9.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 80,
+      sku: 'ACC-CBL-001',
+      category: 'Organization',
+      tags: 'cable management, organizer, sleeve, neoprene, tidy',
+      images: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=800&fit=crop&auto=format'],
+      featured: false,
+      weight: new Prisma.Decimal('0.05'),
+      dimensions: '50x3x3'
+    },
+    {
+      name: 'Wireless Charging Mouse Pad',
+      description: 'Dual-function mouse pad with built-in wireless charging for compatible phones and earbuds. Large surface area (300x250mm), smooth tracking surface, and LED charging indicator. USB-C powered with fast charging support.',
+      slug: 'wireless-charging-mouse-pad',
+      price: new Prisma.Decimal('39.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 20,
+      sku: 'ACC-MP-WC-001',
+      category: 'Gaming Accessories',
+      tags: 'mouse pad, wireless charging, gaming, rgb, large',
+      images: ['https://images.unsplash.com/photo-1591488320449-11f2d4fdf8c6?w=800&h=800&fit=crop&auto=format'],
+      featured: true,
+      weight: new Prisma.Decimal('0.4'),
+      dimensions: '30x25x0.5'
+    },
+    {
+      name: 'Laptop Cooling Pad - RGB Fans',
+      description: 'High-performance laptop cooling pad with dual 120mm RGB fans and adjustable height. Reduces laptop temperature by up to 15°C. USB-powered with speed control. Mesh surface for optimal airflow. Perfect for gaming and intensive tasks.',
+      slug: 'laptop-cooling-pad-rgb',
+      price: new Prisma.Decimal('34.99'),
+      currency: 'USD',
+      status: 'PUBLISHED' as const,
+      stock: 28,
+      sku: 'ACC-CLP-RGB-001',
+      category: 'Cooling Solutions',
+      tags: 'cooling pad, laptop, rgb, fans, temperature control',
+      images: ['https://images.unsplash.com/photo-1591488320449-11f2d4fdf8c6?w=800&h=800&fit=crop&auto=format'],
+      featured: false,
+      weight: new Prisma.Decimal('0.8'),
+      dimensions: '35x30x3'
+    }
+  ]
+
+  for (const productData of products) {
+    const product = await prisma.product.upsert({
+      where: { slug: productData.slug },
+      update: productData,
+      create: productData
+    })
+    console.log(`   ✅ Created product: ${product.name} - $${product.price}`)
+  }
+
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   console.log('\n📚 Created Courses:')
   console.log('   1. Introduction to Web Development - $99.99')
   console.log('   2. Advanced React Development - $149.99')
   console.log('   3. Python for Data Science - $129.99')
-  console.log('\n💡 You can now login and explore the courses!')
+  console.log('\n🛍️  Created Products:')
+  console.log('   1. Touchpad Gel Cleaner & Protector - $12.99')
+  console.log('   2. Programming Sticker Pack - $8.99')
+  console.log('   3. RGB Gaming Mouse Pro - $45.99')
+  console.log('   4. Mechanical Keyboard Wrist Rest - $18.99')
+  console.log('   5. USB-C Hub 8 Ports - $32.99')
+  console.log('   6. Blue Light Blocking Glasses - $24.99')
+  console.log('   7. Laptop Stand Aluminum - $28.99')
+  console.log('   8. Cable Management Sleeve - $9.99')
+  console.log('   9. Wireless Charging Mouse Pad - $39.99')
+  console.log('   10. Laptop Cooling Pad RGB - $34.99')
+  console.log('\n💡 You can now login and explore the courses and shop products!')
 }
 
 main()

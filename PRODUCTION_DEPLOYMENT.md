@@ -247,3 +247,5 @@ pm2 restart wecodezw                      # Restart application (or start it)
 
 That's it! Your application should now be live at `https://wecode.co.zw` 🎉
 
+
+

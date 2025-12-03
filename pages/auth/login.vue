@@ -50,6 +50,11 @@
           <span v-if="loading" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
           {{ loading ? 'Signing in...' : 'Sign In' }}
         </button>
+        <div class="text-center">
+          <NuxtLink to="/auth/forgot-password" class="text-sm text-blue-400 hover:text-blue-300 underline">
+            Forgot your password?
+          </NuxtLink>
+        </div>
         <div class="text-center text-sm text-navy-300">
           No account? <NuxtLink to="/auth/register" class="text-blue-400 hover:text-blue-300 underline">Create one</NuxtLink>
         </div>

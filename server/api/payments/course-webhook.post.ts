@@ -1,4 +1,5 @@
 import prisma, { Decimal } from '~~/server/utils/db'
+import { notifyAdmins, createNotification } from '~~/server/utils/notifications'
 
 /**
  * Webhook handler for course payment confirmation
@@ -80,6 +81,12 @@ export default defineEventHandler(async (event) => {
     const enrollments = invoice.enrollments || []
     console.log('Course webhook: Activating enrollments', { count: enrollments.length })
     
+    // Get user and course info for notifications
+    const user = await prisma.user.findUnique({
+      where: { id: invoice.userId },
+      select: { id: true, name: true, email: true }
+    })
+
     for (const enrollment of enrollments) {
       if (enrollment.status !== 'ACTIVE') {
         await prisma.enrollment.update({
@@ -87,6 +94,69 @@ export default defineEventHandler(async (event) => {
           data: { status: 'ACTIVE' }
         })
         console.log('Course webhook: Enrollment activated', { enrollmentId: enrollment.id })
+
+        // Get course info for notifications
+        const course = await prisma.course.findUnique({
+          where: { id: enrollment.courseId },
+          select: { id: true, name: true, instructorId: true }
+        })
+
+        // Notify admins about successful payment
+        await notifyAdmins({
+          type: 'PAYMENT_SUCCESS',
+          title: 'Payment Received',
+          message: `Payment of ${Number(invoice.amountUsd).toFixed(2)} ${invoice.currency || 'USD'} received from ${user?.name || 'a user'} for course "${course?.name || 'Unknown'}".`,
+          metadata: { 
+            invoiceId: invoice.id, 
+            invoiceNumber: invoice.number,
+            enrollmentId: enrollment.id,
+            courseId: enrollment.courseId,
+            courseName: course?.name,
+            userId: invoice.userId,
+            userName: user?.name,
+            amount: Number(invoice.amountUsd),
+            currency: invoice.currency || 'USD'
+          }
+        })
+
+        // Notify user about successful payment
+        if (user) {
+          await createNotification({
+            userId: user.id,
+            type: 'PAYMENT_SUCCESS',
+            title: 'Payment Successful',
+            message: `Your payment of ${Number(invoice.amountUsd).toFixed(2)} ${invoice.currency || 'USD'} for "${course?.name || 'course'}" has been processed. You now have access to the course!`,
+            metadata: { 
+              invoiceId: invoice.id, 
+              invoiceNumber: invoice.number,
+              enrollmentId: enrollment.id,
+              courseId: enrollment.courseId,
+              courseName: course?.name,
+              amount: Number(invoice.amountUsd),
+              currency: invoice.currency || 'USD'
+            }
+          })
+        }
+
+        // Notify instructor about payment
+        if (course?.instructorId) {
+          await createNotification({
+            userId: course.instructorId,
+            type: 'PAYMENT_SUCCESS',
+            title: 'Student Payment Received',
+            message: `${user?.name || 'A student'} has completed payment for your course "${course.name}".`,
+            metadata: { 
+              invoiceId: invoice.id, 
+              enrollmentId: enrollment.id,
+              courseId: enrollment.courseId,
+              courseName: course.name,
+              userId: invoice.userId,
+              userName: user?.name,
+              amount: Number(invoice.amountUsd),
+              currency: invoice.currency || 'USD'
+            }
+          })
+        }
       } else {
         console.log('Course webhook: Enrollment already active', { enrollmentId: enrollment.id })
       }

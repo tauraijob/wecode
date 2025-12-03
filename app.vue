@@ -4,6 +4,7 @@
   </NuxtLayout>
   <Teleport to="body">
     <!-- portals for modals etc -->
+    <CookieConsent />
   </Teleport>
   <div id="whatsapp" class="fixed bottom-6 right-6 z-50">
     <a

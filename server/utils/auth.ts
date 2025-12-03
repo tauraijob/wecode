@@ -27,11 +27,28 @@ export function setSessionCookie(event: H3Event, token: string) {
 }
 
 export async function getCurrentUser(event: H3Event) {
-  const token = getCookie(event, 'auth_token')
+  // Try both cookie names for compatibility
+  const token = getCookie(event, 'token') || getCookie(event, 'auth_token')
   if (!token) return null
+  
+  // Try to verify with JWT first (most common - used by login)
+  try {
+    const { verifyJwt } = await import('~~/server/utils/jwt')
+    const payload = verifyJwt(token)
+    if (payload?.userId) {
+      return prisma.user.findUnique({ where: { id: payload.userId } })
+    }
+  } catch {
+    // Continue to fallback
+  }
+  
+  // Fall back to session token verification (for older auth_token cookies)
   const payload = verifySession<{ uid: string }>(token)
-  if (!payload?.uid) return null
-  return prisma.user.findUnique({ where: { id: payload.uid } })
+  if (payload?.uid) {
+    return prisma.user.findUnique({ where: { id: payload.uid } })
+  }
+  
+  return null
 }
 
 

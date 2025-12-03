@@ -2,7 +2,17 @@
   <div class="min-h-screen flex bg-navy-950 text-white">
     <aside class="hidden md:flex md:flex-col md:w-[260px] md:flex-shrink-0 border-r border-navy-800 bg-navy-900/30 sticky top-0 h-screen overflow-y-auto">
       <div class="flex items-center gap-3 p-4">
-        <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-navy-700 font-semibold">WZ</span>
+        <div
+          v-if="logoUrl"
+          class="inline-flex items-center justify-center rounded-xl bg-white px-3 py-1.5 shadow-xl border-2 border-white/50 ring-2 ring-white/30"
+        >
+          <img
+            :src="logoUrl"
+            alt="WeCodeZW Logo"
+            class="h-12 w-auto object-contain"
+          />
+        </div>
+        <span v-else class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-navy-700 font-semibold">WZ</span>
         <div class="font-semibold tracking-tight">WeCodeZW Admin</div>
       </div>
       <nav class="mt-2 space-y-1 px-2">
@@ -38,6 +48,21 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
           </svg>
           <span>Certificates</span>
+        </NuxtLink>
+        <NuxtLink :to="'/admin/courses/review'" :class="navClass('/admin/courses/review')">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          <span>Course Reviews</span>
+        </NuxtLink>
+        <div class="pt-2 pb-1">
+          <div class="px-3 text-xs font-semibold text-navy-400 uppercase tracking-wider">E-Commerce</div>
+        </div>
+        <NuxtLink :to="'/admin/products'" :class="navClass('/admin/products')">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span>Products</span>
         </NuxtLink>
         <div class="pt-2 pb-1">
           <div class="px-3 text-xs font-semibold text-navy-400 uppercase tracking-wider">General</div>
@@ -87,6 +112,136 @@
         </div>
         <div class="text-sm text-navy-200">Admin</div>
         <div class="flex items-center gap-3 text-sm">
+          <!-- Notifications -->
+          <div class="relative" ref="notificationMenuRef">
+            <button
+              @click="notificationMenuOpen = !notificationMenuOpen"
+              class="relative rounded-md bg-white/10 p-2 hover:bg-white/15 transition-colors"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span
+                v-if="unreadCount > 0"
+                class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
+              >
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
+              </span>
+            </button>
+
+            <transition
+              enter-active-class="transition ease-out duration-100"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-75"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
+            >
+              <div
+                v-if="notificationMenuOpen"
+                class="absolute right-0 mt-2 w-96 max-h-[600px] overflow-hidden rounded-xl border border-navy-700/50 bg-navy-900/95 backdrop-blur-lg shadow-xl z-50"
+              >
+                <div class="border-b border-navy-700/50 bg-navy-800/50 px-4 py-3 flex items-center justify-between">
+                  <h3 class="font-semibold text-white">Notifications</h3>
+                  <button
+                    v-if="unreadCount > 0"
+                    @click="markAllAsRead"
+                    class="text-xs text-navy-400 hover:text-navy-300"
+                  >
+                    Mark all as read
+                  </button>
+                </div>
+                <div class="max-h-[500px] overflow-y-auto">
+                  <div v-if="notificationsLoading" class="p-8 text-center">
+                    <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-navy-400 border-r-transparent"></div>
+                  </div>
+                  <div v-else-if="notifications.length === 0" class="p-8 text-center text-navy-400">
+                    <p>No notifications</p>
+                  </div>
+                  <div v-else class="divide-y divide-navy-700/50">
+                    <button
+                      v-for="notification in notifications"
+                      :key="notification.id"
+                      @click="handleNotificationClick(notification)"
+                      :class="{
+                        'bg-navy-800/50': !notification.read,
+                        'hover:bg-navy-800/30': true
+                      }"
+                      class="w-full px-4 py-3 text-left transition-colors"
+                    >
+                      <div class="flex items-start gap-3">
+                        <div
+                          :class="{
+                            'bg-blue-500/20': notification.type === 'COURSE_SUBMITTED',
+                            'bg-green-500/20': notification.type === 'COURSE_APPROVED',
+                            'bg-red-500/20': notification.type === 'COURSE_REJECTED',
+                            'bg-purple-500/20': !['COURSE_SUBMITTED', 'COURSE_APPROVED', 'COURSE_REJECTED'].includes(notification.type)
+                          }"
+                          class="rounded-lg p-2"
+                        >
+                          <svg
+                            v-if="notification.type === 'COURSE_SUBMITTED'"
+                            class="h-5 w-5 text-blue-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                          <svg
+                            v-else-if="notification.type === 'COURSE_APPROVED'"
+                            class="h-5 w-5 text-green-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <svg
+                            v-else-if="notification.type === 'COURSE_REJECTED'"
+                            class="h-5 w-5 text-red-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <svg
+                            v-else
+                            class="h-5 w-5 text-purple-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                          </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p :class="{ 'font-semibold': !notification.read, 'font-medium': notification.read }" class="text-sm text-white">
+                            {{ notification.title }}
+                          </p>
+                          <p class="mt-1 text-xs text-navy-400 line-clamp-2">{{ notification.message }}</p>
+                          <p class="mt-1 text-xs text-navy-500">
+                            {{ formatTime(notification.createdAt) }}
+                          </p>
+                        </div>
+                        <div v-if="!notification.read" class="h-2 w-2 rounded-full bg-blue-500"></div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                <div class="border-t border-navy-700/50 bg-navy-800/50 px-4 py-3">
+                  <NuxtLink
+                    to="/admin/notifications"
+                    @click="notificationMenuOpen = false"
+                    class="block text-center text-sm text-navy-400 hover:text-navy-300"
+                  >
+                    View all notifications
+                  </NuxtLink>
+                </div>
+              </div>
+            </transition>
+          </div>
           <div class="text-navy-300">{{ me?.name }} ({{ me?.role }})</div>
           <NuxtLink to="/" class="rounded-md bg-white/10 px-2 py-1 hover:bg-white/15">View site</NuxtLink>
           <button @click="onLogout" class="rounded-md bg-white/10 px-2 py-1 hover:bg-white/15">Logout</button>
@@ -102,7 +257,17 @@
         <div class="bg-black/50" @click="open=false"></div>
         <div class="absolute left-0 top-0 h-full w-72 border-r border-navy-800 bg-navy-900/95 p-4">
           <div class="mb-4 flex items-center gap-3">
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-navy-700 font-semibold">WZ</span>
+            <div
+              v-if="logoUrl"
+              class="inline-flex items-center justify-center rounded-xl bg-white px-3 py-1.5 shadow-xl border-2 border-white/50 ring-2 ring-white/30"
+            >
+              <img
+                :src="logoUrl"
+                alt="WeCodeZW Logo"
+                class="h-12 w-auto object-contain"
+              />
+            </div>
+            <span v-else class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-navy-700 font-semibold">WZ</span>
             <div class="text-xl font-semibold">WeCodeZW</div>
           </div>
           <nav class="space-y-1">
@@ -187,12 +352,24 @@
 
 <script setup lang="ts">
 const { user: me } = useAuth()
+const { logoUrl } = useLogo()
 if (!me.value || me.value.role !== 'ADMIN') {
   await navigateTo('/dashboard')
 }
 
 const open = ref(false)
 const route = useRoute()
+const notificationMenuOpen = ref(false)
+const notificationMenuRef = ref<HTMLElement | null>(null)
+
+// Fetch notifications
+const { data: notificationsData, refresh: refreshNotifications } = await useFetch('/api/admin/notifications', {
+  query: { limit: 10 }
+})
+
+const notifications = computed(() => notificationsData.value?.notifications || [])
+const unreadCount = computed(() => notificationsData.value?.unreadCount || 0)
+const notificationsLoading = ref(false)
 
 function isActive(path: string) {
   if (path.includes('#')) {
@@ -206,9 +383,82 @@ function navClass(path: string) {
   const base = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-white/10'
   return isActive(path) ? `${base} bg-white/10 ring-1 ring-white/10` : `${base} text-navy-200`
 }
+
 async function onLogout() {
   await $fetch('/api/auth/logout', { method: 'POST' }).catch(() => null)
   await navigateTo('/auth/login')
 }
+
+function formatTime(date: string | Date) {
+  const d = new Date(date)
+  const now = new Date()
+  const diff = now.getTime() - d.getTime()
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes}m ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days < 7) return `${days}d ago`
+  return d.toLocaleDateString()
+}
+
+async function handleNotificationClick(notification: any) {
+  if (!notification.read) {
+    try {
+      await $fetch(`/api/admin/notifications/${notification.id}/read`, {
+        method: 'POST'
+      })
+      await refreshNotifications()
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
+    }
+  }
+
+  // Navigate based on notification type
+  if (notification.type === 'COURSE_SUBMITTED' && notification.metadata?.courseId) {
+    await navigateTo(`/admin/courses/review`)
+    notificationMenuOpen.value = false
+  } else if (notification.type === 'COURSE_APPROVED' || notification.type === 'COURSE_REJECTED') {
+    await navigateTo(`/admin/courses`)
+    notificationMenuOpen.value = false
+  }
+}
+
+async function markAllAsRead() {
+  try {
+    await $fetch('/api/admin/notifications/read-all', {
+      method: 'POST'
+    })
+    await refreshNotifications()
+  } catch (error) {
+    console.error('Failed to mark all as read:', error)
+  }
+}
+
+// Close menu when clicking outside
+onMounted(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (notificationMenuRef.value && !notificationMenuRef.value.contains(event.target as Node)) {
+      notificationMenuOpen.value = false
+    }
+  }
+  
+  document.addEventListener('click', handleClickOutside)
+  
+  onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
+  })
+
+  // Refresh notifications every 30 seconds
+  const interval = setInterval(() => {
+    refreshNotifications()
+  }, 30000)
+
+  onUnmounted(() => {
+    clearInterval(interval)
+  })
+})
 </script>
 

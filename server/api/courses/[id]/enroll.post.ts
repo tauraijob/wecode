@@ -1,6 +1,7 @@
 import prismaModule, { Decimal } from '~~/server/utils/db'
 import { verifyJwt } from '~~/server/utils/jwt'
 import { Paynow } from 'paynow'
+import { notifyAdmins, createNotification } from '~~/server/utils/notifications'
 
 export default defineEventHandler(async (event) => {
   const prisma = await prismaModule
@@ -225,6 +226,76 @@ export default defineEventHandler(async (event) => {
     userId: verifiedInvoice.userId
   })
 
+  // Get user info for notifications (fetch early for free courses, or later for paid)
+  let user = await prisma.user.findUnique({
+    where: { id: auth.userId },
+    select: { email: true, name: true }
+  })
+
+  // Notify admins about new enrollment
+  await notifyAdmins({
+    type: 'ENROLLMENT_CREATED',
+    title: 'New Course Enrollment',
+    message: `${user?.name || 'A user'} has enrolled in course "${course.name}".`,
+    metadata: { 
+      enrollmentId: enrollment.id, 
+      courseId: course.id, 
+      courseName: course.name,
+      userId: auth.userId,
+      userName: user?.name,
+      isFreeCourse
+    }
+  })
+
+  // Notify instructor if course has one
+  if (course.instructorId) {
+    await createNotification({
+      userId: course.instructorId,
+      type: 'ENROLLMENT_CREATED',
+      title: 'New Student Enrollment',
+      message: `${user?.name || 'A student'} has enrolled in your course "${course.name}".`,
+      metadata: { 
+        enrollmentId: enrollment.id, 
+        courseId: course.id, 
+        courseName: course.name,
+        userId: auth.userId
+      }
+    })
+  }
+
+  // Notify user about enrollment
+  await createNotification({
+    userId: auth.userId,
+    type: 'ENROLLMENT_CREATED',
+    title: isFreeCourse ? 'Enrollment Successful' : 'Enrollment Pending Payment',
+    message: isFreeCourse 
+      ? `You have successfully enrolled in "${course.name}". Start learning now!`
+      : `You have enrolled in "${course.name}". Please complete payment to access the course.`,
+    metadata: { 
+      enrollmentId: enrollment.id, 
+      courseId: course.id, 
+      courseName: course.name,
+      invoiceId: verifiedInvoice.id,
+      invoiceNumber: verifiedInvoice.number
+    }
+  })
+
+  // Notify admins about invoice creation
+  await notifyAdmins({
+    type: 'INVOICE_CREATED',
+    title: 'New Invoice Created',
+    message: `Invoice ${verifiedInvoice.number} created for ${user?.name || 'a user'} - ${course.name} (${Number(course.price).toFixed(2)} ${course.currency || 'USD'}).`,
+    metadata: { 
+      invoiceId: verifiedInvoice.id, 
+      invoiceNumber: verifiedInvoice.number,
+      courseId: course.id,
+      courseName: course.name,
+      userId: auth.userId,
+      amount: Number(course.price),
+      currency: course.currency || 'USD'
+    }
+  })
+
   // For free courses, return success immediately
   if (isFreeCourse) {
     return {
@@ -287,11 +358,13 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Get user email for payment
-    const user = await prisma.user.findUnique({
-      where: { id: auth.userId },
-      select: { email: true }
-    })
+    // User info already fetched above, just get email if needed
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: { email: true, name: true }
+      })
+    }
 
     // Ensure URLs are properly formatted (remove trailing slashes)
     const resultUrl = `${siteUrl.replace(/\/$/, '')}/api/paynow/result`
