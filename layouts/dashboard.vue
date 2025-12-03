@@ -442,12 +442,26 @@ const userMenuRef = ref<HTMLElement | null>(null)
 const notificationMenuOpen = ref(false)
 const notificationMenuRef = ref<HTMLElement | null>(null)
 
-// Fetch notifications for instructors
-const { data: notificationsData, refresh: refreshNotifications } = await useFetch('/api/instructor/notifications', {
-  query: { limit: 10 },
-  server: false,
-  immediate: computed(() => me.value?.role === 'INSTRUCTOR')
-})
+// Fetch notifications for instructors only
+const notificationsData = ref<any>(null)
+const refreshNotifications = async () => {
+  if (me.value?.role === 'INSTRUCTOR') {
+    try {
+      notificationsData.value = await $fetch('/api/instructor/notifications', {
+        query: { limit: 10 }
+      })
+    } catch (error) {
+      console.error('Failed to fetch instructor notifications:', error)
+    }
+  }
+}
+
+// Watch for role changes and fetch if instructor
+watch(() => me.value?.role, (role) => {
+  if (role === 'INSTRUCTOR') {
+    refreshNotifications()
+  }
+}, { immediate: true })
 
 const notifications = computed(() => notificationsData.value?.notifications || [])
 const unreadCount = computed(() => notificationsData.value?.unreadCount || 0)

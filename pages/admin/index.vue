@@ -479,12 +479,13 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   BarElement,
   Title,
   Tooltip,
   Legend
 } from 'chart.js'
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, LineController, BarElement, Title, Tooltip, Legend)
 const metrics = reactive({ revenue: 0, schools: 0, clubs: 0, pendingRequests: 0 })
 const elearningMetrics = reactive({ courses: 0, publishedCourses: 0, enrollments: 0, activeStudents: 0 })
 const schools = ref<any[]>([])

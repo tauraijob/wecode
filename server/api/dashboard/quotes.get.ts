@@ -1,13 +1,12 @@
 import prisma from '~~/server/utils/db'
-import { verifySession } from '~~/server/utils/auth'
+import { getCurrentUser } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const token = getCookie(event, 'auth_token')
-  const session = token ? verifySession<{ uid: string }>(token) : null
-  if (!session) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  const user = await getCurrentUser(event)
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
 
   const rows = await prisma.quote.findMany({
-    where: { userId: session.uid },
+    where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
     select: { id: true, number: true, totalUsd: true }
   })

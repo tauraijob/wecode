@@ -37,7 +37,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const token = signJwt({ userId: user.id, role: user.role })
-  setCookie(event, 'token', token, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 * 7 })
+  setCookie(event, 'token', token, { 
+    httpOnly: true, 
+    path: '/', 
+    sameSite: 'lax', 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7 
+  })
   return { id: user.id, email: user.email, name: user.name, role: user.role }
 })
 
