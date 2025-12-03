@@ -22,8 +22,7 @@ export default defineEventHandler(async (event) => {
         select: {
           enrollments: true,
           courses: true,
-          invoices: true,
-          orders: true
+          invoices: true
         }
       }
     } 

@@ -243,10 +243,6 @@
                 <span class="ml-2 text-white">{{ userDetails._count?.invoices || 0 }}</span>
               </div>
               <div>
-                <span class="text-navy-400">Orders:</span>
-                <span class="ml-2 text-white">{{ userDetails._count?.orders || 0 }}</span>
-              </div>
-              <div>
                 <span class="text-navy-400">Certificates:</span>
                 <span class="ml-2 text-white">{{ userDetails._count?.certificates || 0 }}</span>
               </div>

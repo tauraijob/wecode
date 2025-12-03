@@ -65,7 +65,6 @@ export default defineEventHandler(async (event) => {
           enrollments: true,
           courses: true,
           invoices: true,
-          orders: true,
           certificates: true
         }
       }

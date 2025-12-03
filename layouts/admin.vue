@@ -56,15 +56,6 @@
           <span>Course Reviews</span>
         </NuxtLink>
         <div class="pt-2 pb-1">
-          <div class="px-3 text-xs font-semibold text-navy-400 uppercase tracking-wider">E-Commerce</div>
-        </div>
-        <NuxtLink :to="'/admin/products'" :class="navClass('/admin/products')">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
-          <span>Products</span>
-        </NuxtLink>
-        <div class="pt-2 pb-1">
           <div class="px-3 text-xs font-semibold text-navy-400 uppercase tracking-wider">General</div>
         </div>
         <NuxtLink :to="'/admin/users'" :class="navClass('/admin/users')">

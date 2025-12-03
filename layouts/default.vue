@@ -93,13 +93,6 @@
             IT Services
           </NuxtLink>
           <NuxtLink 
-            to="/products" 
-            :class="route.path.startsWith('/products') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
-          >
-            Products
-          </NuxtLink>
-          <NuxtLink 
             to="/about" 
             :class="route.path.startsWith('/about') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
             class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
@@ -252,7 +245,6 @@
           <NuxtLink v-if="!me" @click="mobileOpen=false" to="/corporate" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Corporate</NuxtLink>
           <NuxtLink v-if="!me" @click="mobileOpen=false" to="/schools" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Schools</NuxtLink>
           <NuxtLink @click="mobileOpen=false" to="/services" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">IT Services</NuxtLink>
-          <NuxtLink @click="mobileOpen=false" to="/products" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Products</NuxtLink>
           <NuxtLink @click="mobileOpen=false" to="/about" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">About</NuxtLink>
           <template v-if="me">
             <div class="border-t border-navy-700 pt-2 mt-2">
