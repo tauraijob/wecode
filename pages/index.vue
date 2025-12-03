@@ -66,7 +66,7 @@
       <p class="text-navy-300">Check back soon for new courses!</p>
     </div>
     
-    <div v-else-if="courses && courses.length > 0" class="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+    <div v-else-if="courses && courses.length > 0" class="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       <div
         v-for="course in courses.slice(0, 6)"
         :key="course.id"
@@ -191,13 +191,38 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import RequestQuickForm from '@/components/requests/RequestQuickForm.vue'
 
 // Get auth state
 const { user: me } = useAuth()
 
-// Fetch featured courses
-const { data: courses, pending: coursesLoading } = await useFetch('/api/courses', {
-  query: { status: 'PUBLISHED' }
+// Fetch featured courses first
+const { data: featuredCoursesData, pending: featuredLoading, error: featuredError } = await useFetch('/api/courses', {
+  query: { status: 'PUBLISHED', featured: true, limit: 6 }
+})
+
+// Also fetch all published courses as fallback
+const { data: fallbackCoursesData, pending: fallbackLoading } = await useFetch('/api/courses', {
+  query: { status: 'PUBLISHED', limit: 6 }
+})
+
+const courses = computed(() => {
+  const featured = featuredCoursesData.value?.courses || []
+  // If we have featured courses, use them
+  if (featured.length > 0) {
+    return featured
+  }
+  // Otherwise, use fallback (all published courses)
+  return fallbackCoursesData.value?.courses || []
+})
+
+const coursesLoading = computed(() => {
+  const featured = featuredCoursesData.value?.courses || []
+  // If no featured courses, show loading until fallback loads
+  if (featured.length === 0 || featuredError.value) {
+    return featuredLoading.value || fallbackLoading.value
+  }
+  return featuredLoading.value
 })
 </script>

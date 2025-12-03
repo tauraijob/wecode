@@ -239,6 +239,7 @@ model Course {
   thumbnailUrl    String?
   prerequisites   String?       @db.Text
   examConfig      Json?         // { questionCount, duration, passingScore }
+  featured        Boolean       @default(false)
   submittedForReviewAt DateTime?
   reviewedAt     DateTime?
   createdAt       DateTime      @default(now())

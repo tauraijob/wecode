@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
   const search = query.search as string | undefined
   const category = query.category as string | undefined
   const instructor = query.instructor as string | undefined
+  const featured = query.featured === 'true' || query.featured === true
   const minPrice = query.minPrice ? parseFloat(query.minPrice as string) : undefined
   const maxPrice = query.maxPrice ? parseFloat(query.maxPrice as string) : undefined
   const minRating = query.minRating ? parseFloat(query.minRating as string) : undefined
@@ -32,6 +33,12 @@ export default defineEventHandler(async (event) => {
   } else {
     // Public endpoint shows only published courses
     where.status = 'PUBLISHED'
+  }
+
+  // Featured filter (only if featured parameter is true)
+  // Note: This will work once the database migration adds the featured field
+  if (featured) {
+    where.featured = true
   }
 
   // Search filter
@@ -78,9 +85,13 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get total count for pagination
-  const total = await prisma.course.count({ where })
-
-  const courses = await prisma.course.findMany({
+  let total = 0
+  let courses: any[] = []
+  
+  try {
+    total = await prisma.course.count({ where })
+    
+    courses = await prisma.course.findMany({
     where,
     include: {
       instructor: {
@@ -116,10 +127,61 @@ export default defineEventHandler(async (event) => {
         }
       }
     },
-    orderBy,
-    skip,
-    take: limit
-  })
+      orderBy,
+      skip,
+      take: limit
+    })
+  } catch (error: any) {
+    // If featured field doesn't exist in database yet, retry without featured filter
+    if (featured && (error.message?.includes('Unknown field') || error.message?.includes('featured') || error.message?.includes('column'))) {
+      console.warn('Featured field not available yet, ignoring featured filter')
+      const whereWithoutFeatured = { ...where }
+      delete whereWithoutFeatured.featured
+      total = await prisma.course.count({ where: whereWithoutFeatured })
+      courses = await prisma.course.findMany({
+        where: whereWithoutFeatured,
+        include: {
+          instructor: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          topics: {
+            include: {
+              lessons: {
+                select: {
+                  id: true,
+                  title: true,
+                  order: true,
+                  videoDuration: true
+                },
+                orderBy: { order: 'asc' }
+              }
+            },
+            orderBy: { order: 'asc' }
+          },
+          _count: {
+            select: {
+              enrollments: true,
+              ratings: true
+            }
+          },
+          ratings: {
+            select: {
+              rating: true
+            }
+          }
+        },
+        orderBy,
+        skip,
+        take: limit
+      })
+    } else {
+      throw error
+    }
+  }
 
   // Calculate average rating for each course
   const coursesWithRatings = courses.map(course => {

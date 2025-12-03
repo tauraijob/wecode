@@ -9,34 +9,100 @@
     </div>
 
     <!-- Search and Filters -->
-    <div class="mb-8 grid gap-6 lg:grid-cols-4">
+    <div class="mb-8 space-y-4">
       <!-- Search -->
-      <div class="lg:col-span-3">
+      <div>
         <CourseSearch v-model:search="searchQuery" />
       </div>
       
-      <!-- Filters Toggle (Mobile) -->
-      <div class="lg:hidden">
-        <button
-          @click="showFilters = !showFilters"
-          class="w-full rounded-lg border border-navy-700 bg-navy-800/50 px-4 py-2.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all flex items-center justify-center gap-2"
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          Filters
-        </button>
+      <!-- Filters - Horizontal Layout -->
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 to-navy-800/40 p-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold text-white">Filters</h3>
+          <button
+            @click="showFilters = !showFilters"
+            class="lg:hidden rounded-lg border border-navy-700 bg-navy-800/50 px-3 py-1.5 text-xs font-medium text-navy-200 hover:bg-navy-700/50 transition-all flex items-center gap-2"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            {{ showFilters ? 'Hide' : 'Show' }} Filters
+          </button>
+        </div>
+        
+        <!-- Filters Content -->
+        <div :class="showFilters ? 'block' : 'hidden lg:block'">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Price Range -->
+            <div>
+              <label class="mb-2 block text-xs font-medium text-navy-200">Price Range</label>
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model.number="filters.minPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Min"
+                  class="w-full rounded-lg border border-navy-700 bg-navy-800/50 px-3 py-2 text-sm text-white placeholder-navy-400 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+                <input
+                  v-model.number="filters.maxPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Max"
+                  class="w-full rounded-lg border border-navy-700 bg-navy-800/50 px-3 py-2 text-sm text-white placeholder-navy-400 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+              </div>
+            </div>
+
+            <!-- Minimum Rating -->
+            <div>
+              <label class="mb-2 block text-xs font-medium text-navy-200">Minimum Rating</label>
+              <select
+                v-model.number="filters.minRating"
+                class="w-full rounded-lg border border-navy-700 bg-navy-800/50 px-3 py-2 text-sm text-white focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              >
+                <option :value="undefined">Any Rating</option>
+                <option :value="4.5">4.5+ Stars</option>
+                <option :value="4.0">4.0+ Stars</option>
+                <option :value="3.5">3.5+ Stars</option>
+                <option :value="3.0">3.0+ Stars</option>
+              </select>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+              <label class="mb-2 block text-xs font-medium text-navy-200">Sort By</label>
+              <select
+                v-model="filters.sortBy"
+                class="w-full rounded-lg border border-navy-700 bg-navy-800/50 px-3 py-2 text-sm text-white focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">Name A-Z</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="enrollments">Most Enrollments</option>
+              </select>
+            </div>
+
+            <!-- Clear Filters -->
+            <div class="flex items-end">
+              <button
+                @click="clearFilters"
+                class="w-full rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-2 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-4">
-      <!-- Filters Sidebar -->
-      <div :class="filterSidebarClasses">
-        <CourseFilters v-model:filters="filters" />
-      </div>
-
-      <!-- Courses Grid -->
-      <div class="lg:col-span-3">
+    <!-- Courses Grid -->
+    <div>
 
         <!-- Loading State -->
         <div v-if="loading" class="flex items-center justify-center py-20">
@@ -58,7 +124,7 @@
         </div>
 
         <!-- Courses Grid -->
-        <div v-else class="grid gap-6 sm:grid-cols-2">
+        <div v-else class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div
             v-for="course in courses"
             :key="course.id"
@@ -154,7 +220,6 @@
             Next
           </button>
         </div>
-      </div>
     </div>
   </section>
 </template>
@@ -163,7 +228,7 @@
 import { ref, computed, watch } from 'vue'
 
 const searchQuery = ref('')
-const showFilters = ref(false)
+const showFilters = ref(true) // Show filters by default on desktop
 const filters = ref({
   minPrice: undefined as number | undefined,
   maxPrice: undefined as number | undefined,
@@ -188,10 +253,6 @@ const { data: coursesData, pending: loading, refresh } = await useFetch('/api/co
 
 const courses = computed(() => coursesData.value?.courses || [])
 const pagination = computed(() => coursesData.value?.pagination)
-const filterSidebarClasses = computed(() => [
-  'lg:col-span-1',
-  showFilters.value ? 'block' : 'hidden lg:block'
-])
 
 // Reset to page 1 when filters change
 watch([searchQuery, filters], () => {
@@ -202,5 +263,14 @@ watch([searchQuery, filters], () => {
 function loadPage(page: number) {
   currentPage.value = page
   refresh()
+}
+
+function clearFilters() {
+  filters.value = {
+    minPrice: undefined,
+    maxPrice: undefined,
+    minRating: undefined,
+    sortBy: 'newest'
+  }
 }
 </script>
