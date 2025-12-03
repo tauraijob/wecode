@@ -172,12 +172,10 @@
   <!-- Request Training Section (Optional) -->
   <section v-if="!me" class="mx-auto max-w-7xl px-3 sm:px-4 py-12 sm:py-16">
     <div class="rounded-xl border border-navy-800 bg-gradient-to-br from-navy-900/60 to-navy-800/40 p-8 sm:p-12">
-      <div class="max-w-2xl">
-        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Request Training or Workshops</h2>
-        <p class="mt-4 text-navy-300">Tell us about your goals. We'll craft a program that fits your schedule and outcomes.</p>
-        <div class="mt-6">
-          <RequestQuickForm />
-        </div>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Request Training or Workshops</h2>
+      <p class="mt-4 text-navy-300">Tell us about your goals. We'll craft a program that fits your schedule and outcomes.</p>
+      <div class="mt-6">
+        <RequestQuickForm />
       </div>
     </div>
   </section>

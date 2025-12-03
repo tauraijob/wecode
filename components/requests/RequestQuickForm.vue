@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="onSubmit" class="mt-8 grid gap-4 rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-6">
+  <form @submit.prevent="onSubmit" class="grid gap-4 rounded-xl border border-navy-800 bg-navy-900/40 p-4 sm:p-6">
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-2">
         <UiLabel class="text-navy-200">Full name</UiLabel>
