@@ -2,6 +2,7 @@ import { QuoteRequestSchema, calculateQuote, renderInvoiceHtml } from '~~/server
 import { sendMail } from '~~/server/utils/mailer'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import prisma from '~~/server/utils/db'
+import { getQuoteRequestAdminTemplate, getQuoteRequestUserTemplate } from '~~/server/utils/email-templates'
 
 export default defineEventHandler(async (event) => {
   // Check if database is available
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
 
   const invoiceNumber = `WCZW-${Date.now()}`
   const company = { name: 'WeCodeZW', email: process.env.MAIL_FROM || 'info@wecode.co.zw', phone: '+263778456168' }
-  const html = renderInvoiceHtml({ quote, request: data, invoiceNumber, company })
+  const invoiceHtml = renderInvoiceHtml({ quote, request: data, invoiceNumber, company })
 
   // Upsert user and school, persist quote+invoice
   const user = await prisma.user.upsert({
@@ -78,10 +79,8 @@ export default defineEventHandler(async (event) => {
   const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
   const dashLink = `${siteUrl}/api/auth/magic-link/verify?token=${token}`
 
-  const adminTo = process.env.MAIL_TO || process.env.MAIL_FROM
+  const adminTo = process.env.MAIL_TO || process.env.MAIL_FROM || 'info@wecode.co.zw'
   if (!adminTo) throw createError({ statusCode: 500, statusMessage: 'MAIL_TO not configured' })
-
-  const subject = `Quote Request — ${data.schoolName} (${data.level}) — ${invoiceNumber}`
 
   // Optional PDF attachment if requested
   let attachments: any[] | undefined
@@ -105,21 +104,58 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // Extract body content from invoice HTML
+    const invoiceBodyMatch = invoiceHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i)
+    const invoiceContent = invoiceBodyMatch ? invoiceBodyMatch[1] : invoiceHtml
+    
+    // Admin email with new template
+    const { html: adminHtml, text: adminText } = getQuoteRequestAdminTemplate({
+      invoiceNumber,
+      schoolName: data.schoolName,
+      level: data.level,
+      contactName: data.contactName,
+      email: data.email,
+      phone: data.phone,
+      total: quote.total,
+      currency: quote.currency,
+      dashLink
+    })
+    
+    // Embed invoice HTML in admin email (insert before closing main table)
+    const adminEmailHtml = adminHtml.replace(
+      '</table>\n        \n        <!-- Footer -->',
+      `</table>\n        \n        <!-- Invoice Details -->\n        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; margin-top: 0;">\n          <tr>\n            <td style="padding: 0 40px 40px 40px;">\n              <div style="margin-top: 24px; padding: 24px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">\n                ${invoiceContent}\n              </div>\n            </td>\n          </tr>\n        </table>\n        \n        <!-- Footer -->`
+    )
+
     await sendMail({
       to: adminTo,
-      subject,
-      text: `Quote total: ${quote.currency} ${quote.total.toFixed(2)} | From: ${data.contactName} <${data.email}>`,
-      html,
+      subject: `Quote Request — ${data.schoolName} (${data.level}) — ${invoiceNumber}`,
+      html: adminEmailHtml,
+      text: adminText,
       replyTo: data.email,
       ...(attachments ? { attachments } : {}) as any
     })
 
-    // Send a copy to the requester
+    // User email with new template
+    const { html: userHtml, text: userText } = getQuoteRequestUserTemplate({
+      invoiceNumber,
+      schoolName: data.schoolName,
+      total: quote.total,
+      currency: quote.currency,
+      dashLink
+    })
+    
+    // Embed invoice HTML in user email (insert before closing main table)
+    const userEmailHtml = userHtml.replace(
+      '</table>\n        \n        <!-- Footer -->',
+      `</table>\n        \n        <!-- Invoice Details -->\n        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; margin-top: 0;">\n          <tr>\n            <td style="padding: 0 40px 40px 40px;">\n              <div style="margin-top: 24px; padding: 24px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">\n                ${invoiceContent}\n              </div>\n            </td>\n          </tr>\n        </table>\n        \n        <!-- Footer -->`
+    )
+
     await sendMail({
       to: data.email,
       subject: `Your Quote — WeCodeZW — ${invoiceNumber}`,
-      text: `Thank you for your request. Total: ${quote.currency} ${quote.total.toFixed(2)}. Access your dashboard: ${dashLink}`,
-      html: `${html}<div style="margin-top:16px"><a href="${dashLink}">Access your dashboard</a></div>`,
+      html: userEmailHtml,
+      text: userText,
       ...(attachments ? { attachments } : {}) as any
     })
   } catch (error) {

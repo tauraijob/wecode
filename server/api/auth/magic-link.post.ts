@@ -20,11 +20,14 @@ export default defineEventHandler(async (event) => {
   const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
   const link = `${siteUrl}/api/auth/magic-link/verify?token=${token}`
 
+  const { getMagicLinkTemplate } = await import('~~/server/utils/email-templates')
+  const { html, text } = getMagicLinkTemplate(user.name || 'User', link)
+  
   await sendMail({
     to: email,
     subject: 'Your secure sign-in link — WeCodeZW',
-    text: `Click to sign in: ${link}`,
-    html: `<p>Click to sign in:</p><p><a href="${link}">${link}</a></p>`
+    html,
+    text
   })
 
   return { ok: true }

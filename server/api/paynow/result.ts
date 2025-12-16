@@ -1,5 +1,6 @@
 import prisma, { Decimal } from '~~/server/utils/db'
 import { Paynow } from 'paynow'
+import { notifyAdmins, createNotification } from '~~/server/utils/notifications'
 
 /**
  * Paynow webhook handler for payment status updates
@@ -119,9 +120,24 @@ export default defineEventHandler(async (event) => {
         }
       }
 
+      // Get user info for notifications
+      const user = await prisma.user.findUnique({
+        where: { id: invoice.userId },
+        select: { id: true, name: true, email: true }
+      })
+
       // Activate enrollments linked to this invoice
       const enrollments = await prisma.enrollment.findMany({
-        where: { invoiceId: invoice.id }
+        where: { invoiceId: invoice.id },
+        include: {
+          course: {
+            select: {
+              id: true,
+              name: true,
+              instructorId: true
+            }
+          }
+        }
       })
 
       for (const enrollment of enrollments) {
@@ -139,6 +155,64 @@ export default defineEventHandler(async (event) => {
           } catch (earningError) {
             console.error('Failed to create instructor earning:', earningError)
             // Don't fail the payment if earning creation fails
+          }
+
+          // Notify admins about successful payment
+          await notifyAdmins({
+            type: 'PAYMENT_SUCCESS',
+            title: 'Payment Received (PayNow)',
+            message: `Payment of ${Number(invoice.amountUsd).toFixed(2)} ${invoice.currency || 'USD'} received from ${user?.name || 'a user'} for course "${enrollment.course?.name || 'Unknown'}".`,
+            metadata: { 
+              invoiceId: invoice.id, 
+              invoiceNumber: invoice.number,
+              enrollmentId: enrollment.id,
+              courseId: enrollment.courseId,
+              courseName: enrollment.course?.name,
+              userId: invoice.userId,
+              userName: user?.name,
+              amount: Number(invoice.amountUsd),
+              currency: invoice.currency || 'USD',
+              method: 'PAYNOW'
+            }
+          })
+
+          // Notify user about successful payment
+          if (user) {
+            await createNotification({
+              userId: user.id,
+              type: 'PAYMENT_SUCCESS',
+              title: 'Payment Successful',
+              message: `Your payment of ${Number(invoice.amountUsd).toFixed(2)} ${invoice.currency || 'USD'} for "${enrollment.course?.name || 'course'}" has been processed. You now have access to the course!`,
+              metadata: { 
+                invoiceId: invoice.id, 
+                invoiceNumber: invoice.number,
+                enrollmentId: enrollment.id,
+                courseId: enrollment.courseId,
+                courseName: enrollment.course?.name,
+                amount: Number(invoice.amountUsd),
+                currency: invoice.currency || 'USD'
+              }
+            })
+          }
+
+          // Notify instructor about payment
+          if (enrollment.course?.instructorId) {
+            await createNotification({
+              userId: enrollment.course.instructorId,
+              type: 'PAYMENT_SUCCESS',
+              title: 'Student Payment Received',
+              message: `${user?.name || 'A student'} has completed payment for your course "${enrollment.course.name}".`,
+              metadata: { 
+                invoiceId: invoice.id, 
+                enrollmentId: enrollment.id,
+                courseId: enrollment.courseId,
+                courseName: enrollment.course.name,
+                userId: invoice.userId,
+                userName: user?.name,
+                amount: Number(invoice.amountUsd),
+                currency: invoice.currency || 'USD'
+              }
+            })
           }
         }
       }

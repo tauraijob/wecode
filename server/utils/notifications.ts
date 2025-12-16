@@ -1,5 +1,6 @@
 import prismaModule from './db'
 import { formatNotificationMessage } from './notification-templates'
+import { sendMail } from './mailer'
 
 /**
  * Create a notification for a user with rich templates
@@ -37,6 +38,7 @@ export async function createNotification(data: {
 
 /**
  * Create notifications for multiple users (e.g., all admins) with rich templates
+ * Also sends email notifications for course-related events
  */
 export async function notifyAdmins(data: {
   type: string
@@ -58,6 +60,7 @@ export async function notifyAdmins(data: {
       ? { title: data.title, message: data.message }
       : formatNotificationMessage(data.type, data.metadata || {}, data.title || '', data.message || '')
 
+    // Create in-app notifications for admins
     await Promise.all(
       admins.map(admin =>
         prisma.notification.create({
@@ -71,6 +74,33 @@ export async function notifyAdmins(data: {
         })
       )
     )
+
+    // Send email notification for course-related events
+    const courseNotificationTypes = [
+      'ENROLLMENT_CREATED',
+      'ENROLLMENT_CANCELLED',
+      'PAYMENT_SUCCESS',
+      'INVOICE_CREATED',
+      'USER_REGISTERED'
+    ]
+
+    if (courseNotificationTypes.includes(data.type)) {
+      try {
+        const { getAdminNotificationTemplate } = await import('~~/server/utils/email-templates')
+        const { html, text } = getAdminNotificationTemplate(title, message, data.metadata)
+        const adminEmail = process.env.MAIL_TO || process.env.MAIL_FROM || 'info@wecode.co.zw'
+        
+        await sendMail({
+          to: adminEmail,
+          subject: `${title} — WeCodeZW`,
+          html,
+          text
+        })
+      } catch (emailError) {
+        console.error('Failed to send admin email notification:', emailError)
+        // Don't fail the entire notification if email fails
+      }
+    }
   } catch (error) {
     console.error('Failed to notify admins:', error)
   }

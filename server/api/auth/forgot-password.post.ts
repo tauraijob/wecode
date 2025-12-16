@@ -63,28 +63,14 @@ export default defineEventHandler(async (event) => {
   const resetLink = `${siteUrl}/auth/reset-password?token=${resetToken}`
 
   try {
+    const { getPasswordResetTemplate } = await import('~~/server/utils/email-templates')
+    const { html, text } = getPasswordResetTemplate(user.name, resetLink)
+    
     await sendMail({
       to: email,
       subject: 'Reset your password — WeCodeZW',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1e40af;">Password Reset Request</h2>
-          <p>Hi ${user.name},</p>
-          <p>We received a request to reset your password. Click the button below to create a new password:</p>
-          <p style="margin: 30px 0;">
-            <a href="${resetLink}" 
-               style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Reset Password
-            </a>
-          </p>
-          <p>Or copy and paste this link into your browser:</p>
-          <p style="color: #6b7280; word-break: break-all;">${resetLink}</p>
-          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
-            This link will expire in 1 hour. If you didn't request a password reset, please ignore this email.
-          </p>
-        </div>
-      `,
-      text: `Password Reset Request\n\nHi ${user.name},\n\nWe received a request to reset your password. Click this link to create a new password:\n${resetLink}\n\nThis link will expire in 1 hour. If you didn't request a password reset, please ignore this email.`
+      html,
+      text
     })
   } catch (mailError) {
     console.error('Failed to send password reset email:', mailError)
@@ -96,4 +82,6 @@ export default defineEventHandler(async (event) => {
     message: 'If an account exists with this email, a password reset link has been sent.' 
   }
 })
+
+
 

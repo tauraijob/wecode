@@ -52,28 +52,14 @@ export default defineEventHandler(async (event) => {
   const verificationLink = `${siteUrl}/api/auth/verify-email?token=${verificationToken}`
 
   try {
+    const { getEmailVerificationTemplate } = await import('~~/server/utils/email-templates')
+    const { html, text } = getEmailVerificationTemplate(user.name, verificationLink)
+    
     await sendMail({
       to: email,
       subject: 'Verify your email — WeCodeZW',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1e40af;">Verify Your Email</h2>
-          <p>Hi ${user.name},</p>
-          <p>Please verify your email address to activate your account.</p>
-          <p style="margin: 30px 0;">
-            <a href="${verificationLink}" 
-               style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Verify Email Address
-            </a>
-          </p>
-          <p>Or copy and paste this link into your browser:</p>
-          <p style="color: #6b7280; word-break: break-all;">${verificationLink}</p>
-          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
-            This link will expire in 24 hours. If you didn't request this, please ignore this email.
-          </p>
-        </div>
-      `,
-      text: `Hi ${user.name},\n\nPlease verify your email by clicking this link:\n${verificationLink}\n\nThis link will expire in 24 hours.`
+      html,
+      text
     })
 
     return { ok: true, message: 'Verification email sent! Please check your inbox.' }
@@ -82,6 +68,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: 'Failed to send verification email. Please try again later.' })
   }
 })
+
+
 
 
 
