@@ -356,6 +356,18 @@ const proceedToPayment = async () => {
           })
           
           if (paymentResponse.redirectUrl) {
+            // Store pollUrl in localStorage for later use when user returns
+            if (paymentResponse.pollUrl && invoiceNumber) {
+              try {
+                const stored = localStorage.getItem('paynow_pollUrls') || '{}'
+                const pollUrls = JSON.parse(stored)
+                pollUrls[invoiceNumber] = paymentResponse.pollUrl
+                localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+              } catch (e) {
+                console.warn('Failed to store pollUrl:', e)
+              }
+            }
+            
             window.location.href = paymentResponse.redirectUrl
             return
           }

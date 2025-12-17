@@ -262,7 +262,21 @@ async function payNow() {
     })
     
     const redirectUrl = (res as any)?.redirectUrl
+    const pollUrl = (res as any)?.pollUrl
+    
     if (redirectUrl) {
+      // Store pollUrl in localStorage for later use when user returns
+      if (pollUrl && invoice.number) {
+        try {
+          const stored = localStorage.getItem('paynow_pollUrls') || '{}'
+          const pollUrls = JSON.parse(stored)
+          pollUrls[invoice.number] = pollUrl
+          localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+        } catch (e) {
+          console.warn('Failed to store pollUrl:', e)
+        }
+      }
+      
       // Redirect to PayNow payment page
       window.location.href = redirectUrl
     } else {

@@ -24,6 +24,10 @@ export default defineEventHandler(async (event) => {
   const integrationKey = process.env.PAYNOW_INTEGRATION_KEY
   const canPollPayNow = !!(integrationId && integrationKey)
 
+  // Get pollUrl from request body if provided (stored in localStorage on frontend)
+  const body = await readBody(event).catch(() => ({}))
+  const pollUrlMap = (body as any)?.pollUrls as Record<string, string> | undefined
+
   // Find all pending enrollments for this user with invoices
   const pendingEnrollments = await prisma.enrollment.findMany({
     where: {
@@ -84,26 +88,75 @@ export default defineEventHandler(async (event) => {
       continue
     }
 
-    // If invoice is not paid, try to manually process payment status
-    // This is especially important for localhost where webhooks can't reach the server
-    // We'll check if there's a pending payment and try to verify it
-    if (invoice.status !== 'PAID') {
-      // Check if there's a recent payment attempt (within last hour)
+    // If invoice is not paid, try to poll PayNow using pollUrl
+    if (invoice.status !== 'PAID' && canPollPayNow) {
+      // Try to get pollUrl from provided map (keyed by invoice number)
+      const pollUrl = pollUrlMap?.[invoice.number]
+      
+      if (pollUrl) {
+        try {
+          const paynow = new Paynow(integrationId, integrationKey)
+          const status = await paynow.pollTransaction(pollUrl)
+          
+          if (status && status.paid) {
+            console.log('PayNow poll: Payment confirmed for invoice:', invoice.number)
+            
+            // Payment is confirmed paid, update invoice and enrollments
+            await prisma.invoice.update({
+              where: { id: invoice.id },
+              data: { status: 'PAID' }
+            })
+
+            // Check if payment record exists
+            const existingPayment = await prisma.payment.findFirst({
+              where: { invoiceId: invoice.id }
+            })
+
+            if (!existingPayment) {
+              await prisma.payment.create({
+                data: {
+                  invoiceId: invoice.id,
+                  amountUsd: invoice.amountUsd,
+                  currency: invoice.currency || 'USD',
+                  status: 'SUCCESS',
+                  method: 'PAYNOW'
+                }
+              })
+            } else {
+              // Update existing payment to ensure it's marked as SUCCESS
+              if (existingPayment.status !== 'SUCCESS' || !existingPayment.method) {
+                await prisma.payment.update({
+                  where: { id: existingPayment.id },
+                  data: { 
+                    status: 'SUCCESS',
+                    method: existingPayment.method || 'PAYNOW'
+                  }
+                })
+              }
+            }
+            
+            // Activate enrollment
+            await prisma.enrollment.update({
+              where: { id: enrollment.id },
+              data: { status: 'ACTIVE' }
+            })
+            
+            updated.push(enrollment.id)
+            continue
+          }
+        } catch (pollError) {
+          console.error('Error polling PayNow for invoice:', invoice.number, pollError)
+          // Continue to check other enrollments even if polling fails
+        }
+      }
+      
+      // If no pollUrl but there's a recent payment attempt, check if payment was already successful
       const recentPayment = invoice.payments?.find(p => {
         const paymentTime = new Date(p.createdAt).getTime()
         const oneHourAgo = Date.now() - 60 * 60 * 1000
         return paymentTime > oneHourAgo
       })
 
-      // If there's a recent payment attempt, we should check PayNow status
-      // However, without pollUrl, we can't directly poll PayNow
-      // The webhook should handle this, but on localhost it won't work
-      // 
-      // Solution: When user returns from PayNow, they should manually trigger
-      // payment status check, or we can try to process return URL parameters
-      // 
-      // For now, we'll log that we're checking and the user should manually
-      // check payment status after returning from PayNow
       if (recentPayment) {
         console.log('Found recent payment attempt for invoice:', invoice.number, 'Status:', recentPayment.status)
         // If payment is already marked as SUCCESS but invoice isn't PAID, update it

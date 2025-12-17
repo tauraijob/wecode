@@ -534,11 +534,25 @@ async function payNow() {
       }
     })
     const redirectUrl = (res as any)?.redirectUrl
+    const pollUrl = (res as any)?.pollUrl
+    
     if (redirectUrl) {
+      // Store pollUrl in localStorage for later use when user returns
+      if (pollUrl && invoiceId.value) {
+        try {
+          const stored = localStorage.getItem('paynow_pollUrls') || '{}'
+          const pollUrls = JSON.parse(stored)
+          pollUrls[invoiceId.value] = pollUrl
+          localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+        } catch (e) {
+          console.warn('Failed to store pollUrl:', e)
+        }
+      }
+      
       // Open PayNow in same window (better for mobile) or new tab
       window.location.href = redirectUrl
       // Note: After payment, PayNow will redirect back to returnUrl
-      // The polling mechanism will detect the payment status change
+      // The polling mechanism will detect the payment status change using stored pollUrl
     } else {
       alert('Payment initiation failed. Please try again or contact us.')
     }

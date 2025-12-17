@@ -392,7 +392,7 @@ export default defineEventHandler(async (event) => {
     const response = await paynow.send(payment)
     
     if (response.success && response.redirectUrl) {
-      console.log('Paynow payment initiated successfully:', { redirectUrl: response.redirectUrl })
+      console.log('Paynow payment initiated successfully:', { redirectUrl: response.redirectUrl, pollUrl: response.pollUrl })
       return {
         enrollment,
         invoice: {
@@ -401,7 +401,8 @@ export default defineEventHandler(async (event) => {
           amount: course.price,
           currency: course.currency || 'USD'
         },
-        redirectUrl: response.redirectUrl // Redirect to Paynow payment page
+        redirectUrl: response.redirectUrl, // Redirect to Paynow payment page
+        pollUrl: response.pollUrl // Poll URL to check payment status
       }
     } else {
       console.error('Paynow payment initiation failed:', response)

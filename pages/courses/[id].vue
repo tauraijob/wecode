@@ -234,6 +234,19 @@ const handleEnroll = async () => {
     // If paid course with redirect URL, go directly to Paynow
     if (data.redirectUrl) {
       console.log('Redirecting to Paynow payment:', data.redirectUrl)
+      
+      // Store pollUrl in localStorage for later use when user returns
+      if (data.pollUrl && data.invoice?.number) {
+        try {
+          const stored = localStorage.getItem('paynow_pollUrls') || '{}'
+          const pollUrls = JSON.parse(stored)
+          pollUrls[data.invoice.number] = data.pollUrl
+          localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+        } catch (e) {
+          console.warn('Failed to store pollUrl:', e)
+        }
+      }
+      
       window.location.href = data.redirectUrl // Use window.location for external redirect
       return
     }

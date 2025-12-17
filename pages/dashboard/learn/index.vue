@@ -227,14 +227,59 @@
             .forEach((e: any) => checkingPayments.value.add(e.id))
         }
         
+        // Get pollUrls from localStorage (stored when payment was initiated)
+        const pollUrls: Record<string, string> = {}
+        if (process.client) {
+          try {
+            const stored = localStorage.getItem('paynow_pollUrls')
+            if (stored) {
+              const parsed = JSON.parse(stored)
+              // Only keep pollUrls for invoices that are still pending
+              if (enrollments.value) {
+                enrollments.value
+                  .filter((e: any) => e.status === 'PENDING' && e.invoiceId && e.invoice?.number)
+                  .forEach((e: any) => {
+                    if (parsed[e.invoice.number]) {
+                      pollUrls[e.invoice.number] = parsed[e.invoice.number]
+                    }
+                  })
+              }
+            }
+          } catch (e) {
+            console.warn('Error reading pollUrls from localStorage:', e)
+          }
+        }
+        
         // Call endpoint to check and update payment status
         const result = await $fetch('/api/enrollments/check-payments', {
-          method: 'POST'
+          method: 'POST',
+          body: {
+            pollUrls: Object.keys(pollUrls).length > 0 ? pollUrls : undefined
+          }
         })
         
         if (result.updated > 0) {
           // Payments were updated, refresh enrollments
           await refresh()
+          
+          // Clean up pollUrls for paid invoices
+          if (process.client) {
+            try {
+              const stored = localStorage.getItem('paynow_pollUrls')
+              if (stored) {
+                const parsed = JSON.parse(stored)
+                // Remove pollUrls for invoices that are now paid
+                enrollments.value
+                  ?.filter((e: any) => e.status === 'ACTIVE' && e.invoice?.number)
+                  .forEach((e: any) => {
+                    delete parsed[e.invoice.number]
+                  })
+                localStorage.setItem('paynow_pollUrls', JSON.stringify(parsed))
+              }
+            } catch (e) {
+              console.warn('Error cleaning up pollUrls:', e)
+            }
+          }
         }
       } catch (error) {
         console.error('Error checking payment status:', error)
@@ -274,9 +319,8 @@
         
         // Always check payment status when page loads (user might have just returned from Paynow)
         // This ensures enrollments are activated even if webhook hasn't fired yet
-        setTimeout(async () => {
-          await checkAllPayments()
-        }, 500)
+        // Immediately check on return from Paynow (no delay)
+        await checkAllPayments()
         
         // Check URL parameters for payment status (PayNow might include these)
         const paymentStatus = route.query.status as string
