@@ -363,9 +363,15 @@ const proceedToPayment = async () => {
                 const pollUrls = JSON.parse(stored)
                 pollUrls[invoiceNumber] = paymentResponse.pollUrl
                 localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+                console.log('Stored pollUrl for invoice:', invoiceNumber, 'PollUrl:', paymentResponse.pollUrl.substring(0, 50) + '...')
               } catch (e) {
                 console.warn('Failed to store pollUrl:', e)
               }
+            } else {
+              console.warn('Cannot store pollUrl - missing pollUrl or invoice number', { 
+                pollUrl: !!paymentResponse.pollUrl, 
+                invoiceNumber 
+              })
             }
             
             window.location.href = paymentResponse.redirectUrl

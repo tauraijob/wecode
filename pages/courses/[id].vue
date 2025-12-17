@@ -242,9 +242,15 @@ const handleEnroll = async () => {
           const pollUrls = JSON.parse(stored)
           pollUrls[data.invoice.number] = data.pollUrl
           localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+          console.log('Stored pollUrl for invoice:', data.invoice.number, 'PollUrl:', data.pollUrl.substring(0, 50) + '...')
         } catch (e) {
           console.warn('Failed to store pollUrl:', e)
         }
+      } else {
+        console.warn('Cannot store pollUrl - missing pollUrl or invoice number', { 
+          pollUrl: !!data.pollUrl, 
+          invoiceNumber: data.invoice?.number 
+        })
       }
       
       window.location.href = data.redirectUrl // Use window.location for external redirect

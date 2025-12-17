@@ -538,15 +538,20 @@ async function payNow() {
     
     if (redirectUrl) {
       // Store pollUrl in localStorage for later use when user returns
-      if (pollUrl && invoiceId.value) {
+      // Use invoice number from the response or from the invoice value
+      const invoiceNumber = invoice.value?.number || invoiceId.value
+      if (pollUrl && invoiceNumber) {
         try {
           const stored = localStorage.getItem('paynow_pollUrls') || '{}'
           const pollUrls = JSON.parse(stored)
-          pollUrls[invoiceId.value] = pollUrl
+          pollUrls[invoiceNumber] = pollUrl
           localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+          console.log('Stored pollUrl for invoice:', invoiceNumber, 'PollUrl:', pollUrl.substring(0, 50) + '...')
         } catch (e) {
           console.warn('Failed to store pollUrl:', e)
         }
+      } else {
+        console.warn('Cannot store pollUrl - missing pollUrl or invoice number', { pollUrl: !!pollUrl, invoiceNumber })
       }
       
       // Open PayNow in same window (better for mobile) or new tab

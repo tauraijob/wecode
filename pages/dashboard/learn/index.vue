@@ -234,16 +234,15 @@
             const stored = localStorage.getItem('paynow_pollUrls')
             if (stored) {
               const parsed = JSON.parse(stored)
-              // Only keep pollUrls for invoices that are still pending
-              if (enrollments.value) {
-                enrollments.value
-                  .filter((e: any) => e.status === 'PENDING' && e.invoiceId && e.invoice?.number)
-                  .forEach((e: any) => {
-                    if (parsed[e.invoice.number]) {
-                      pollUrls[e.invoice.number] = parsed[e.invoice.number]
-                    }
-                  })
-              }
+              console.log('Found pollUrls in localStorage:', Object.keys(parsed))
+              
+              // Get all pollUrls - check all of them, not just pending enrollments
+              // This ensures we check payment status even if enrollment hasn't loaded yet
+              Object.keys(parsed).forEach((invoiceNumber) => {
+                pollUrls[invoiceNumber] = parsed[invoiceNumber]
+              })
+              
+              console.log('Sending pollUrls to check:', Object.keys(pollUrls))
             }
           } catch (e) {
             console.warn('Error reading pollUrls from localStorage:', e)
@@ -315,12 +314,40 @@
       
       // Check if user just returned from PayNow (might have payment status in URL)
       onMounted(async () => {
+        // First, check if we have any pollUrls stored (user might have just returned from Paynow)
+        let hasPollUrls = false
+        if (process.client) {
+          try {
+            const stored = localStorage.getItem('paynow_pollUrls')
+            if (stored) {
+              const parsed = JSON.parse(stored)
+              hasPollUrls = Object.keys(parsed).length > 0
+              if (hasPollUrls) {
+                console.log('User returned from Paynow - found pollUrls:', Object.keys(parsed))
+              }
+            }
+          } catch (e) {
+            // Ignore
+          }
+        }
+        
         await refresh()
         
         // Always check payment status when page loads (user might have just returned from Paynow)
         // This ensures enrollments are activated even if webhook hasn't fired yet
-        // Immediately check on return from Paynow (no delay)
-        await checkAllPayments()
+        // If we have pollUrls, check immediately (user just returned from payment)
+        if (hasPollUrls) {
+          console.log('Immediately checking payment status after return from Paynow...')
+          await checkAllPayments()
+          // Also refresh again after a short delay to ensure UI updates
+          setTimeout(async () => {
+            await refresh()
+            await checkAllPayments()
+          }, 2000)
+        } else {
+          // No pollUrls, but still check (webhook might have updated)
+          await checkAllPayments()
+        }
         
         // Check URL parameters for payment status (PayNow might include these)
         const paymentStatus = route.query.status as string
@@ -331,35 +358,57 @@
           console.log('PayNow return detected with parameters:', route.query)
           // Try to process PayNow return parameters manually
           try {
-            await $fetch('/api/paynow/process-return', {
+            const result = await $fetch('/api/paynow/process-return', {
               method: 'POST',
               body: {
                 queryParams: route.query
               }
             })
+            console.log('PayNow return processing result:', result)
             // Refresh enrollments after processing
             await refresh()
             // Clear query parameters from URL after processing
             await navigateTo(route.path, { replace: true })
+            // Check payments again after processing
+            await checkAllPayments()
           } catch (error) {
             console.error('Error processing PayNow return:', error)
-          }
-          // Also check all payments again after processing
-          setTimeout(async () => {
+            // Still try to check payments even if return processing fails
             await checkAllPayments()
-          }, 1000)
+          }
         }
         
         // Set up periodic checking for pending payments
+        // More aggressive checking for first 30 seconds after page load (user might have just returned from Paynow)
+        let checkCount = 0
         const pendingCheckInterval = setInterval(async () => {
+          checkCount++
           const hasPending = enrollments.value?.some((e: any) => e.status === 'PENDING' && e.invoiceId)
           if (hasPending) {
+            console.log(`Checking payment status (attempt ${checkCount})...`)
             await checkAllPayments()
+            // After 30 seconds (3 checks), reduce frequency
+            if (checkCount >= 3) {
+              clearInterval(pendingCheckInterval)
+              // Set up less frequent checking
+              const slowCheckInterval = setInterval(async () => {
+                const stillPending = enrollments.value?.some((e: any) => e.status === 'PENDING' && e.invoiceId)
+                if (stillPending) {
+                  await checkAllPayments()
+                } else {
+                  clearInterval(slowCheckInterval)
+                }
+              }, 30000) // Check every 30 seconds after initial checks
+              
+              onUnmounted(() => {
+                clearInterval(slowCheckInterval)
+              })
+            }
           } else {
             // No pending payments, stop checking
             clearInterval(pendingCheckInterval)
           }
-        }, 10000) // Check every 10 seconds
+        }, 10000) // Check every 10 seconds for first 30 seconds
         
         // Clean up interval on unmount
         onUnmounted(() => {
