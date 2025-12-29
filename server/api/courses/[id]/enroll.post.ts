@@ -393,6 +393,16 @@ export default defineEventHandler(async (event) => {
     
     if (response.success && response.redirectUrl) {
       console.log('Paynow payment initiated successfully:', { redirectUrl: response.redirectUrl, pollUrl: response.pollUrl })
+      
+      // Store pollUrl in database for reliable payment status checking
+      if (response.pollUrl) {
+        await prisma.invoice.update({
+          where: { id: verifiedInvoice.id },
+          data: { pollUrl: response.pollUrl }
+        })
+        console.log('Stored pollUrl in database for invoice:', verifiedInvoice.number)
+      }
+      
       return {
         enrollment,
         invoice: {

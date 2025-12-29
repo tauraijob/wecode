@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     body = {}
   }
   const pollUrlMap = body?.pollUrls as Record<string, string> | undefined
-  
+
   if (pollUrlMap && Object.keys(pollUrlMap).length > 0) {
     console.log('Received pollUrls to check:', Object.keys(pollUrlMap))
   }
@@ -78,15 +78,15 @@ export default defineEventHandler(async (event) => {
             }
           }
         })
-        
+
         if (invoice && invoice.status !== 'PAID' && invoice.userId === auth.userId) {
           console.log('Polling PayNow for invoice (direct check):', invoiceNumber)
           const paynow = new Paynow(integrationId, integrationKey)
           const status = await paynow.pollTransaction(pollUrl)
-          
+
           if (status && status.paid) {
             console.log('PayNow poll (direct): Payment confirmed for invoice:', invoiceNumber)
-            
+
             // Update invoice
             await prisma.invoice.update({
               where: { id: invoice.id },
@@ -111,13 +111,13 @@ export default defineEventHandler(async (event) => {
             } else if (existingPayment.status !== 'SUCCESS') {
               await prisma.payment.update({
                 where: { id: existingPayment.id },
-                data: { 
+                data: {
                   status: 'SUCCESS',
                   method: existingPayment.method || 'PAYNOW'
                 }
               })
             }
-            
+
             // Activate all enrollments for this invoice
             for (const enrollment of invoice.enrollments) {
               if (enrollment.status !== 'ACTIVE') {
@@ -165,7 +165,7 @@ export default defineEventHandler(async (event) => {
         where: { id: invoice.id },
         data: { status: 'PAID' }
       })
-      
+
       await prisma.enrollment.update({
         where: { id: enrollment.id },
         data: { status: 'ACTIVE' }
@@ -176,20 +176,21 @@ export default defineEventHandler(async (event) => {
 
     // If invoice is not paid, try to poll PayNow using pollUrl
     if (invoice.status !== 'PAID' && canPollPayNow) {
-      // Try to get pollUrl from provided map (keyed by invoice number)
-      const pollUrl = pollUrlMap?.[invoice.number]
-      
+      // Priority: Use pollUrl from database (reliable) > localStorage (fallback)
+      const pollUrl = (invoice as any).pollUrl || pollUrlMap?.[invoice.number]
+
       if (pollUrl) {
-        console.log('Polling PayNow for invoice:', invoice.number, 'using pollUrl:', pollUrl.substring(0, 50) + '...')
+        const source = (invoice as any).pollUrl ? 'database' : 'localStorage'
+        console.log('Polling PayNow for invoice:', invoice.number, 'using pollUrl from', source + ':', pollUrl.substring(0, 50) + '...')
         try {
           const paynow = new Paynow(integrationId, integrationKey)
           const status = await paynow.pollTransaction(pollUrl)
-          
+
           console.log('PayNow poll response for invoice:', invoice.number, { paid: status?.paid, status: status?.status })
-          
+
           if (status && status.paid) {
             console.log('PayNow poll: Payment confirmed for invoice:', invoice.number)
-            
+
             // Payment is confirmed paid, update invoice and enrollments
             await prisma.invoice.update({
               where: { id: invoice.id },
@@ -216,20 +217,20 @@ export default defineEventHandler(async (event) => {
               if (existingPayment.status !== 'SUCCESS' || !existingPayment.method) {
                 await prisma.payment.update({
                   where: { id: existingPayment.id },
-                  data: { 
+                  data: {
                     status: 'SUCCESS',
                     method: existingPayment.method || 'PAYNOW'
                   }
                 })
               }
             }
-            
+
             // Activate enrollment
             await prisma.enrollment.update({
               where: { id: enrollment.id },
               data: { status: 'ACTIVE' }
             })
-            
+
             updated.push(enrollment.id)
             continue
           } else {
@@ -243,7 +244,7 @@ export default defineEventHandler(async (event) => {
         // We have pollUrls but not for this invoice - log for debugging
         console.log('No pollUrl found for invoice:', invoice.number, 'Available pollUrls for:', Object.keys(pollUrlMap))
       }
-      
+
       // If no pollUrl but there's a recent payment attempt, check if payment was already successful
       const recentPayment = invoice.payments?.find(p => {
         const paymentTime = new Date(p.createdAt).getTime()
@@ -259,7 +260,7 @@ export default defineEventHandler(async (event) => {
             where: { id: invoice.id },
             data: { status: 'PAID' }
           })
-          
+
           await prisma.enrollment.update({
             where: { id: enrollment.id },
             data: { status: 'ACTIVE' }

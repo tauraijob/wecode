@@ -102,6 +102,7 @@ model Invoice {
   amountUsd  Decimal       @db.Decimal(10, 2)
   status     InvoiceStatus @default(DRAFT)
   dueDate    DateTime?
+  pollUrl    String?       @db.Text  // Store Paynow pollUrl for payment status checking
   createdAt  DateTime      @default(now())
 
   user       User          @relation(fields: [userId], references: [id])
