@@ -36,6 +36,17 @@ export function getNotificationTemplate(
       actionUrl: meta.userId ? `/admin/users?userId=${meta.userId}` : undefined
     }),
 
+    INSTRUCTOR_REGISTERED: (meta) => ({
+      icon: '👨‍🏫',
+      color: 'purple',
+      bgColor: 'bg-purple-500/10',
+      borderColor: 'border-purple-500/50',
+      title: 'New Instructor Registration',
+      message: `👨‍🏫 A new instructor has joined the platform!\n\n👤 **${meta.userName || 'Instructor'}**\n📧 ${meta.email || 'N/A'}\n\n🎓 They can now create and submit courses for review. Keep an eye out for their first course submission!`,
+      actionText: 'View Instructor',
+      actionUrl: meta.userId ? `/admin/users?userId=${meta.userId}` : undefined
+    }),
+
     // Course Notifications
     COURSE_CREATED: (meta) => ({
       icon: '📚',
@@ -54,7 +65,7 @@ export function getNotificationTemplate(
       bgColor: 'bg-blue-500/10',
       borderColor: 'border-blue-500/50',
       title: 'Course Submitted for Review',
-      message: meta.userId 
+      message: meta.userId
         ? `📝 Your course has been submitted!\n\n**Course:** ${meta.courseName || 'Unknown'}\n\n⏳ Please wait while our team reviews it. You'll be notified once it's approved.`
         : `📝 A new course is awaiting review!\n\n**Course:** ${meta.courseName || 'Unknown'}\n**Instructor:** ${meta.instructorId || 'N/A'}\n\nPlease review and approve or reject.`,
       actionText: meta.userId ? 'View Course' : 'Review Course',
@@ -93,9 +104,9 @@ export function getNotificationTemplate(
       message: meta.isFreeCourse
         ? `🎓 You've successfully enrolled!\n\n**Course:** ${meta.courseName || 'Unknown'}\n\n🚀 Start learning now!`
         : meta.userId
-        ? `🎓 You've enrolled in a course!\n\n**Course:** ${meta.courseName || 'Unknown'}\n**Invoice:** ${meta.invoiceNumber || 'N/A'}\n\n💳 Please complete payment to access the course.`
-        : `🎓 New student enrollment!\n\n**Student:** ${meta.userName || 'User'}\n**Course:** ${meta.courseName || 'Unknown'}\n\nTrack their progress in the dashboard.`,
-      actionText: meta.userId 
+          ? `🎓 You've enrolled in a course!\n\n**Course:** ${meta.courseName || 'Unknown'}\n**Invoice:** ${meta.invoiceNumber || 'N/A'}\n\n💳 Please complete payment to access the course.`
+          : `🎓 New student enrollment!\n\n**Student:** ${meta.userName || 'User'}\n**Course:** ${meta.courseName || 'Unknown'}\n\nTrack their progress in the dashboard.`,
+      actionText: meta.userId
         ? (meta.isFreeCourse ? 'Start Learning' : 'Complete Payment')
         : 'View Enrollment',
       actionUrl: meta.userId
@@ -138,18 +149,18 @@ export function getNotificationTemplate(
       message: meta.userId
         ? `💳 Payment received!\n\n**Amount:** ${meta.currency || 'USD'} ${meta.amount?.toFixed(2) || '0.00'}\n**Course:** ${meta.courseName || 'Unknown'}\n**Invoice:** ${meta.invoiceNumber || 'N/A'}\n\n✅ You now have full access to the course!`
         : meta.instructorId
-        ? `💳 Student payment received!\n\n**Student:** ${meta.userName || 'User'}\n**Course:** ${meta.courseName || 'Unknown'}\n**Amount:** ${meta.currency || 'USD'} ${meta.amount?.toFixed(2) || '0.00'}\n\n💰 Your earnings have been updated.`
-        : `💳 Payment received!\n\n**Student:** ${meta.userName || 'User'}\n**Course:** ${meta.courseName || 'Unknown'}\n**Amount:** ${meta.currency || 'USD'} ${meta.amount?.toFixed(2) || '0.00'}\n**Invoice:** ${meta.invoiceNumber || 'N/A'}\n\nTrack in payment dashboard.`,
-      actionText: meta.userId 
+          ? `💳 Student payment received!\n\n**Student:** ${meta.userName || 'User'}\n**Course:** ${meta.courseName || 'Unknown'}\n**Amount:** ${meta.currency || 'USD'} ${meta.amount?.toFixed(2) || '0.00'}\n\n💰 Your earnings have been updated.`
+          : `💳 Payment received!\n\n**Student:** ${meta.userName || 'User'}\n**Course:** ${meta.courseName || 'Unknown'}\n**Amount:** ${meta.currency || 'USD'} ${meta.amount?.toFixed(2) || '0.00'}\n**Invoice:** ${meta.invoiceNumber || 'N/A'}\n\nTrack in payment dashboard.`,
+      actionText: meta.userId
         ? 'Start Learning'
         : meta.instructorId
-        ? 'View Earnings'
-        : 'View Payment',
+          ? 'View Earnings'
+          : 'View Payment',
       actionUrl: meta.userId
         ? `/dashboard/learn/${meta.courseId}`
         : meta.instructorId
-        ? '/instructor/earnings'
-        : (meta.invoiceId ? `/admin/invoices?invoiceId=${meta.invoiceId}` : undefined)
+          ? '/instructor/earnings'
+          : (meta.invoiceId ? `/admin/invoices?invoiceId=${meta.invoiceId}` : undefined)
     }),
 
     // Payout Notifications
@@ -202,7 +213,7 @@ export function formatNotificationMessage(
   defaultMessage: string = ''
 ): { title: string; message: string; template: NotificationTemplate } {
   const template = getNotificationTemplate(type, metadata, defaultTitle, defaultMessage)
-  
+
   return {
     title: template.title,
     message: template.message,

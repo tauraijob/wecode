@@ -21,7 +21,7 @@ export async function createNotification(data: {
       ? { title: data.title, message: data.message }
       : formatNotificationMessage(data.type, data.metadata || {}, data.title || '', data.message || '')
 
-    return await prisma.notification.create({
+    const notification = await prisma.notification.create({
       data: {
         userId: data.userId,
         type: data.type,
@@ -30,6 +30,33 @@ export async function createNotification(data: {
         metadata: data.metadata || null
       }
     })
+
+    // Send email for user-facing events
+    const userEmailTypes = ['COURSE_APPROVED', 'COURSE_REJECTED']
+    if (userEmailTypes.includes(data.type)) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: data.userId },
+          select: { email: true, name: true }
+        })
+
+        if (user?.email) {
+          const { getAdminNotificationTemplate } = await import('~~/server/utils/email-templates')
+          const { html, text } = getAdminNotificationTemplate(title, message, data.metadata)
+
+          await sendMail({
+            to: user.email,
+            subject: `${title} — WeCodeZW`,
+            html,
+            text
+          })
+        }
+      } catch (emailError) {
+        console.error('Failed to send user email notification:', emailError)
+      }
+    }
+
+    return notification
   } catch (error) {
     console.error('Failed to create notification:', error)
     return null
@@ -62,7 +89,7 @@ export async function notifyAdmins(data: {
 
     // Create in-app notifications for admins
     await Promise.all(
-      admins.map(admin =>
+      admins.map((admin: any) =>
         prisma.notification.create({
           data: {
             userId: admin.id,
@@ -81,7 +108,9 @@ export async function notifyAdmins(data: {
       'ENROLLMENT_CANCELLED',
       'PAYMENT_SUCCESS',
       'INVOICE_CREATED',
-      'USER_REGISTERED'
+      'USER_REGISTERED',
+      'COURSE_SUBMITTED',
+      'INSTRUCTOR_REGISTERED'
     ]
 
     if (courseNotificationTypes.includes(data.type)) {
@@ -89,7 +118,7 @@ export async function notifyAdmins(data: {
         const { getAdminNotificationTemplate } = await import('~~/server/utils/email-templates')
         const { html, text } = getAdminNotificationTemplate(title, message, data.metadata)
         const adminEmail = process.env.MAIL_TO || process.env.MAIL_FROM || 'info@wecode.co.zw'
-        
+
         await sendMail({
           to: adminEmail,
           subject: `${title} — WeCodeZW`,

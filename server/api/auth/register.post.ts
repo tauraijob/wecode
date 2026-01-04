@@ -29,12 +29,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: 'Email already registered' })
   }
   const hashedPassword = await hashPassword(password)
-  
+
   // Create user with emailVerified = false
   const user = await prisma.user.create({
-    data: { 
-      name, 
-      email, 
+    data: {
+      name,
+      email,
       hashedPassword,
       role: role || 'INDIVIDUAL',
       emailVerified: false
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
   // Generate verification token
   const verificationToken = crypto.randomUUID().replace(/-/g, '')
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24) // 24 hours
-  
+
   await prisma.magicLink.create({
     data: {
       token: verificationToken,
@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { getEmailVerificationTemplate } = await import('~~/server/utils/email-templates')
     const { html, text } = getEmailVerificationTemplate(name, verificationLink)
-    
+
     await sendMail({
       to: email,
       subject: 'Verify your email — WeCodeZW',
@@ -73,21 +73,22 @@ export default defineEventHandler(async (event) => {
   }
 
   // Notify admins about new user registration
+  const notificationType = user.role === 'INSTRUCTOR' ? 'INSTRUCTOR_REGISTERED' : 'USER_REGISTERED'
   await notifyAdmins({
-    type: 'USER_REGISTERED',
-    metadata: { 
-      userId: user.id, 
-      email: user.email, 
-      userName: user.name, 
-      role: user.role 
+    type: notificationType,
+    metadata: {
+      userId: user.id,
+      email: user.email,
+      userName: user.name,
+      role: user.role
     }
   })
 
   // Don't auto-login - user must verify email first
-  return { 
-    id: user.id, 
-    email: user.email, 
-    name: user.name, 
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
     role: user.role,
     emailVerified: false,
     message: 'Registration successful! Please check your email to verify your account.'

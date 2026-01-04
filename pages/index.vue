@@ -238,6 +238,68 @@
     </div>
   </section>
 
+  <!-- Become an Instructor CTA -->
+  <section class="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20">
+    <div class="rounded-3xl bg-gradient-to-br from-primary-500 to-primary-600 p-8 sm:p-12 shadow-xl overflow-hidden relative">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+      <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+      
+      <div class="relative z-10 grid gap-8 lg:grid-cols-2 items-center">
+        <div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/30 px-4 py-1.5 text-sm font-medium text-white">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            For Instructors
+          </span>
+          <h2 class="mt-4 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+            Share Your Knowledge, <span class="text-primary-100">Earn Revenue</span>
+          </h2>
+          <p class="mt-4 text-primary-100 text-lg leading-relaxed">
+            Join WeCodeZW as an instructor. Create courses, set your prices, and earn up to 70% of every sale. Our AI tools help you build content faster.
+          </p>
+          <div class="mt-6 flex flex-col sm:flex-row gap-3">
+            <NuxtLink 
+              to="/instructors" 
+              class="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-primary-700 shadow-lg hover:bg-primary-50 transition-all"
+            >
+              Learn More
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </NuxtLink>
+            <NuxtLink 
+              to="/auth/register?role=INSTRUCTOR" 
+              class="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/30 bg-white/10 px-6 py-3 font-semibold text-white hover:bg-white/20 transition-all"
+            >
+              Register as Instructor
+            </NuxtLink>
+          </div>
+        </div>
+        <div class="hidden lg:flex justify-center">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 p-4 text-center">
+              <div class="text-3xl font-bold text-white">70%</div>
+              <div class="text-sm text-primary-100">Revenue Share</div>
+            </div>
+            <div class="rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 p-4 text-center">
+              <div class="text-3xl font-bold text-white">AI</div>
+              <div class="text-sm text-primary-100">Content Tools</div>
+            </div>
+            <div class="rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 p-4 text-center">
+              <div class="text-3xl font-bold text-white">0</div>
+              <div class="text-sm text-primary-100">Upfront Cost</div>
+            </div>
+            <div class="rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 p-4 text-center">
+              <div class="text-3xl font-bold text-white">24/7</div>
+              <div class="text-sm text-primary-100">Support</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Request Training Section -->
   <section v-if="!me" class="mx-auto max-w-7xl px-4 sm:px-6 py-16">
     <div class="rounded-3xl bg-gradient-to-br from-primary-500 to-primary-600 p-8 sm:p-12 shadow-xl">

@@ -105,6 +105,7 @@
           <!-- Not Logged In -->
           <template v-if="!me">
             <NuxtLink to="/auth/login" class="hidden sm:inline-block rounded-lg border border-cream-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-100 transition-colors font-medium">Sign in</NuxtLink>
+            <NuxtLink to="/auth/register" class="hidden sm:inline-block rounded-lg border border-purple-300 bg-purple-50 px-3 py-1.5 text-sm text-purple-700 hover:bg-purple-100 transition-colors font-medium">Register</NuxtLink>
             <NuxtLink to="/request" class="rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-white shadow-md hover:shadow-lg hover:from-primary-700 hover:to-primary-800 transition-all font-medium">Request Training</NuxtLink>
           </template>
 
@@ -245,6 +246,12 @@
           <NuxtLink v-if="!me" @click="mobileOpen=false" to="/schools" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Schools</NuxtLink>
           <NuxtLink @click="mobileOpen=false" to="/services" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">IT Services</NuxtLink>
           <NuxtLink @click="mobileOpen=false" to="/about" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">About</NuxtLink>
+          <template v-if="!me">
+            <div class="border-t border-white/20 pt-2 mt-2 flex gap-2 px-3">
+              <NuxtLink @click="mobileOpen=false" to="/auth/login" class="flex-1 text-center rounded-md px-3 py-2 bg-white/20 text-sm text-white font-medium">Sign in</NuxtLink>
+              <NuxtLink @click="mobileOpen=false" to="/auth/register" class="flex-1 text-center rounded-md px-3 py-2 bg-purple-400/30 text-sm text-purple-100 font-medium">Register</NuxtLink>
+            </div>
+          </template>
           <template v-if="me">
             <div class="border-t border-white/20 pt-2 mt-2">
               <div class="px-3 py-2 mb-2">

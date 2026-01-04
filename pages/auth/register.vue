@@ -78,7 +78,8 @@
             >
               <option value="INDIVIDUAL">Individual / Student</option>
               <option value="CORPORATE">Corporate</option>
-              <option value="STUDENT">Student</option>
+              <option value="STUDENT">E-Learning Student</option>
+              <option value="INSTRUCTOR">Instructor (Create & Sell Courses)</option>
             </select>
           </div>
           <button
@@ -103,7 +104,7 @@ import { ref } from 'vue'
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const role = ref<'INDIVIDUAL'|'STUDENT'|'CORPORATE'>('INDIVIDUAL')
+const role = ref<'INDIVIDUAL'|'STUDENT'|'CORPORATE'|'INSTRUCTOR'>('INDIVIDUAL')
 const loading = ref(false)
 
 const showVerificationMessage = ref(false)

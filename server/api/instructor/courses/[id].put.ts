@@ -16,7 +16,8 @@ const CourseUpdateSchema = z.object({
     questionCount: z.number().int().positive(),
     duration: z.number().int().positive(),
     passingScore: z.number().min(0).max(100)
-  }).optional().nullable()
+  }).optional().nullable(),
+  submitForReview: z.boolean().optional()
 })
 
 export default defineEventHandler(async (event) => {
@@ -71,6 +72,12 @@ export default defineEventHandler(async (event) => {
     updateData.examConfig = examConfig ? examConfig as any : null
   }
 
+  // Handle re-submission for review
+  if (parsed.data.submitForReview) {
+    updateData.reviewStatus = 'PENDING_REVIEW'
+    updateData.submittedForReviewAt = new Date()
+  }
+
   const course = await prisma.course.update({
     where: { id: courseId },
     data: updateData,
@@ -89,6 +96,31 @@ export default defineEventHandler(async (event) => {
       }
     }
   })
+
+  // Create review record if submitted
+  if (parsed.data.submitForReview) {
+    await prisma.courseReview.create({
+      data: {
+        courseId: course.id,
+        action: 'SUBMITTED',
+        comment: 'Course resubmitted for review'
+      }
+    })
+
+    // Notify admins
+    const { notifyAdmins, createNotification } = await import('~~/server/utils/notifications')
+    await notifyAdmins({
+      type: 'COURSE_SUBMITTED',
+      metadata: { courseId: course.id, courseName: course.name, instructorId: auth.userId }
+    })
+
+    // Notify instructor
+    await createNotification({
+      userId: auth.userId,
+      type: 'COURSE_SUBMITTED',
+      metadata: { courseId: course.id, courseName: course.name }
+    })
+  }
 
   return course
 })
