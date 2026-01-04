@@ -378,9 +378,11 @@ const route = useRoute()
 const notificationMenuOpen = ref(false)
 const notificationMenuRef = ref<HTMLElement | null>(null)
 
-// Fetch notifications
-const { data: notificationsData, refresh: refreshNotifications } = await useFetch('/api/admin/notifications', {
-  query: { limit: 10 }
+// Fetch notifications with lazy loading to prevent blocking
+const { data: notificationsData, refresh: refreshNotifications } = useLazyFetch('/api/admin/notifications', {
+  query: { limit: 10 },
+  default: () => ({ notifications: [], unreadCount: 0 }),
+  server: false // Only fetch on client to avoid hydration issues
 })
 
 const notifications = computed(() => notificationsData.value?.notifications || [])
