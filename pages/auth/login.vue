@@ -107,9 +107,11 @@ async function onSubmit() {
   }
 }
 
+const toast = useToast()
+
 async function resendVerification() {
   if (!email.value) {
-    alert('Please enter your email address first')
+    toast.error('Please enter your email address first')
     return
   }
   
@@ -119,10 +121,10 @@ async function resendVerification() {
       method: 'POST',
       body: { email: email.value }
     })
-    alert(result.message || 'Verification email sent! Please check your inbox.')
+    toast.success(result.message || 'Verification email sent! Please check your inbox.')
     showResendVerification.value = false
   } catch (err: any) {
-    alert(err.data?.message || 'Failed to resend verification email')
+    toast.error(err.data?.message || 'Failed to resend verification email')
   } finally {
     resending.value = false
   }
