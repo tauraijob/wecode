@@ -7,27 +7,32 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
-  const courses = await prisma.course.findMany({
-    include: {
-      _count: {
-        select: {
-          enrollments: true,
-          topics: true
-        }
-      },
-      topics: {
-        include: {
-          _count: {
-            select: {
-              lessons: true
+  try {
+    const courses = await prisma.course.findMany({
+      include: {
+        _count: {
+          select: {
+            enrollments: true,
+            topics: true
+          }
+        },
+        topics: {
+          include: {
+            _count: {
+              select: {
+                lessons: true
+              }
             }
           }
         }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+      },
+      orderBy: { createdAt: 'desc' }
+    })
 
-  return courses
+    return courses || []
+  } catch (error) {
+    console.error('[admin/courses] Database error:', error)
+    // Return empty array instead of throwing 500 to prevent frontend crash
+    return []
+  }
 })
-

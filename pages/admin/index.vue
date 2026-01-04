@@ -106,14 +106,14 @@
       </div>
 
       <!-- Recent Courses -->
-      <div v-if="recentCourses.length > 0" class="mt-6">
+      <div v-if="safeRecentCourses.length > 0" class="mt-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-white">Recent Courses</h3>
           <NuxtLink to="/admin/courses" class="text-sm text-navy-400 hover:text-navy-300">View all →</NuxtLink>
         </div>
         <div class="grid gap-4 md:grid-cols-3">
           <div
-            v-for="course in recentCourses.slice(0, 3)"
+            v-for="course in safeRecentCourses.slice(0, 3)"
             :key="course.id"
             class="group relative overflow-hidden rounded-xl border border-navy-700/50 bg-navy-800/40 p-5 hover:border-navy-600 hover:bg-navy-800/60 transition-all cursor-pointer"
           >
@@ -388,10 +388,10 @@
           <h2 class="text-lg font-semibold text-white">Recent Invoices</h2>
           <NuxtLink to="/admin/billing" class="text-sm text-navy-400 hover:text-navy-300">View all →</NuxtLink>
         </div>
-        <div v-if="invoices.length === 0" class="text-center text-navy-400 py-8 text-sm">No invoices yet</div>
+        <div v-if="safeInvoices.length === 0" class="text-center text-navy-400 py-8 text-sm">No invoices yet</div>
         <div v-else class="space-y-3">
           <div
-            v-for="invoice in invoices.slice(0, 5)"
+            v-for="invoice in safeInvoices.slice(0, 5)"
             :key="invoice.id"
             class="flex items-center justify-between rounded-lg border border-navy-700/50 bg-navy-800/30 p-3 hover:bg-navy-800/50 transition-colors"
           >
@@ -420,10 +420,10 @@
           <h2 class="text-lg font-semibold text-white">Recent Requests</h2>
           <NuxtLink to="/admin/requests" class="text-sm text-navy-400 hover:text-navy-300">View all →</NuxtLink>
         </div>
-        <div v-if="requests.length === 0" class="text-center text-navy-400 py-8 text-sm">No requests yet</div>
+        <div v-if="safeRequests.length === 0" class="text-center text-navy-400 py-8 text-sm">No requests yet</div>
         <div v-else class="space-y-3">
           <div
-            v-for="request in requests.slice(0, 5)"
+            v-for="request in safeRequests.slice(0, 5)"
             :key="request.id"
             class="flex items-center justify-between rounded-lg border border-navy-700/50 bg-navy-800/30 p-3 hover:bg-navy-800/50 transition-colors"
           >
@@ -500,6 +500,11 @@ const schoolsCanvas = ref<HTMLCanvasElement>()
 
 const notificationsLoading = ref(false)
 const recentNotifications = ref<any[]>([])
+
+// Safe computed properties to ensure arrays even when API fails
+const safeRecentCourses = computed(() => Array.isArray(recentCourses.value) ? recentCourses.value : [])
+const safeInvoices = computed(() => Array.isArray(invoices.value) ? invoices.value : [])
+const safeRequests = computed(() => Array.isArray(requests.value) ? requests.value : [])
 
 function formatNotificationTime(date: string | Date) {
   if (!date) return 'Unknown'
