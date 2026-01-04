@@ -1,17 +1,17 @@
 <template>
   <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
           Notifications
         </h1>
-        <p class="mt-2 text-navy-300">View and manage all your notifications</p>
+        <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">View and manage all your notifications</p>
       </div>
       <button
         v-if="unreadCount > 0"
         @click="markAllAsRead"
         :disabled="markingAll"
-        class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-2 text-sm font-medium text-white hover:bg-navy-700/50 transition-colors disabled:opacity-50"
+        class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-2 text-sm font-medium text-white hover:bg-navy-700/50 transition-colors disabled:opacity-50 self-start sm:self-auto"
       >
         {{ markingAll ? 'Marking...' : 'Mark All as Read' }}
       </button>

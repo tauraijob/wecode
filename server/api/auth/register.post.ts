@@ -54,12 +54,19 @@ export default defineEventHandler(async (event) => {
   })
 
   // Send verification email
-  const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  let siteUrl = process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
+
+  // CRITICAL: In production, NEVER allow localhost URLs
+  if (!isDevelopment && siteUrl.includes('localhost')) {
+    siteUrl = 'https://wecode.co.zw'
+  }
+
   const verificationLink = `${siteUrl}/api/auth/verify-email?token=${verificationToken}`
 
   try {
     const { getEmailVerificationTemplate } = await import('~~/server/utils/email-templates')
-    const { html, text } = getEmailVerificationTemplate(name, verificationLink)
+    const { html, text } = getEmailVerificationTemplate(name, verificationLink, user.role)
 
     await sendMail({
       to: email,

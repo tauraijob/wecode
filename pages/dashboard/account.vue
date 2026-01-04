@@ -1,11 +1,11 @@
 <template>
   <div class="mx-auto max-w-4xl px-4 sm:px-6 py-8">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Account Settings
       </h1>
-      <p class="mt-2 text-navy-300">Manage your profile information and password</p>
+      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Manage your profile information and password</p>
     </div>
 
     <!-- Profile Form -->

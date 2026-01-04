@@ -22,12 +22,12 @@ export default defineEventHandler(async (event) => {
 
   // Find user by email
   const user = await prisma.user.findUnique({ where: { email } })
-  
+
   // Don't reveal if user exists or not for security
   if (!user) {
-    return { 
-      ok: true, 
-      message: 'If an account exists with this email, a password reset link has been sent.' 
+    return {
+      ok: true,
+      message: 'If an account exists with this email, a password reset link has been sent.'
     }
   }
 
@@ -59,13 +59,20 @@ export default defineEventHandler(async (event) => {
   })
 
   // Send reset email
-  const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  let siteUrl = process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
+
+  // CRITICAL: In production, NEVER allow localhost URLs
+  if (!isDevelopment && siteUrl.includes('localhost')) {
+    siteUrl = 'https://wecode.co.zw'
+  }
+
   const resetLink = `${siteUrl}/auth/reset-password?token=${resetToken}`
 
   try {
     const { getPasswordResetTemplate } = await import('~~/server/utils/email-templates')
     const { html, text } = getPasswordResetTemplate(user.name, resetLink)
-    
+
     await sendMail({
       to: email,
       subject: 'Reset your password — WeCodeZW',
@@ -77,9 +84,9 @@ export default defineEventHandler(async (event) => {
     // Don't fail the request if email fails, but log it
   }
 
-  return { 
-    ok: true, 
-    message: 'If an account exists with this email, a password reset link has been sent.' 
+  return {
+    ok: true,
+    message: 'If an account exists with this email, a password reset link has been sent.'
   }
 })
 

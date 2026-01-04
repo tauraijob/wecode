@@ -1,10 +1,10 @@
 <template>
   <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
-    <div class="mb-8">
-      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Course Reviews
       </h1>
-      <p class="mt-2 text-navy-300">Review and approve courses submitted by instructors</p>
+      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Review and approve courses submitted by instructors</p>
     </div>
 
     <div v-if="loading" class="text-center py-20">

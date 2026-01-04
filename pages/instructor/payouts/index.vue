@@ -1,17 +1,17 @@
 <template>
   <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
     <!-- Header -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between mb-4">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <div>
-          <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
             Payout History
           </h1>
-          <p class="mt-2 text-navy-300">View your payout requests and their status</p>
+          <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">View your payout requests and their status</p>
         </div>
         <NuxtLink
           to="/instructor/payouts/request"
-          class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 text-sm font-medium text-white hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
+          class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-medium text-white hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl self-start sm:self-auto"
         >
           Request Payout
         </NuxtLink>

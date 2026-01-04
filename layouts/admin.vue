@@ -246,9 +246,9 @@
               </div>
             </transition>
           </div>
-          <div class="text-navy-300">{{ me?.name }} ({{ me?.role }})</div>
-          <NuxtLink to="/" class="rounded-md bg-white/10 px-2 py-1 hover:bg-white/15">View site</NuxtLink>
-          <button @click="onLogout" class="rounded-md bg-white/10 px-2 py-1 hover:bg-white/15">Logout</button>
+          <div class="hidden sm:block text-navy-300 truncate max-w-[200px]">{{ me?.name }} ({{ me?.role }})</div>
+          <NuxtLink to="/" class="hidden sm:block rounded-md bg-white/10 px-2 py-1 hover:bg-white/15 text-xs sm:text-sm whitespace-nowrap">View site</NuxtLink>
+          <button @click="onLogout" class="rounded-md bg-white/10 px-2 py-1 hover:bg-white/15 text-xs sm:text-sm">Logout</button>
         </div>
       </header>
       <main class="flex-1 overflow-y-auto">

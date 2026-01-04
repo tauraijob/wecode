@@ -1,12 +1,12 @@
 <template>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 py-8">
     <!-- Header -->
-    <div class="mb-8 flex items-start justify-between">
+    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       <div>
-        <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
           Invoices
         </h1>
-        <p class="mt-2 text-navy-300">View and pay your invoices</p>
+        <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">View and pay your invoices</p>
       </div>
       <button
         v-if="!loading && invoices.length > 0"

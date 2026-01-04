@@ -1,20 +1,21 @@
 <template>
   <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-purple-200 to-purple-400 bg-clip-text text-transparent">
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-purple-200 to-purple-400 bg-clip-text text-transparent">
           My Courses
         </h1>
-        <p class="mt-2 text-navy-300">Manage and track your courses</p>
+        <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Manage and track your courses</p>
       </div>
       <NuxtLink
         to="/instructor/courses/create"
-        class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-3 text-sm font-medium text-white hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+        class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-medium text-white hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl self-start sm:self-auto"
       >
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Create Course
+        <span class="hidden sm:inline">Create Course</span>
+        <span class="sm:hidden">Create</span>
       </NuxtLink>
     </div>
 

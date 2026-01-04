@@ -90,7 +90,7 @@ function getButton(href: string, text: string, variant: 'primary' | 'success' | 
     success: BRAND_COLORS.success,
     warning: BRAND_COLORS.warning
   }
-  
+
   return `
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 32px 0;">
     <tr>
@@ -133,7 +133,7 @@ function getInfoBox(content: string, type: 'info' | 'success' | 'warning' = 'inf
     success: '#10b981',
     warning: '#f59e0b'
   }
-  
+
   return `
   <div style="background-color: ${bgColors[type]}; border-left: 4px solid ${borderColors[type]}; padding: 20px; border-radius: 6px; margin: 24px 0;">
     <div style="color: ${BRAND_COLORS.text}; font-size: 15px; line-height: 1.6;">
@@ -146,12 +146,17 @@ function getInfoBox(content: string, type: 'info' | 'success' | 'warning' = 'inf
 /**
  * Email Verification Template
  */
-export function getEmailVerificationTemplate(name: string, verificationLink: string): { html: string; text: string } {
+export function getEmailVerificationTemplate(name: string, verificationLink: string, role?: string): { html: string; text: string } {
+  // Show role-appropriate welcome message
+  const communityText = role === 'INSTRUCTOR'
+    ? 'community of instructors'
+    : 'community of learners'
+
   const content = `
     ${getHeader('Welcome to WeCodeZW!', 'Verify Your Email Address')}
     ${getContent(`
       <p style="margin: 0 0 16px 0;">Hi <strong>${name}</strong>,</p>
-      <p style="margin: 0 0 24px 0;">Thank you for registering with WeCodeZW! We're excited to have you join our community of learners.</p>
+      <p style="margin: 0 0 24px 0;">Thank you for registering with WeCodeZW! We're excited to have you join our ${communityText}.</p>
       <p style="margin: 0 0 24px 0;">To get started, please verify your email address by clicking the button below:</p>
       ${getButton(verificationLink, 'Verify Email Address', 'primary')}
       <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Or copy and paste this link into your browser:</p>
@@ -159,10 +164,10 @@ export function getEmailVerificationTemplate(name: string, verificationLink: str
       ${getInfoBox('This verification link will expire in 24 hours. If you didn\'t create an account, please ignore this email.', 'info')}
     `)}
   `
-  
+
   const html = getBaseTemplate(content, 'Verify Your Email — WeCodeZW')
   const text = `Welcome to WeCodeZW!\n\nHi ${name},\n\nThank you for registering with WeCodeZW. Please verify your email address by clicking this link:\n${verificationLink}\n\nThis link will expire in 24 hours. If you didn't create an account, please ignore this email.`
-  
+
   return { html, text }
 }
 
@@ -181,10 +186,10 @@ export function getPasswordResetTemplate(name: string, resetLink: string): { htm
       ${getInfoBox('This link will expire in 1 hour. If you didn\'t request a password reset, please ignore this email and your password will remain unchanged.', 'warning')}
     `)}
   `
-  
+
   const html = getBaseTemplate(content, 'Reset Your Password — WeCodeZW')
   const text = `Password Reset Request\n\nHi ${name},\n\nWe received a request to reset your password. Click this link to create a new password:\n${resetLink}\n\nThis link will expire in 1 hour. If you didn't request a password reset, please ignore this email.`
-  
+
   return { html, text }
 }
 
@@ -203,10 +208,10 @@ export function getMagicLinkTemplate(name: string, magicLink: string): { html: s
       ${getInfoBox('This link will expire in 30 minutes. If you didn\'t request this sign-in link, please ignore this email.', 'warning')}
     `)}
   `
-  
+
   const html = getBaseTemplate(content, 'Your Secure Sign-In Link — WeCodeZW')
   const text = `Secure Sign-In Link\n\nHi ${name},\n\nClick this link to sign in to your WeCodeZW account:\n${magicLink}\n\nThis link will expire in 30 minutes.`
-  
+
   return { html, text }
 }
 
@@ -259,10 +264,10 @@ export function getContactFormTemplate(data: {
       <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Reply directly to this email to respond to ${data.fullName}.</p>
     `)}
   `
-  
+
   const html = getBaseTemplate(content, 'New Contact Inquiry — WeCodeZW')
   const text = `New Contact Inquiry\n\nName: ${data.fullName}\nEmail: ${data.email}\nClient Type: ${data.clientType}\n${data.phone ? `Phone: ${data.phone}\n` : ''}${data.message ? `\nMessage:\n${data.message}` : ''}`
-  
+
   return { html, text }
 }
 
@@ -327,10 +332,10 @@ export function getQuoteRequestAdminTemplate(data: {
       <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Reply directly to this email to contact ${data.contactName}.</p>
     `)}
   `
-  
+
   const html = getBaseTemplate(content, `Quote Request — ${data.invoiceNumber} — WeCodeZW`)
   const text = `New Quote Request\n\nInvoice: ${data.invoiceNumber}\nSchool: ${data.schoolName}\nLevel: ${data.level}\nContact: ${data.contactName}\nEmail: ${data.email}\n${data.phone ? `Phone: ${data.phone}\n` : ''}Total: ${data.currency} ${data.total.toFixed(2)}`
-  
+
   return { html, text }
 }
 
@@ -362,10 +367,10 @@ export function getQuoteRequestUserTemplate(data: {
       ${getInfoBox('You can access your dashboard anytime to view your quote, make payments, and track your progress.', 'info')}
     `)}
   `
-  
+
   const html = getBaseTemplate(content, `Your Quote — ${data.invoiceNumber} — WeCodeZW`)
   const text = `Your Quote is Ready!\n\nThank you for your quote request for ${data.schoolName}.\n\nTotal: ${data.currency} ${data.total.toFixed(2)}\nInvoice: ${data.invoiceNumber}\n\nAccess your dashboard: ${data.dashLink}`
-  
+
   return { html, text }
 }
 
@@ -377,7 +382,7 @@ export function getAdminNotificationTemplate(title: string, message: string, met
   const formattedMessage = message
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n/g, '<br>')
-  
+
   const content = `
     ${getHeader(title, 'WeCodeZW Notification')}
     ${getContent(`
@@ -401,10 +406,10 @@ export function getAdminNotificationTemplate(title: string, message: string, met
       ` : ''}
     `)}
   `
-  
+
   const html = getBaseTemplate(content, `${title} — WeCodeZW`)
   const text = `${title}\n\n${message.replace(/\*\*/g, '')}`
-  
+
   return { html, text }
 }
 

@@ -1,37 +1,37 @@
 <template>
   <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Admin Dashboard
       </h1>
-      <p class="mt-2 text-navy-300">Welcome back! Here's what's happening with your platform.</p>
+      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Welcome back! Here's what's happening with your platform.</p>
     </div>
 
     <!-- E-Learning Platform Section -->
-    <div class="mb-8 rounded-2xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 via-navy-900/60 to-navy-800/40 p-8 shadow-xl backdrop-blur-sm">
-      <div class="flex items-center justify-between mb-6">
+    <div class="mb-8 rounded-2xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 via-navy-900/60 to-navy-800/40 p-4 sm:p-8 shadow-xl backdrop-blur-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div class="flex items-center gap-3">
-          <div class="rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3 border border-blue-500/30">
-            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-2 sm:p-3 border border-blue-500/30">
+            <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
           <div>
-            <h2 class="text-2xl font-bold text-white">E-Learning Platform</h2>
-            <p class="text-sm text-navy-300">Manage courses, enrollments, and student progress</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-white">E-Learning Platform</h2>
+            <p class="text-xs sm:text-sm text-navy-300">Manage courses, enrollments, and student progress</p>
           </div>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <NuxtLink
             to="/admin/courses"
-            class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2.5 font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
+            class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
           >
             Manage Courses
           </NuxtLink>
           <NuxtLink
             to="/admin/courses/analytics"
-            class="rounded-lg border border-navy-600 bg-navy-800/50 px-5 py-2.5 font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+            class="rounded-lg border border-navy-600 bg-navy-800/50 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
           >
             View Analytics
           </NuxtLink>

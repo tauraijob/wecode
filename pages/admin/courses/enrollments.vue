@@ -1,17 +1,17 @@
 <template>
   <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
     <!-- Header -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between mb-4">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <div>
-          <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
             Course Enrollments
           </h1>
-          <p class="mt-2 text-navy-300">View and manage all course enrollments</p>
+          <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">View and manage all course enrollments</p>
         </div>
         <NuxtLink
           to="/admin/courses"
-          class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-2 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+          class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-2 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all self-start sm:self-auto"
         >
           ← Back to Courses
         </NuxtLink>

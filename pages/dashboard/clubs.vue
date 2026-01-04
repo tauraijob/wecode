@@ -1,16 +1,16 @@
 <template>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 py-8">
     <!-- Header -->
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
           Clubs
         </h1>
-        <p class="mt-2 text-navy-300">Manage your coding clubs</p>
+        <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Manage your coding clubs</p>
       </div>
       <button
         @click="open = true"
-        class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+        class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 self-start sm:self-auto"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

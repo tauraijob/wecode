@@ -1,7 +1,7 @@
 <template>
   <section class="mx-auto max-w-4xl px-3 sm:px-4 py-8">
     <!-- Header -->
-    <div class="mb-8">
+    <div class="mb-6 sm:mb-8">
       <NuxtLink
         to="/instructor/payouts"
         class="inline-flex items-center gap-2 text-sm text-navy-400 hover:text-navy-300 mb-4"
@@ -11,10 +11,10 @@
         </svg>
         Back to Payouts
       </NuxtLink>
-      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Request Payout
       </h1>
-      <p class="mt-2 text-navy-300">Enter your payment details to request a payout of your earnings</p>
+      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Enter your payment details to request a payout of your earnings</p>
     </div>
 
     <!-- Available Balance -->

@@ -1,38 +1,40 @@
 <template>
   <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
     <!-- Header -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between mb-4">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <div>
-          <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
             Certificates
           </h1>
-          <p class="mt-2 text-navy-300">Manage certificate templates and view issued certificates</p>
+          <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Manage certificate templates and view issued certificates</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <NuxtLink
             to="/admin/courses"
-            class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-2 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+            class="rounded-lg border border-navy-600 bg-navy-800/50 px-3 sm:px-4 py-2 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
           >
-            ← Back to Courses
+            ← Back
           </NuxtLink>
           <button
             @click="openIssueModal"
-            class="rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-medium text-white hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            class="rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-3 sm:px-5 py-2 text-sm font-medium text-white hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
             </svg>
-            Issue Certificate
+            <span class="hidden sm:inline">Issue Certificate</span>
+            <span class="sm:hidden">Issue</span>
           </button>
           <button
             @click="openCreateModal"
-            class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-3 sm:px-5 py-2 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Create Template
+            <span class="hidden sm:inline">Create Template</span>
+            <span class="sm:hidden">Create</span>
           </button>
         </div>
       </div>
