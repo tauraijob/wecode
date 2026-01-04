@@ -22,7 +22,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'WeCodeZW empowers individuals, schools, and corporates with digital skills training, IT services, and innovative products for Zimbabwe\'s digital economy.' },
-        { name: 'keywords', content: 'wecode, we code, coding academy in zimbabwe, short computer courses in harare, short computer courses in zimbabwe, coding courses, computer programming, wecode company, computer courses in zimbabwe, programming courses, digital skills, programming, web development, cybersecurity, IT services, coding clubs, corporate training, Zimbabwe, Harare, technology education' },
+        { name: 'keywords', content: 'wecode, we code, computer courses in zimbabwe, computer programming, short computer courses in harare, programming courses in zimbabwe, computer lessons in harare, short computer courses in zimbabwe, coding classes, coding courses, coding academy in zimbabwe, wecode company, digital skills, programming, web development, cybersecurity, IT services, coding clubs, corporate training, Zimbabwe, Harare, technology education' },
         { name: 'author', content: 'WeCodeZW' },
         { name: 'robots', content: 'index, follow' },
         { name: 'googlebot', content: 'index, follow' },
@@ -40,7 +40,8 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'canonical', href: 'https://wecode.co.zw' },
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', href: '/logo.png' },
+        { rel: 'apple-touch-icon', href: '/logo.png' },
         { rel: 'manifest', href: '/site.webmanifest' }
       ],
       script: [
