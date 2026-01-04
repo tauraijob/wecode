@@ -361,11 +361,17 @@
 </template>
 
 <script setup lang="ts">
-const { user: me } = useAuth()
+const { user: me, pending: authPending } = useAuth()
 const { logoUrl } = useLogo()
-if (!me.value || me.value.role !== 'ADMIN') {
-  await navigateTo('/dashboard')
-}
+
+// Wait for auth to load before redirecting
+// This prevents the page from disappearing during hydration
+watch([me, authPending], ([user, pending]) => {
+  // Only check once auth has finished loading
+  if (!pending && (!user || user.role !== 'ADMIN')) {
+    navigateTo('/dashboard')
+  }
+}, { immediate: true })
 
 const open = ref(false)
 const route = useRoute()
