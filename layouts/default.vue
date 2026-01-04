@@ -235,26 +235,26 @@
     </header>
     <transition name="fade">
       <div v-if="mobileOpen" class="xl:hidden">
-        <nav class="space-y-1 border-b border-navy-800 bg-navy-900/95 px-3 sm:px-4 py-3">
-          <NuxtLink @click="mobileOpen=false" to="/" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Home</NuxtLink>
-          <NuxtLink v-if="me" @click="mobileOpen=false" to="/courses" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Courses</NuxtLink>
-          <NuxtLink v-if="me?.role === 'STUDENT'" @click="mobileOpen=false" to="/dashboard/learn" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">My Learning</NuxtLink>
-          <NuxtLink v-if="me" @click="mobileOpen=false" to="/dashboard" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Dashboard</NuxtLink>
-          <NuxtLink v-if="!me" @click="mobileOpen=false" to="/training" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Training</NuxtLink>
-          <NuxtLink v-if="!me" @click="mobileOpen=false" to="/corporate" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Corporate</NuxtLink>
-          <NuxtLink v-if="!me" @click="mobileOpen=false" to="/schools" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Schools</NuxtLink>
-          <NuxtLink @click="mobileOpen=false" to="/services" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">IT Services</NuxtLink>
-          <NuxtLink @click="mobileOpen=false" to="/about" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">About</NuxtLink>
+        <nav class="space-y-1 border-b border-primary-500/30 bg-gradient-to-r from-primary-600 to-primary-700 px-3 sm:px-4 py-3 text-white">
+          <NuxtLink @click="mobileOpen=false" to="/" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Home</NuxtLink>
+          <NuxtLink v-if="me" @click="mobileOpen=false" to="/courses" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Courses</NuxtLink>
+          <NuxtLink v-if="me?.role === 'STUDENT'" @click="mobileOpen=false" to="/dashboard/learn" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">My Learning</NuxtLink>
+          <NuxtLink v-if="me" @click="mobileOpen=false" to="/dashboard" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Dashboard</NuxtLink>
+          <NuxtLink v-if="!me" @click="mobileOpen=false" to="/training" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Training</NuxtLink>
+          <NuxtLink v-if="!me" @click="mobileOpen=false" to="/corporate" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Corporate</NuxtLink>
+          <NuxtLink v-if="!me" @click="mobileOpen=false" to="/schools" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Schools</NuxtLink>
+          <NuxtLink @click="mobileOpen=false" to="/services" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">IT Services</NuxtLink>
+          <NuxtLink @click="mobileOpen=false" to="/about" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">About</NuxtLink>
           <template v-if="me">
-            <div class="border-t border-navy-700 pt-2 mt-2">
+            <div class="border-t border-white/20 pt-2 mt-2">
               <div class="px-3 py-2 mb-2">
                 <div class="flex items-center gap-2 mb-1">
-                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-emerald-600 text-xs font-semibold text-white">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-xs font-semibold text-white">
                     {{ me.name?.charAt(0).toUpperCase() || 'U' }}
                   </div>
                   <div>
-                    <div class="font-medium text-sm">{{ me.name }}</div>
-                    <div class="text-xs text-navy-400">
+                    <div class="font-medium text-sm text-white">{{ me.name }}</div>
+                    <div class="text-xs text-white/70">
                       <span v-if="me.role === 'STUDENT'">E-Learning Student</span>
                       <span v-else-if="me.role === 'ADMIN'">Admin</span>
                       <span v-else>{{ me.role }}</span>
@@ -262,17 +262,17 @@
                   </div>
                 </div>
               </div>
-              <NuxtLink v-if="me.role === 'ADMIN'" @click="mobileOpen=false" to="/admin" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Admin Dashboard</NuxtLink>
+              <NuxtLink v-if="me.role === 'ADMIN'" @click="mobileOpen=false" to="/admin" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Admin Dashboard</NuxtLink>
               <template v-else>
-                <NuxtLink @click="mobileOpen=false" to="/dashboard" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Dashboard</NuxtLink>
-                <NuxtLink v-if="me.role === 'STUDENT'" @click="mobileOpen=false" to="/dashboard/learn" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">My Courses</NuxtLink>
-                <NuxtLink @click="mobileOpen=false" to="/dashboard/account" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Account Settings</NuxtLink>
+                <NuxtLink @click="mobileOpen=false" to="/dashboard" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Dashboard</NuxtLink>
+                <NuxtLink v-if="me.role === 'STUDENT'" @click="mobileOpen=false" to="/dashboard/learn" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">My Courses</NuxtLink>
+                <NuxtLink @click="mobileOpen=false" to="/dashboard/account" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Account Settings</NuxtLink>
               </template>
-              <button @click="onLogout; mobileOpen=false" class="block w-full text-left rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base text-red-400">Logout</button>
+              <button @click="onLogout; mobileOpen=false" class="block w-full text-left rounded-md px-3 py-2 hover:bg-red-500/30 text-sm sm:text-base text-red-200 font-medium">Logout</button>
             </div>
           </template>
-          <div v-else class="border-t border-navy-700 pt-2 mt-2">
-            <NuxtLink @click="mobileOpen=false" to="/auth/login" class="block rounded-md px-3 py-2 hover:bg-white/10 text-sm sm:text-base">Sign in</NuxtLink>
+          <div v-else class="border-t border-white/20 pt-2 mt-2">
+            <NuxtLink @click="mobileOpen=false" to="/auth/login" class="block rounded-md px-3 py-2 hover:bg-white/20 text-sm sm:text-base text-white font-medium">Sign in</NuxtLink>
           </div>
         </nav>
       </div>
