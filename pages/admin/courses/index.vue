@@ -126,6 +126,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
+          <!-- Dark gradient overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-navy-900/70 via-navy-900/20 to-transparent pointer-events-none"></div>
           <!-- Status Badge -->
           <div class="absolute top-4 right-4">
             <span
@@ -339,11 +341,23 @@
         </div>
       </div>
     </transition>
+
+    <!-- Delete Course Confirm Modal -->
+    <ConfirmModal
+      v-model:is-open="showDeleteModal"
+      title="Delete Course"
+      message="Are you sure you want to delete this course? This action cannot be undone."
+      type="danger"
+      confirm-text="Delete Course"
+      cancel-text="Cancel"
+      @confirm="confirmDeleteCourse"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
+const toast = useToast()
 const { data: courses, refresh, pending: loading } = await useFetch('/api/admin/courses')
 
 const showCreateModal = ref(false)
@@ -351,6 +365,8 @@ const creating = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref('')
 const sortBy = ref('newest')
+const showDeleteModal = ref(false)
+const courseToDelete = ref<string | null>(null)
 
 const newCourse = ref({
   name: '',
@@ -414,20 +430,27 @@ const createCourse = async () => {
     }
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to create course')
+    toast.error(error.data?.message || 'Failed to create course')
   } finally {
     creating.value = false
   }
 }
 
 const deleteCourse = async (id: string) => {
-  if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) return
+  courseToDelete.value = id
+  showDeleteModal.value = true
+}
 
+const confirmDeleteCourse = async () => {
+  if (!courseToDelete.value) return
   try {
-    await $fetch(`/api/courses/${id}`, { method: 'DELETE' })
+    await $fetch(`/api/courses/${courseToDelete.value}`, { method: 'DELETE' })
+    toast.success('Course deleted successfully')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to delete course')
+    toast.error(error.data?.message || 'Failed to delete course')
+  } finally {
+    courseToDelete.value = null
   }
 }
 </script>

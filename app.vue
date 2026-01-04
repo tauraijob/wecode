@@ -2,6 +2,7 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <ToastContainer />
   <Teleport to="body">
     <!-- portals for modals etc -->
     <CookieConsent />

@@ -35,6 +35,7 @@
           class="rounded-lg border border-navy-700 bg-navy-800/50 px-4 py-2 text-sm text-white focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
         >
           <option value="">All Status</option>
+          <option value="PENDING">Pending</option>
           <option value="ACTIVE">Active</option>
           <option value="COMPLETED">Completed</option>
           <option value="CANCELLED">Cancelled</option>
@@ -87,6 +88,7 @@
               <div class="flex items-center gap-2">
                 <span
                   :class="{
+                    'bg-amber-500/20 text-amber-400 border-amber-500/30': enrollment.status === 'PENDING',
                     'bg-green-500/20 text-green-400 border-green-500/30': enrollment.status === 'ACTIVE',
                     'bg-blue-500/20 text-blue-400 border-blue-500/30': enrollment.status === 'COMPLETED',
                     'bg-red-500/20 text-red-400 border-red-500/30': enrollment.status === 'CANCELLED'
@@ -120,7 +122,7 @@
             <div class="mb-4">
               <div class="h-2 w-full overflow-hidden rounded-full bg-navy-800">
                 <div
-                  class="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all"
+                  class="h-full bg-gradient-to-r from-accent-500 to-emerald-600 transition-all"
                   :style="{ width: `${Number(enrollment.progressPercent)}%` }"
                 ></div>
               </div>
@@ -136,7 +138,7 @@
               {{ enrollment.status === 'ACTIVE' ? 'Mark Complete' : 'Reactivate' }}
             </button>
             <button
-              @click="cancelEnrollment(enrollment.id)"
+              @click="openCancelModal(enrollment.id)"
               class="rounded-lg border border-red-700/50 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 transition-all"
             >
               Cancel
@@ -145,15 +147,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirm Modal -->
+    <ConfirmModal
+      v-model:is-open="showConfirmModal"
+      title="Cancel Enrollment"
+      message="Are you sure you want to cancel this enrollment? This action cannot be undone."
+      type="danger"
+      confirm-text="Cancel Enrollment"
+      cancel-text="Keep Enrollment"
+      @confirm="confirmCancelEnrollment"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
+const toast = useToast()
 const { data: enrollments, refresh, pending: loading } = await useFetch('/api/admin/enrollments')
 
 const searchQuery = ref('')
 const statusFilter = ref('')
+const showConfirmModal = ref(false)
+const enrollmentToCancel = ref<string | null>(null)
 
 const filteredEnrollments = computed(() => {
   let result = enrollments.value || []
@@ -180,21 +196,30 @@ const updateEnrollmentStatus = async (id: string, status: string) => {
       method: 'POST',
       body: { status }
     })
+    toast.success('Enrollment status updated')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to update enrollment')
+    toast.error(error.data?.message || 'Failed to update enrollment')
   }
 }
 
-const cancelEnrollment = async (id: string) => {
-  if (!confirm('Are you sure you want to cancel this enrollment?')) return
+const openCancelModal = (id: string) => {
+  enrollmentToCancel.value = id
+  showConfirmModal.value = true
+}
+
+const confirmCancelEnrollment = async () => {
+  if (!enrollmentToCancel.value) return
   try {
-    await $fetch(`/api/admin/enrollments/${id}`, {
+    await $fetch(`/api/admin/enrollments/${enrollmentToCancel.value}`, {
       method: 'DELETE'
     })
+    toast.success('Enrollment cancelled successfully')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to cancel enrollment')
+    toast.error(error.data?.message || 'Failed to cancel enrollment')
+  } finally {
+    enrollmentToCancel.value = null
   }
 }
 </script>

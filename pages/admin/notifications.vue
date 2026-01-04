@@ -60,7 +60,7 @@
                   <NuxtLink
                     :to="getActionUrl(notification)!"
                     @click.stop
-                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm font-medium text-white hover:from-blue-600 hover:to-purple-700 transition-all"
+                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-4 py-2 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all"
                   >
                     <span>{{ getActionText(notification) || 'View Details' }}</span>
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

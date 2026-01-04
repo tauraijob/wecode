@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
@@ -114,19 +114,19 @@
           >
             <div>
               <span class="text-sm text-white font-medium">{{ i.number }}</span>
-              <span class="text-sm text-navy-300 ml-2">USD {{ Number(i.amountUsd).toFixed(2) }}</span>
+              <span class="text-sm text-navy-400 ml-2">USD {{ Number(i.amountUsd).toFixed(2) }}</span>
             </div>
             <NuxtLink
               v-if="i.firstCourseId"
               :to="`/checkout/${i.firstCourseId}`"
-              class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-1.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+              class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-md"
             >
               Pay
             </NuxtLink>
             <NuxtLink
               v-else
               :to="`/pay/${i.number}?amount=${i.amountUsd}`"
-              class="rounded-lg border border-navy-600 bg-navy-800/50 px-4 py-1.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+              class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-md"
             >
               Pay
             </NuxtLink>
@@ -134,16 +134,20 @@
         </ul>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({ 
+  layout: 'dashboard',
+  middleware: ['auth']
+})
+
+const { user: me } = useAuth()
 
 // Redirect admins to admin dashboard
-const { user: me } = useAuth()
-if (me.value && me.value.role === 'ADMIN') {
-  await navigateTo('/admin')
+if (import.meta.client && me.value && me.value.role === 'ADMIN') {
+  navigateTo('/admin', { replace: true })
 }
 import {
   Chart as ChartJS,
@@ -173,10 +177,8 @@ onMounted(async () => {
   const s = await $fetch('/api/dashboard/summary').catch(() => ({ quotes: 0, invoices: 0, invoicesPaid: 0, clubs: 0 }))
   Object.assign(summary, s as any)
   
-  // Load charts data
   chartsData.value = await $fetch('/api/dashboard/charts').catch(() => ({ payments: [], clubs: [] }))
   
-  // Initialize charts
   nextTick(() => {
     initCharts()
   })
@@ -185,7 +187,6 @@ onMounted(async () => {
 const initCharts = () => {
   if (!paymentsChart.value || !clubsChart.value) return
 
-  // Payments chart
   new ChartJS(paymentsChart.value, {
     type: 'line',
     data: {
@@ -228,7 +229,6 @@ const initCharts = () => {
     }
   })
 
-  // Clubs chart
   new ChartJS(clubsChart.value, {
     type: 'bar',
     data: {
@@ -237,14 +237,14 @@ const initCharts = () => {
         {
           label: 'Total Clubs',
           data: chartsData.value.clubs.map((c: any) => c.total),
-          backgroundColor: 'rgba(34, 197, 94, 0.6)',
-          borderColor: '#22c55e',
+          backgroundColor: 'rgba(52, 211, 153, 0.6)',
+          borderColor: '#34d399',
           borderWidth: 1
         },
         {
           label: 'Active Clubs',
           data: chartsData.value.clubs.map((c: any) => c.active),
-          backgroundColor: 'rgba(96,165,250,0.6)',
+          backgroundColor: 'rgba(96, 165, 250, 0.6)',
           borderColor: '#60a5fa',
           borderWidth: 1
         }

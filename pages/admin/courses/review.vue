@@ -111,6 +111,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
+const toast = useToast()
 
 const { data: courses, refresh, pending: loading } = await useFetch('/api/admin/courses/pending')
 const processing = ref<string | null>(null)
@@ -125,9 +126,9 @@ async function approveCourse(courseId: string, publish: boolean) {
       body: { publish }
     })
     await refresh()
-    alert(`Course ${publish ? 'approved and published' : 'approved'} successfully!`)
+    toast.success(`Course ${publish ? 'approved and published' : 'approved'} successfully!`)
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to approve course')
+    toast.error(error.data?.message || 'Failed to approve course')
   } finally {
     processing.value = null
   }
@@ -140,7 +141,7 @@ function showRejectDialog(course: any) {
 
 async function rejectCourse(courseId: string) {
   if (!rejectionReason.value.trim()) {
-    alert('Please provide a rejection reason')
+    toast.warning('Please provide a rejection reason')
     return
   }
 
@@ -153,9 +154,9 @@ async function rejectCourse(courseId: string) {
     await refresh()
     rejectingCourse.value = null
     rejectionReason.value = ''
-    alert('Course rejected successfully!')
+    toast.success('Course rejected successfully!')
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to reject course')
+    toast.error(error.data?.message || 'Failed to reject course')
   } finally {
     processing.value = null
   }

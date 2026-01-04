@@ -610,11 +610,34 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Topic Confirm Modal -->
+    <ConfirmModal
+      v-model:is-open="showDeleteTopicModal"
+      title="Delete Topic"
+      message="Are you sure you want to delete this topic? All lessons will be deleted too."
+      type="danger"
+      confirm-text="Delete Topic"
+      cancel-text="Cancel"
+      @confirm="confirmDeleteTopic"
+    />
+
+    <!-- Delete Lesson Confirm Modal -->
+    <ConfirmModal
+      v-model:is-open="showDeleteLessonModal"
+      title="Delete Lesson"
+      message="Are you sure you want to delete this lesson? This action cannot be undone."
+      type="danger"
+      confirm-text="Delete Lesson"
+      cancel-text="Cancel"
+      @confirm="confirmDeleteLesson"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
+const toast = useToast()
 import { parseVideoUrl, getVideoPlatformName } from '~/composables/useVideoUrl'
 
 const route = useRoute()
@@ -634,6 +657,10 @@ const editingTopic = ref<any>(null)
 const editingLesson = ref<any>(null)
 const selectedTopicId = ref<string | null>(null)
 const quizPreview = ref<any>({ questions: [], lesson: null })
+const showDeleteTopicModal = ref(false)
+const showDeleteLessonModal = ref(false)
+const topicToDelete = ref<string | null>(null)
+const lessonToDelete = ref<string | null>(null)
 
 const editForm = ref({
   name: '',
@@ -708,7 +735,7 @@ const updateCourse = async () => {
     })
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to update course')
+    toast.error(error.data?.message || 'Failed to update course')
   }
 }
 
@@ -722,7 +749,7 @@ const updateExamConfig = async () => {
     })
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to update exam config')
+    toast.error(error.data?.message || 'Failed to update exam config')
   }
 }
 
@@ -734,9 +761,10 @@ const saveCourse = async () => {
       body: editForm.value
     })
     showEditModal.value = false
+    toast.success('Course updated successfully')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to update course')
+    toast.error(error.data?.message || 'Failed to update course')
   } finally {
     saving.value = false
   }
@@ -759,9 +787,10 @@ const saveTopic = async () => {
     showTopicModal.value = false
     editingTopic.value = null
     topicForm.value = { name: '', description: '', order: 0 }
+    toast.success(editingTopic.value ? 'Topic updated' : 'Topic created')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to save topic')
+    toast.error(error.data?.message || 'Failed to save topic')
   } finally {
     savingTopic.value = false
   }
@@ -778,14 +807,22 @@ const editTopic = (topic: any) => {
 }
 
 const deleteTopic = async (topicId: string) => {
-  if (!confirm('Are you sure you want to delete this topic? All lessons will be deleted too.')) return
+  topicToDelete.value = topicId
+  showDeleteTopicModal.value = true
+}
+
+const confirmDeleteTopic = async () => {
+  if (!topicToDelete.value) return
   try {
-    await $fetch(`/api/courses/${courseId}/topics/${topicId}`, {
+    await $fetch(`/api/courses/${courseId}/topics/${topicToDelete.value}`, {
       method: 'DELETE'
     })
+    toast.success('Topic deleted successfully')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to delete topic')
+    toast.error(error.data?.message || 'Failed to delete topic')
+  } finally {
+    topicToDelete.value = null
   }
 }
 
@@ -816,9 +853,10 @@ const saveLesson = async () => {
       notes: '',
       order: 0
     }
+    toast.success(editingLesson.value ? 'Lesson updated' : 'Lesson created')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to save lesson')
+    toast.error(error.data?.message || 'Failed to save lesson')
   } finally {
     savingLesson.value = false
   }
@@ -841,7 +879,7 @@ const editLesson = (lesson: any, topicId: string) => {
 
 const generateQuiz = async (lesson: any) => {
   if (!lesson.transcript && !lesson.notes && !lesson.description) {
-    alert('Please add transcript, notes, or description to the lesson before generating a quiz.')
+    toast.warning('Please add transcript, notes, or description to the lesson before generating a quiz.')
     return
   }
 
@@ -859,27 +897,35 @@ const generateQuiz = async (lesson: any) => {
     showQuizModal.value = true
   } catch (error: any) {
     console.error('Error generating quiz:', error)
-    alert(error.data?.message || 'Failed to generate quiz. Please check your GEMINI_API_KEY environment variable.')
+    toast.error(error.data?.message || 'Failed to generate quiz. Please check your GEMINI_API_KEY environment variable.')
   } finally {
     generatingQuiz.value = null
   }
 }
 
 const deleteLesson = async (lessonId: string) => {
-  if (!confirm('Are you sure you want to delete this lesson?')) return
+  lessonToDelete.value = lessonId
+  showDeleteLessonModal.value = true
+}
+
+const confirmDeleteLesson = async () => {
+  if (!lessonToDelete.value) return
   try {
     // Find the topic ID for this lesson
-    const topic = course.value?.topics.find(t => t.lessons.some(l => l.id === lessonId))
+    const topic = course.value?.topics.find(t => t.lessons.some(l => l.id === lessonToDelete.value))
     if (!topic) {
-      alert('Topic not found')
+      toast.error('Topic not found')
       return
     }
-    await $fetch(`/api/courses/${courseId}/topics/${topic.id}/lessons/${lessonId}`, {
+    await $fetch(`/api/courses/${courseId}/topics/${topic.id}/lessons/${lessonToDelete.value}`, {
       method: 'DELETE'
     })
+    toast.success('Lesson deleted successfully')
     await refresh()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to delete lesson')
+    toast.error(error.data?.message || 'Failed to delete lesson')
+  } finally {
+    lessonToDelete.value = null
   }
 }
 </script>

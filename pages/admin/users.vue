@@ -72,7 +72,7 @@
             <tr v-for="u in filtered" :key="u.id" class="hover:bg-navy-800/30 transition-colors">
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-semibold text-white">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-emerald-600 text-sm font-semibold text-white">
                     {{ u.name?.charAt(0).toUpperCase() || 'U' }}
                   </div>
                   <div>
@@ -330,7 +330,7 @@
             </button>
             <button
               type="submit"
-              class="flex-1 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm font-medium text-white hover:from-blue-600 hover:to-purple-700"
+              class="flex-1 rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-4 py-2 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700"
             >
               Save Changes
             </button>
@@ -368,11 +368,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Impersonate Confirm Modal -->
+    <ConfirmModal
+      v-model:is-open="showImpersonateModal"
+      title="Impersonate User"
+      :message="`You will be logged in as ${impersonateTarget?.name}. You can end impersonation from the dashboard.`"
+      type="warning"
+      confirm-text="Impersonate"
+      cancel-text="Cancel"
+      @confirm="confirmImpersonate"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
+const toast = useToast()
 
 const q = ref('')
 const roleFilter = ref('')
@@ -388,6 +400,8 @@ const editForm = ref({
   role: 'INDIVIDUAL' as any,
   emailVerified: false
 })
+const showImpersonateModal = ref(false)
+const impersonateTarget = ref<any>(null)
 
 onMounted(async () => {
   await loadUsers()
@@ -448,10 +462,11 @@ async function saveUser() {
       method: 'PUT',
       body: editForm.value
     })
+    toast.success('User updated successfully')
     await loadUsers()
     editingUser.value = null
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to update user')
+    toast.error(error.data?.message || 'Failed to update user')
   }
 }
 
@@ -461,23 +476,32 @@ async function updateRole(u: any) {
       method: 'POST',
       body: { userId: u.id, role: u.role }
     })
+    toast.success('Role updated successfully')
     await loadUsers()
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to update role')
+    toast.error(error.data?.message || 'Failed to update role')
     await loadUsers() // Reload to revert change
   }
 }
 
-async function impersonate(u: any) {
-  if (!confirm(`Impersonate ${u.name}? You will be logged in as this user.`)) return
+function impersonate(u: any) {
+  impersonateTarget.value = u
+  showImpersonateModal.value = true
+}
+
+async function confirmImpersonate() {
+  if (!impersonateTarget.value) return
   try {
     await $fetch('/api/admin/users.impersonate', {
       method: 'POST',
-      body: { userId: u.id }
+      body: { userId: impersonateTarget.value.id }
     })
+    toast.success(`Now logged in as ${impersonateTarget.value.name}`)
     await navigateTo('/dashboard')
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to impersonate user')
+    toast.error(error.data?.message || 'Failed to impersonate user')
+  } finally {
+    impersonateTarget.value = null
   }
 }
 
@@ -491,10 +515,11 @@ async function deleteUser() {
     await $fetch(`/api/admin/users/${userToDelete.value.id}`, {
       method: 'DELETE'
     })
+    toast.success('User deleted successfully')
     await loadUsers()
     userToDelete.value = null
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to delete user')
+    toast.error(error.data?.message || 'Failed to delete user')
     userToDelete.value = null
   }
 }

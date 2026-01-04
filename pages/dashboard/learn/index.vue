@@ -61,7 +61,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="enrollments.length === 0" class="rounded-2xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 to-navy-800/40 p-12 text-center">
+    <div v-else-if="enrollments.length === 0" class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 to-navy-800/40 p-12 text-center">
       <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-navy-800/50">
         <svg class="h-8 w-8 text-navy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -71,7 +71,7 @@
       <p class="text-navy-300 mb-6">You haven't enrolled in any courses yet.</p>
       <NuxtLink
         to="/courses"
-        class="inline-block rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-2.5 text-sm font-medium text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg"
+        class="inline-block rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg"
       >
         Browse Courses
       </NuxtLink>
@@ -109,9 +109,9 @@
               <span class="text-navy-300">Progress</span>
               <span class="text-white font-medium">{{ Number(enrollment.progressPercent).toFixed(0) }}%</span>
             </div>
-            <div class="h-2 w-full overflow-hidden rounded-full bg-navy-800">
+            <div class="h-2 w-full overflow-hidden rounded-full bg-navy-900/50">
               <div
-                class="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all"
+                class="h-full bg-gradient-to-r from-accent-500 to-emerald-600 transition-all"
                 :style="{ width: `${Number(enrollment.progressPercent)}%` }"
               ></div>
             </div>
@@ -147,7 +147,7 @@
             <NuxtLink
               v-if="enrollment.status === 'ACTIVE' || enrollment.status === 'COMPLETED'"
               :to="`/dashboard/learn/${enrollment.course.id}`"
-              class="flex-1 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+              class="flex-1 rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
             >
               {{ enrollment.status === 'COMPLETED' ? 'View Course' : 'Continue Learning' }}
             </NuxtLink>
@@ -427,11 +427,12 @@
       })
     }
 
-const handleUnenroll = async (enrollmentId: string, courseName: string) => {
-  if (!confirm(`Are you sure you want to unenroll from "${courseName}"? This action cannot be undone.`)) {
-    return
-  }
+const toast = useToast()
 
+const handleUnenroll = async (enrollmentId: string, courseName: string) => {
+  // Show warning toast
+  toast.warning('Unenrolling from the course...')
+  
   try {
     unenrolling.value = enrollmentId
     await $fetch(`/api/enrollments/${enrollmentId}/unenroll`, {
@@ -442,9 +443,9 @@ const handleUnenroll = async (enrollmentId: string, courseName: string) => {
     await refresh()
     
     // Show success message
-    alert('Successfully unenrolled from the course.')
+    toast.success('Successfully unenrolled from the course.')
   } catch (error: any) {
-    alert(error.data?.message || 'Failed to unenroll. Please try again.')
+    toast.error(error.data?.message || 'Failed to unenroll. Please try again.')
   } finally {
     unenrolling.value = null
   }

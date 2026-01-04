@@ -30,11 +30,21 @@ export default defineEventHandler(async (event) => {
     create: { email: data.email, name: data.contactName, hashedPassword: '' }
   })
 
-  const school = await prisma.school.upsert({
-    where: { contactEmail: data.email },
-    update: { name: data.schoolName, contactName: data.contactName, phone: data.phone || undefined, ownerId: user.id },
-    create: { name: data.schoolName, contactEmail: data.email, contactName: data.contactName, phone: data.phone || undefined, ownerId: user.id }
+  // Find or create school by owner
+  let school = await prisma.school.findFirst({
+    where: { ownerId: user.id }
   })
+
+  if (school) {
+    school = await prisma.school.update({
+      where: { id: school.id },
+      data: { name: data.schoolName, contactName: data.contactName, phone: data.phone || undefined }
+    })
+  } else {
+    school = await prisma.school.create({
+      data: { name: data.schoolName, contactEmail: data.email, contactName: data.contactName, phone: data.phone || undefined, ownerId: user.id }
+    })
+  }
 
   const quoteRecord = await prisma.quote.create({
     data: {
@@ -107,7 +117,7 @@ export default defineEventHandler(async (event) => {
     // Extract body content from invoice HTML
     const invoiceBodyMatch = invoiceHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i)
     const invoiceContent = invoiceBodyMatch ? invoiceBodyMatch[1] : invoiceHtml
-    
+
     // Admin email with new template
     const { html: adminHtml, text: adminText } = getQuoteRequestAdminTemplate({
       invoiceNumber,
@@ -120,7 +130,7 @@ export default defineEventHandler(async (event) => {
       currency: quote.currency,
       dashLink
     })
-    
+
     // Embed invoice HTML in admin email (insert before closing main table)
     const adminEmailHtml = adminHtml.replace(
       '</table>\n        \n        <!-- Footer -->',
@@ -144,7 +154,7 @@ export default defineEventHandler(async (event) => {
       currency: quote.currency,
       dashLink
     })
-    
+
     // Embed invoice HTML in user email (insert before closing main table)
     const userEmailHtml = userHtml.replace(
       '</table>\n        \n        <!-- Footer -->',

@@ -1,142 +1,150 @@
 <template>
-  <form @submit.prevent="onSubmit" class="grid gap-4 rounded-xl border border-navy-800 bg-navy-900/40 p-6">
-    <div class="grid gap-2 sm:grid-cols-2">
+  <form @submit.prevent="onSubmit" class="grid gap-6">
+    <!-- Contact Info -->
+    <div class="grid gap-4 sm:grid-cols-2">
       <div>
-        <UiLabel class="text-navy-200">School name</UiLabel>
-        <UiInput v-model="form.schoolName" required placeholder="Example High School" class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
+        <UiLabel class="text-white font-medium mb-1.5">School name</UiLabel>
+        <UiInput v-model="form.schoolName" required placeholder="Example High School" class="bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-primary-300 focus:ring-primary-300/20" />
       </div>
       <div>
-        <UiLabel class="text-navy-200">Contact person</UiLabel>
-        <UiInput v-model="form.contactName" required placeholder="Jane Doe" class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
+        <UiLabel class="text-white font-medium mb-1.5">Contact person</UiLabel>
+        <UiInput v-model="form.contactName" required placeholder="Jane Doe" class="bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-primary-300 focus:ring-primary-300/20" />
       </div>
       <div>
-        <UiLabel class="text-navy-200">Email</UiLabel>
-        <UiInput v-model="form.email" type="email" required placeholder="[email protected]" class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
+        <UiLabel class="text-white font-medium mb-1.5">Email</UiLabel>
+        <UiInput v-model="form.email" type="email" required placeholder="[email protected]" class="bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-primary-300 focus:ring-primary-300/20" />
       </div>
       <div>
-        <UiLabel class="text-navy-200">Phone / WhatsApp</UiLabel>
-        <UiInput v-model="form.phone" placeholder="+263778456168" class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
-      </div>
-    </div>
-
-    <div class="grid gap-2 sm:grid-cols-3">
-      <div>
-        <UiLabel class="text-navy-200">Level</UiLabel>
-        <UiSelect v-model="form.level" class="bg-navy-900 border-navy-700 text-navy-100">
-          <option value="primary">Primary (Grade 1–7)</option>
-          <option value="high">High School (Form 1–6)</option>
-        </UiSelect>
-      </div>
-      <div>
-        <UiLabel class="text-navy-200">Plan</UiLabel>
-        <UiSelect v-model="form.planId" class="bg-navy-900 border-navy-700 text-navy-100">
-          <option v-for="p in plans" :key="p.id" :value="p.id">{{ p.name }} — ${{ p.price }}/student/mo (min {{ p.minimumStudents }})</option>
-        </UiSelect>
-      </div>
-      <div>
-        <UiLabel class="text-navy-200">Months</UiLabel>
-        <UiInput v-model.number="form.months" type="number" min="1" required class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
+        <UiLabel class="text-white font-medium mb-1.5">Phone / WhatsApp</UiLabel>
+        <UiInput v-model="form.phone" placeholder="+263778456168" class="bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-primary-300 focus:ring-primary-300/20" />
       </div>
     </div>
 
-    <div class="grid gap-2 sm:grid-cols-3">
+    <!-- Plan Selection -->
+    <div class="grid gap-4 sm:grid-cols-3">
       <div>
-        <UiLabel class="text-navy-200">Students</UiLabel>
-        <UiInput v-model.number="form.students" type="number" min="1" required class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
+        <UiLabel class="text-white font-medium mb-1.5">Level</UiLabel>
+        <UiSelect v-model="form.level" class="bg-white/10 border-white/20 text-white">
+          <option value="primary" class="bg-primary-700 text-white">Primary (Grade 1–7)</option>
+          <option value="high" class="bg-primary-700 text-white">High School (Form 1–6)</option>
+        </UiSelect>
       </div>
       <div>
-        <UiLabel class="text-navy-200">Teacher Training</UiLabel>
+        <UiLabel class="text-white font-medium mb-1.5">Plan</UiLabel>
+        <UiSelect v-model="form.planId" class="bg-white/10 border-white/20 text-white">
+          <option v-for="p in plans" :key="p.id" :value="p.id" class="bg-primary-700 text-white">{{ p.name }} — ${{ p.price }}/student/mo (min {{ p.minimumStudents }})</option>
+        </UiSelect>
+      </div>
+      <div>
+        <UiLabel class="text-white font-medium mb-1.5">Months</UiLabel>
+        <UiInput v-model.number="form.months" type="number" min="1" required class="bg-white/10 border-white/20 text-white placeholder-white/50" />
+      </div>
+    </div>
+
+    <!-- Students & Training -->
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <UiLabel class="text-white font-medium mb-1.5">Students</UiLabel>
+        <UiInput v-model.number="form.students" type="number" min="1" required class="bg-white/10 border-white/20 text-white placeholder-white/50" />
+      </div>
+      <div>
+        <UiLabel class="text-white font-medium mb-1.5">Teacher Training</UiLabel>
         <div class="grid grid-cols-1 gap-2">
-          <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+          <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
             <span>Basic (2 hrs)</span>
             <div class="flex items-center gap-2">
-              <span class="text-navy-300">$50 ×</span>
-              <input v-model.number="teacherBasic" type="number" min="0" class="w-16 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+              <span class="text-primary-200">$50 ×</span>
+              <input v-model.number="teacherBasic" type="number" min="0" class="w-16 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
             </div>
           </label>
-          <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+          <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
             <span>Facilitator (Full day)</span>
             <div class="flex items-center gap-2">
-              <span class="text-navy-300">$100 ×</span>
-              <input v-model.number="teacherFacilitator" type="number" min="0" class="w-16 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+              <span class="text-primary-200">$100 ×</span>
+              <input v-model.number="teacherFacilitator" type="number" min="0" class="w-16 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
             </div>
           </label>
-          <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+          <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
             <span>Termly Refresher</span>
             <div class="flex items-center gap-2">
-              <span class="text-navy-300">$60 ×</span>
-              <input v-model.number="teacherTermly" type="number" min="0" class="w-16 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+              <span class="text-primary-200">$60 ×</span>
+              <input v-model.number="teacherTermly" type="number" min="0" class="w-16 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
             </div>
           </label>
         </div>
       </div>
       <div>
-        <UiLabel class="text-navy-200">Robotics Kits (optional)</UiLabel>
+        <UiLabel class="text-white font-medium mb-1.5">Robotics Kits (optional)</UiLabel>
         <div class="grid grid-cols-1 gap-2">
-          <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+          <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
             <span>Micro:bit Kit</span>
             <div class="flex items-center gap-2">
-              <span class="text-navy-300">$35 ×</span>
-              <input v-model.number="kitMicrobit" type="number" min="0" class="w-16 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+              <span class="text-primary-200">$35 ×</span>
+              <input v-model.number="kitMicrobit" type="number" min="0" class="w-16 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
             </div>
           </label>
-          <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+          <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
             <span>Bit:Bot Kit</span>
             <div class="flex items-center gap-2">
-              <span class="text-navy-300">$70 ×</span>
-              <input v-model.number="kitBitbot" type="number" min="0" class="w-16 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+              <span class="text-primary-200">$70 ×</span>
+              <input v-model.number="kitBitbot" type="number" min="0" class="w-16 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
             </div>
           </label>
-          <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+          <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
             <span>High School Pack (5 kits)</span>
             <div class="flex items-center gap-2">
-              <span class="text-navy-300">$350 ×</span>
-              <input v-model.number="kitPack" type="number" min="0" class="w-16 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+              <span class="text-primary-200">$350 ×</span>
+              <input v-model.number="kitPack" type="number" min="0" class="w-16 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
             </div>
           </label>
         </div>
       </div>
     </div>
 
+    <!-- Extras -->
     <div>
-      <UiLabel class="text-navy-200">Extras</UiLabel>
+      <UiLabel class="text-white font-medium mb-1.5">Extras</UiLabel>
       <div class="grid gap-2 sm:grid-cols-2">
-        <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+        <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
           <span>Hackathon Entry ($5 per student)</span>
           <div class="flex items-center gap-2">
-            <span class="text-navy-300">$5 ×</span>
-            <input v-model.number="extraHackathon" type="number" min="0" class="w-20 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+            <span class="text-primary-200">$5 ×</span>
+            <input v-model.number="extraHackathon" type="number" min="0" class="w-20 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
           </div>
         </label>
-        <label class="flex items-center justify-between gap-2 rounded-md border border-navy-800 bg-navy-900 px-3 py-2 text-sm">
+        <label class="flex items-center justify-between gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors">
           <span>Club Merchandise (avg $8.5 per student)</span>
           <div class="flex items-center gap-2">
-            <span class="text-navy-300">$8.5 ×</span>
-            <input v-model.number="extraMerch" type="number" min="0" class="w-20 rounded-md border border-navy-700 bg-navy-900 px-2 py-1 text-right text-navy-100" />
+            <span class="text-primary-200">$8.5 ×</span>
+            <input v-model.number="extraMerch" type="number" min="0" class="w-20 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-right text-white" />
           </div>
         </label>
       </div>
     </div>
 
+    <!-- Notes -->
     <div>
-      <UiLabel class="text-navy-200">Notes</UiLabel>
-      <UiTextarea v-model="form.notes" :rows="3" placeholder="Anything we should know?" class="bg-navy-900 border-navy-700 text-navy-100 placeholder-navy-400" />
+      <UiLabel class="text-white font-medium mb-1.5">Notes</UiLabel>
+      <UiTextarea v-model="form.notes" :rows="3" placeholder="Anything we should know?" class="bg-white/10 border-white/20 text-white placeholder-white/50" />
     </div>
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="text-sm text-navy-300">Estimated total: <span class="font-semibold text-white">USD {{ total.toFixed(2) }}</span></div>
-      <div class="flex items-center gap-3">
-        <label class="flex items-center gap-2 text-sm text-navy-200">
-          <input type="checkbox" v-model="attachPdf" class="h-4 w-4" /> Attach PDF
+    <!-- Submit Section -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+      <div class="text-lg text-white">Estimated total: <span class="font-bold text-accent-300">USD {{ total.toFixed(2) }}</span></div>
+      <div class="flex flex-wrap items-center gap-4">
+        <label class="flex items-center gap-2 text-sm text-white/80 cursor-pointer">
+          <input type="checkbox" v-model="attachPdf" class="h-4 w-4 rounded border-white/30 bg-white/10 text-primary-500 focus:ring-primary-400" /> Attach PDF
         </label>
-        <label class="flex items-center gap-2 text-sm text-navy-200">
-          <input type="checkbox" v-model="depositOnly" class="h-4 w-4" /> Deposit only (50%)
+        <label class="flex items-center gap-2 text-sm text-white/80 cursor-pointer">
+          <input type="checkbox" v-model="depositOnly" class="h-4 w-4 rounded border-white/30 bg-white/10 text-primary-500 focus:ring-primary-400" /> Deposit only (50%)
         </label>
       </div>
-      <UiButton :disabled="submitting" type="submit" class="w-full bg-navy-400 text-navy-950 hover:bg-navy-300 sm:w-auto">Generate Invoice</UiButton>
+      <button :disabled="submitting" type="submit" class="w-full sm:w-auto rounded-xl bg-white px-6 py-3 font-semibold text-primary-600 shadow-lg hover:shadow-xl hover:bg-primary-50 transition-all disabled:opacity-50">
+        {{ submitting ? 'Generating...' : 'Generate Invoice' }}
+      </button>
     </div>
 
-    <div v-if="successMsg" class="rounded-md border border-green-600/40 bg-green-900/20 px-3 py-2 text-sm text-green-200 animate-fade-in">{{ successMsg }}</div>
+    <div v-if="successMsg" class="rounded-xl border border-green-400/30 bg-green-500/20 px-4 py-3 text-sm text-green-100 animate-fade-in">{{ successMsg }}</div>
   </form>
 </template>
 
@@ -146,7 +154,6 @@ import UiInput from '@/components/ui/Input.vue'
 import UiLabel from '@/components/ui/Label.vue'
 import UiSelect from '@/components/ui/Select.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
-import UiButton from '@/components/ui/Button.vue'
 
 type Level = 'primary' | 'high'
 
@@ -250,5 +257,3 @@ async function onSubmit() {
   }
 }
 </script>
-
-

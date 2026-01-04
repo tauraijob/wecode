@@ -1,12 +1,11 @@
 <template>
-  <div class="min-h-screen bg-navy-950 text-white">
-    <header class="sticky top-0 z-40 border-b border-navy-800 bg-navy-950/60 backdrop-blur supports-[backdrop-filter]:bg-navy-950/50">
+  <div class="min-h-screen bg-cream-50 text-gray-900">
+    <header class="sticky top-0 z-40 border-b border-cream-300/60 bg-surface-50/95 backdrop-blur-md shadow-sm">
       <div class="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4 py-3">
         <NuxtLink to="/" class="flex items-center gap-2 font-semibold tracking-tight">
-          <!-- Logo Image (if exists) -->
           <div
             v-if="logoUrl"
-            class="inline-flex items-center justify-center rounded-xl bg-white px-3 sm:px-4 py-1.5 sm:py-2 shadow-2xl border-2 border-white/50 ring-2 ring-white/30"
+            class="inline-flex items-center justify-center rounded-xl px-2 py-1"
           >
             <img
               :src="logoUrl"
@@ -17,96 +16,96 @@
           </div>
           <!-- Fallback Text Logo -->
           <template v-else>
-            <span class="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-navy-700 text-sm sm:text-base">WZ</span>
-            <span class="hidden xs:inline">WeCodeZW</span>
+            <span class="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 text-sm sm:text-base font-bold text-white shadow-md">WZ</span>
+            <span class="hidden xs:inline font-semibold text-gray-900">WeCodeZW</span>
           </template>
         </NuxtLink>
         <nav class="hidden items-center gap-2 lg:gap-3 xl:flex">
           <NuxtLink 
             to="/" 
-            :class="route.path === '/' ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path === '/' ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             Home
           </NuxtLink>
           <NuxtLink 
             v-if="me" 
             to="/courses" 
-            :class="route.path.startsWith('/courses') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/courses') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             Courses
           </NuxtLink>
           <NuxtLink 
             v-if="me?.role === 'STUDENT'" 
             to="/dashboard/learn" 
-            :class="route.path.startsWith('/dashboard/learn') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/dashboard/learn') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             My Learning
           </NuxtLink>
           <NuxtLink 
             v-if="me && me.role !== 'ADMIN'" 
             to="/dashboard" 
-            :class="route.path === '/dashboard' ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path === '/dashboard' ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             Dashboard
           </NuxtLink>
           <NuxtLink 
             v-if="me?.role === 'ADMIN'" 
             to="/admin" 
-            :class="route.path.startsWith('/admin') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/admin') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             Admin
           </NuxtLink>
           <NuxtLink 
             v-if="!me" 
             to="/training" 
-            :class="route.path.startsWith('/training') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/training') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             Training
           </NuxtLink>
           <NuxtLink 
             v-if="!me" 
             to="/corporate" 
-            :class="route.path.startsWith('/corporate') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/corporate') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             Corporate
           </NuxtLink>
           <NuxtLink 
             v-if="!me" 
             to="/schools" 
-            :class="route.path.startsWith('/schools') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/schools') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             Schools
           </NuxtLink>
           <NuxtLink 
             to="/services" 
-            :class="route.path.startsWith('/services') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/services') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             IT Services
           </NuxtLink>
           <NuxtLink 
             to="/about" 
-            :class="route.path.startsWith('/about') ? 'bg-navy-800/50 border-navy-700/50' : 'hover:bg-navy-800/30 border-transparent'"
-            class="rounded-md border px-3 py-1.5 text-sm lg:text-base transition-colors"
+            :class="route.path.startsWith('/about') ? 'bg-primary-50 text-primary-700 border-primary-200' : 'hover:bg-cream-100 text-gray-700 border-transparent'"
+            class="rounded-lg border px-3 py-1.5 text-sm lg:text-base transition-all font-medium"
           >
             About
           </NuxtLink>
         </nav>
         <div class="flex items-center gap-2 sm:gap-3">
-          <button class="xl:hidden rounded-md bg-white/10 px-2 sm:px-3 py-1.5 text-xs sm:text-sm hover:bg-white/15 transition-colors" @click="mobileOpen = !mobileOpen">Menu</button>
+          <button class="xl:hidden rounded-lg border border-cream-300 bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-gray-700 hover:bg-cream-100 transition-colors font-medium" @click="mobileOpen = !mobileOpen">Menu</button>
           
           <!-- Not Logged In -->
           <template v-if="!me">
-            <NuxtLink to="/auth/login" class="hidden sm:inline-block rounded-md bg-white/10 px-3 py-1.5 text-sm hover:bg-white/15 transition-colors">Sign in</NuxtLink>
-            <NuxtLink to="/request" class="rounded-md bg-navy-400 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-navy-950 shadow-sm shadow-navy-900/30 hover:bg-navy-300 transition-colors">Request Training</NuxtLink>
+            <NuxtLink to="/auth/login" class="hidden sm:inline-block rounded-lg border border-cream-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-100 transition-colors font-medium">Sign in</NuxtLink>
+            <NuxtLink to="/request" class="rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-white shadow-md hover:shadow-lg hover:from-primary-700 hover:to-primary-800 transition-all font-medium">Request Training</NuxtLink>
           </template>
 
           <!-- Logged In -->
@@ -117,7 +116,7 @@
                 @click="menuOpen = !menuOpen" 
                 class="flex items-center gap-2 rounded-md bg-gradient-to-r from-navy-700/50 to-navy-800/50 px-3 py-1.5 text-xs sm:text-sm hover:from-navy-600/50 hover:to-navy-700/50 transition-all border border-navy-700/50"
               >
-                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-semibold text-white">
+                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-emerald-600 text-xs font-semibold text-white">
                   {{ me.name?.charAt(0).toUpperCase() || 'U' }}
                 </div>
                 <span class="hidden sm:inline">
@@ -142,7 +141,7 @@
                   <!-- User Info Header -->
                   <div class="border-b border-navy-700/50 bg-navy-800/50 px-4 py-3">
                     <div class="flex items-center gap-3">
-                      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-semibold text-white">
+                      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-emerald-600 text-sm font-semibold text-white">
                         {{ me.name?.charAt(0).toUpperCase() || 'U' }}
                       </div>
                       <div class="flex-1 min-w-0">
@@ -250,7 +249,7 @@
             <div class="border-t border-navy-700 pt-2 mt-2">
               <div class="px-3 py-2 mb-2">
                 <div class="flex items-center gap-2 mb-1">
-                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-semibold text-white">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-emerald-600 text-xs font-semibold text-white">
                     {{ me.name?.charAt(0).toUpperCase() || 'U' }}
                   </div>
                   <div>
@@ -281,13 +280,13 @@
     <main>
       <slot />
     </main>
-    <footer class="mt-16 border-t border-navy-800 bg-navy-900/30">
+    <footer class="mt-16 bg-gradient-to-br from-navy-900 to-primary-900">
       <div class="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-3 sm:px-4 py-8 sm:py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div class="sm:col-span-2 lg:col-span-1">
           <div class="mb-3 flex items-center gap-2">
             <div
               v-if="logoUrl"
-              class="inline-flex items-center justify-center rounded-xl bg-white px-3 py-1.5 shadow-xl border-2 border-white/50 ring-2 ring-white/30"
+              class="inline-flex items-center justify-center rounded-xl bg-white px-3 py-1.5 shadow-xl"
             >
               <img
                 :src="logoUrl"
@@ -295,50 +294,51 @@
                 class="h-12 w-auto object-contain"
               />
             </div>
-            <div v-else class="text-lg font-semibold">WeCodeZW</div>
+            <div v-else class="text-lg font-semibold text-white">WeCodeZW</div>
           </div>
           <p class="text-navy-200 text-sm sm:text-base">Bridging knowledge, technology, and innovation for a digital-first world.</p>
           <div class="mt-4 text-sm text-navy-300">WhatsApp: +263 778 456 168</div>
         </div>
         <div>
-          <div class="mb-3 font-semibold text-sm sm:text-base">Offerings</div>
+          <div class="mb-3 font-semibold text-sm sm:text-base text-white">Offerings</div>
           <ul class="space-y-2 text-navy-200 text-sm sm:text-base">
-            <li><NuxtLink to="/training" class="hover:text-navy-100">Individuals</NuxtLink></li>
-            <li><NuxtLink to="/schools" class="hover:text-navy-100">School Clubs</NuxtLink></li>
-            <li><NuxtLink to="/corporate" class="hover:text-navy-100">Corporate Upskilling</NuxtLink></li>
-            <li><NuxtLink to="/services" class="hover:text-navy-100">IT Services</NuxtLink></li>
+            <li><NuxtLink to="/training" class="hover:text-white transition-colors">Individuals</NuxtLink></li>
+            <li><NuxtLink to="/schools" class="hover:text-white transition-colors">School Clubs</NuxtLink></li>
+            <li><NuxtLink to="/corporate" class="hover:text-white transition-colors">Corporate Upskilling</NuxtLink></li>
+            <li><NuxtLink to="/services" class="hover:text-white transition-colors">IT Services</NuxtLink></li>
           </ul>
         </div>
         <div>
-          <div class="mb-3 font-semibold text-sm sm:text-base">Company</div>
+          <div class="mb-3 font-semibold text-sm sm:text-base text-white">Company</div>
           <ul class="space-y-2 text-navy-200 text-sm sm:text-base">
-            <li><NuxtLink to="/about" class="hover:text-navy-100">About</NuxtLink></li>
-            <li><NuxtLink to="/contact" class="hover:text-navy-100">Contact</NuxtLink></li>
-            <li><a href="https://wa.me/263778456168" target="_blank" class="underline hover:text-navy-100">WhatsApp</a></li>
+            <li><NuxtLink to="/about" class="hover:text-white transition-colors">About</NuxtLink></li>
+            <li><NuxtLink to="/contact" class="hover:text-white transition-colors">Contact</NuxtLink></li>
+            <li><a href="https://wa.me/263778456168" target="_blank" class="underline hover:text-white transition-colors">WhatsApp</a></li>
           </ul>
         </div>
         <div>
-          <div class="mb-3 font-semibold text-sm sm:text-base">Legal</div>
+          <div class="mb-3 font-semibold text-sm sm:text-base text-white">Legal</div>
           <ul class="space-y-2 text-navy-200 text-sm sm:text-base">
-            <li><NuxtLink to="/privacy-policy" class="hover:text-navy-100">Privacy Policy</NuxtLink></li>
-            <li><NuxtLink to="/terms-and-conditions" class="hover:text-navy-100">Terms & Conditions</NuxtLink></li>
+            <li><NuxtLink to="/privacy-policy" class="hover:text-white transition-colors">Privacy Policy</NuxtLink></li>
+            <li><NuxtLink to="/terms-and-conditions" class="hover:text-white transition-colors">Terms & Conditions</NuxtLink></li>
           </ul>
-        </div>
-        <div class="sm:col-span-2 lg:col-span-1">
-          <div class="mb-3 font-semibold text-sm sm:text-base">Newsletter</div>
-          <form class="flex flex-col gap-2 sm:flex-row">
-            <UiInput type="email" placeholder="Your email" class="flex-1" />
-            <UiButton type="submit" class="px-3 whitespace-nowrap">Join</UiButton>
-          </form>
+          <!-- Newsletter -->
+          <div class="mt-6">
+            <div class="mb-2 font-semibold text-sm text-white">Newsletter</div>
+            <form class="flex flex-col gap-2">
+              <input type="email" placeholder="Your email" class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white placeholder-navy-300 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/20" />
+              <button type="submit" class="rounded-lg bg-gradient-to-r from-primary-400 to-primary-500 px-4 py-2 text-sm font-semibold text-white hover:from-primary-500 hover:to-primary-600 transition-all">Join</button>
+            </form>
+          </div>
         </div>
       </div>
-      <div class="border-t border-navy-800 py-4 sm:py-6">
+      <div class="border-t border-white/10 py-4 sm:py-6">
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs sm:text-sm text-navy-300">
           <span>© {{ new Date().getFullYear() }} WeCodeZW. All rights reserved.</span>
           <div class="flex items-center gap-4">
-            <NuxtLink to="/privacy-policy" class="hover:text-navy-100">Privacy Policy</NuxtLink>
+            <NuxtLink to="/privacy-policy" class="hover:text-white transition-colors">Privacy Policy</NuxtLink>
             <span>•</span>
-            <NuxtLink to="/terms-and-conditions" class="hover:text-navy-100">Terms & Conditions</NuxtLink>
+            <NuxtLink to="/terms-and-conditions" class="hover:text-white transition-colors">Terms & Conditions</NuxtLink>
           </div>
         </div>
       </div>

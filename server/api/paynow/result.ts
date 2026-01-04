@@ -22,14 +22,14 @@ export default defineEventHandler(async (event) => {
 
   try {
     const paynow = new Paynow(integrationId, integrationKey)
-    
+
     // Paynow sends webhooks as GET with query params or POST with form data
     // Get query parameters (for GET requests) or body (for POST requests)
     const query = getQuery(event)
     const method = getMethod(event)
-    
+
     let statusData: any
-    
+
     if (method === 'GET' && Object.keys(query).length > 0) {
       // GET request with query parameters
       // Convert query object to query string for parseStatus
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
       // POST request - try to read body
       try {
         const body = await readBody(event)
-        
+
         // If body is an object, convert to query string
         if (typeof body === 'object' && body !== null) {
           const queryString = new URLSearchParams(body as Record<string, string>).toString()
@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
         statusData = paynow.parseStatus(queryString)
       }
     }
-    
+
     if (!statusData) {
       console.error('PayNow webhook: Failed to parse status', { method, query, body: method === 'POST' ? 'attempted' : 'N/A' })
       throw createError({ statusCode: 400, statusMessage: 'Invalid payment status' })
@@ -84,7 +84,7 @@ export default defineEventHandler(async (event) => {
     // If payment successful, activate enrollment
     if (statusData.paid) {
       console.log('PayNow webhook: Payment successful, updating invoice and enrollments', { invoiceId: invoice.id })
-      
+
       // Update invoice status
       await prisma.invoice.update({
         where: { id: invoice.id },
@@ -112,7 +112,7 @@ export default defineEventHandler(async (event) => {
         if (existingPayment.status !== 'SUCCESS' || !existingPayment.method) {
           await prisma.payment.update({
             where: { id: existingPayment.id },
-            data: { 
+            data: {
               status: 'SUCCESS',
               method: existingPayment.method || 'PAYNOW'
             }
@@ -125,6 +125,8 @@ export default defineEventHandler(async (event) => {
         where: { id: invoice.userId },
         select: { id: true, name: true, email: true }
       })
+
+      console.log('PayNow webhook: Looking for enrollments with invoiceId:', invoice.id)
 
       // Activate enrollments linked to this invoice
       const enrollments = await prisma.enrollment.findMany({
@@ -140,14 +142,41 @@ export default defineEventHandler(async (event) => {
         }
       })
 
+      console.log('PayNow webhook: Found enrollments:', {
+        count: enrollments.length,
+        enrollments: enrollments.map(e => ({
+          id: e.id,
+          courseId: e.courseId,
+          status: e.status,
+          invoiceId: e.invoiceId
+        }))
+      })
+
+      if (enrollments.length === 0) {
+        console.error('PayNow webhook: WARNING - No enrollments found for invoice!', {
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.number,
+          userId: invoice.userId
+        })
+      }
+
       for (const enrollment of enrollments) {
         if (enrollment.status !== 'ACTIVE') {
+          console.log('PayNow webhook: Updating enrollment to ACTIVE', {
+            enrollmentId: enrollment.id,
+            currentStatus: enrollment.status
+          })
+
           await prisma.enrollment.update({
             where: { id: enrollment.id },
             data: { status: 'ACTIVE' }
           })
-          console.log('PayNow webhook: Activated enrollment', { enrollmentId: enrollment.id, courseId: enrollment.courseId })
-          
+
+          console.log('PayNow webhook: Successfully activated enrollment', {
+            enrollmentId: enrollment.id,
+            courseId: enrollment.courseId
+          })
+
           // Create instructor earning
           try {
             const { createInstructorEarning } = await import('~~/server/utils/instructor-earnings')
@@ -162,8 +191,8 @@ export default defineEventHandler(async (event) => {
             type: 'PAYMENT_SUCCESS',
             title: 'Payment Received (PayNow)',
             message: `Payment of ${Number(invoice.amountUsd).toFixed(2)} ${invoice.currency || 'USD'} received from ${user?.name || 'a user'} for course "${enrollment.course?.name || 'Unknown'}".`,
-            metadata: { 
-              invoiceId: invoice.id, 
+            metadata: {
+              invoiceId: invoice.id,
               invoiceNumber: invoice.number,
               enrollmentId: enrollment.id,
               courseId: enrollment.courseId,
@@ -183,8 +212,8 @@ export default defineEventHandler(async (event) => {
               type: 'PAYMENT_SUCCESS',
               title: 'Payment Successful',
               message: `Your payment of ${Number(invoice.amountUsd).toFixed(2)} ${invoice.currency || 'USD'} for "${enrollment.course?.name || 'course'}" has been processed. You now have access to the course!`,
-              metadata: { 
-                invoiceId: invoice.id, 
+              metadata: {
+                invoiceId: invoice.id,
                 invoiceNumber: invoice.number,
                 enrollmentId: enrollment.id,
                 courseId: enrollment.courseId,
@@ -202,8 +231,8 @@ export default defineEventHandler(async (event) => {
               type: 'PAYMENT_SUCCESS',
               title: 'Student Payment Received',
               message: `${user?.name || 'A student'} has completed payment for your course "${enrollment.course.name}".`,
-              metadata: { 
-                invoiceId: invoice.id, 
+              metadata: {
+                invoiceId: invoice.id,
                 enrollmentId: enrollment.id,
                 courseId: enrollment.courseId,
                 courseName: enrollment.course.name,
@@ -217,8 +246,8 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      console.log('PayNow webhook: Successfully processed payment', { 
-        invoiceId: invoice.id, 
+      console.log('PayNow webhook: Successfully processed payment', {
+        invoiceId: invoice.id,
         enrollmentsUpdated: enrollments.length,
         enrollments: enrollments.map(e => ({ id: e.id, status: e.status }))
       })

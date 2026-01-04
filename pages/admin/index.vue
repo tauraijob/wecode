@@ -25,7 +25,7 @@
         <div class="flex gap-2">
           <NuxtLink
             to="/admin/courses"
-            class="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-2.5 font-medium text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+            class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2.5 font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
           >
             Manage Courses
           </NuxtLink>

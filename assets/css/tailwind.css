@@ -3,36 +3,136 @@
 @tailwind utilities;
 
 :root {
-  --navy-50: #f5f7fb;
-  --navy-100: #e8edf7;
-  --navy-200: #cfdaf0;
-  --navy-300: #a6bde3;
-  --navy-400: #7899d1;
-  --navy-500: #456dac;
-  --navy-600: #2e518d;
-  --navy-700: #213c6d;
-  --navy-800: #182a4e;
-  --navy-900: #111c36;
+  /* Navy blue primary palette */
+  --color-primary: #1e3a5f;
+  --color-primary-dark: #172d4d;
+  --color-accent: #f97316;
+  --color-accent-dark: #ea580c;
+  --color-bg: #f7f9ff;
+  --color-surface: #fafbfd;
+  --color-border: #e4e9f2;
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b7280;
 }
 
 @layer base {
-  html { @apply scroll-smooth; }
-  body { @apply bg-navy-950 text-white antialiased; }
-  
-  /* Ensure form elements have proper text color */
-  input, textarea, select {
-    color: white !important;
+  html {
+    @apply scroll-smooth;
   }
-  
-  /* Style select options */
+
+  body {
+    @apply antialiased;
+    background-color: #f7f9ff;
+    color: #1a1a1a;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #1a1a1a;
+  }
+
+  p {
+    color: #4a4a4a;
+  }
+
+  input,
+  textarea,
+  select {
+    color: #1a1a1a;
+  }
+
   select option {
-    background-color: #1e293b;
-    color: #e2e8f0;
+    background-color: #fafbfd;
+    color: #1a1a1a;
   }
-  
-  /* Custom breakpoint for extra small screens */
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #eef1f8;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c1cada;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #9fb3c8;
+  }
+
   @media (min-width: 475px) {
-    .xs\:inline { display: inline; }
+    .xs\:inline {
+      display: inline;
+    }
   }
 }
 
+@layer components {
+  .card {
+    @apply rounded-2xl border;
+    background-color: #fafbfd;
+    border-color: #e4e9f2;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+  }
+
+  /* Gradient text - navy blue */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, #1e3a5f, #2d4a6f);
+  }
+
+  /* Primary button - NAVY BLUE */
+  .btn-primary {
+    @apply rounded-xl px-6 py-3;
+    @apply text-sm font-semibold text-white;
+    background: linear-gradient(to right, #1e3a5f, #172d4d);
+    @apply transition-all duration-300;
+    box-shadow: 0 4px 14px rgba(30, 58, 95, 0.3);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(to right, #172d4d, #122340);
+    box-shadow: 0 6px 20px rgba(30, 58, 95, 0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Accent button - orange */
+  .btn-accent {
+    @apply rounded-xl px-6 py-3;
+    @apply text-sm font-semibold text-white;
+    background: linear-gradient(to right, #f97316, #ea580c);
+    @apply transition-all duration-300;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
+  }
+
+  .glass {
+    background-color: rgba(250, 251, 253, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(228, 233, 242, 0.5);
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-soft-lg {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 2px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+}

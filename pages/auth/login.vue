@@ -1,64 +1,66 @@
 <template>
-  <section class="mx-auto max-w-md px-3 sm:px-4 py-16">
-    <div class="mb-8 text-center">
-      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
-        Sign In
-      </h1>
-      <p class="mt-2 text-navy-300">Welcome back to WeCodeZW</p>
-    </div>
-
-    <div class="rounded-2xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-8 shadow-xl">
-      <!-- Error Message -->
-      <div v-if="error" class="mb-5 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-        <p class="text-sm text-red-300">{{ error }}</p>
-        <button
-          v-if="showResendVerification"
-          @click="resendVerification"
-          :disabled="resending"
-          class="mt-3 text-sm text-blue-400 hover:text-blue-300 underline disabled:opacity-50"
-        >
-          {{ resending ? 'Sending...' : 'Resend verification email' }}
-        </button>
+  <section class="min-h-screen bg-cream-50 py-16">
+    <div class="mx-auto max-w-md px-4 sm:px-6">
+      <div class="mb-8 text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">
+          Sign In
+        </h1>
+        <p class="mt-2 text-gray-600">Welcome back to WeCodeZW</p>
       </div>
 
-      <form @submit.prevent="onSubmit" class="space-y-5">
-        <div>
-          <label class="mb-2 block text-sm font-medium text-navy-200">Email</label>
-          <input
-            v-model="email"
-            type="email"
-            required
-            placeholder="[email protected]"
-            class="w-full rounded-lg border border-navy-700 bg-navy-800/50 px-4 py-2.5 text-white placeholder-navy-400 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-          />
+      <div class="rounded-2xl bg-white border border-cream-200 p-8 shadow-card">
+        <!-- Error Message -->
+        <div v-if="error" class="mb-5 rounded-lg border border-red-200 bg-red-50 p-4">
+          <p class="text-sm text-red-600">{{ error }}</p>
+          <button
+            v-if="showResendVerification"
+            @click="resendVerification"
+            :disabled="resending"
+            class="mt-3 text-sm text-primary-600 hover:text-primary-700 underline disabled:opacity-50"
+          >
+            {{ resending ? 'Sending...' : 'Resend verification email' }}
+          </button>
         </div>
-        <div>
-          <label class="mb-2 block text-sm font-medium text-navy-200">Password</label>
-          <input
-            v-model="password"
-            type="password"
-            required
-            placeholder="••••••••"
-            class="w-full rounded-lg border border-navy-700 bg-navy-800/50 px-4 py-2.5 text-white placeholder-navy-400 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-          />
-        </div>
-        <button
-          type="submit"
-          :disabled="loading"
-          class="w-full rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-5 py-2.5 text-sm font-medium text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          <span v-if="loading" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
-        <div class="text-center">
-          <NuxtLink to="/auth/forgot-password" class="text-sm text-blue-400 hover:text-blue-300 underline">
-            Forgot your password?
-          </NuxtLink>
-        </div>
-        <div class="text-center text-sm text-navy-300">
-          No account? <NuxtLink to="/auth/register" class="text-blue-400 hover:text-blue-300 underline">Create one</NuxtLink>
-        </div>
-      </form>
+
+        <form @submit.prevent="onSubmit" class="space-y-5">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">Email</label>
+            <input
+              v-model="email"
+              type="email"
+              required
+              placeholder="[email protected]"
+              class="w-full rounded-lg border border-cream-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">Password</label>
+            <input
+              v-model="password"
+              type="password"
+              required
+              placeholder="••••••••"
+              class="w-full rounded-lg border border-cream-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="w-full rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-5 py-3 text-sm font-semibold text-white hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <span v-if="loading" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+            {{ loading ? 'Signing in...' : 'Sign In' }}
+          </button>
+          <div class="text-center">
+            <NuxtLink to="/auth/forgot-password" class="text-sm text-primary-600 hover:text-primary-700 underline underline-offset-2">
+              Forgot your password?
+            </NuxtLink>
+          </div>
+          <div class="text-center text-sm text-gray-600">
+            No account? <NuxtLink to="/auth/register" class="text-primary-600 hover:text-primary-700 font-medium underline underline-offset-2">Create one</NuxtLink>
+          </div>
+        </form>
+      </div>
     </div>
   </section>
 </template>
@@ -83,14 +85,11 @@ async function onSubmit() {
       body: { email: email.value, password: password.value }
     })
     
-    // Trigger auth refresh event to update header
     if (process.client) {
       window.dispatchEvent(new Event('auth:login'))
-      // Small delay to ensure cookie is set
       await new Promise(resolve => setTimeout(resolve, 100))
     }
     
-    // Navigate to appropriate dashboard
     if (me && me.role === 'ADMIN') {
       await navigateTo('/admin')
     } else {
@@ -100,7 +99,6 @@ async function onSubmit() {
     const errorMessage = err.data?.message || 'Login failed'
     error.value = errorMessage
     
-    // Show resend verification option if email not verified
     if (errorMessage.includes('verify your email') || errorMessage.includes('verification')) {
       showResendVerification.value = true
     }
