@@ -17,12 +17,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Enrollment ID required' })
   }
 
-  await prisma.enrollment.update({
-    where: { id },
-    data: { status: 'CANCELLED' }
+  // Delete related lesson progress first
+  await prisma.lessonProgress.deleteMany({
+    where: { enrollmentId: id }
   })
 
-  return { success: true }
+  // Then delete the enrollment
+  await prisma.enrollment.delete({
+    where: { id }
+  })
+
+  return { success: true, message: 'Enrollment deleted successfully' }
 })
 
 
