@@ -357,6 +357,165 @@
         </div>
       </div>
     </transition>
+
+    <!-- Notification Detail Modal -->
+    <transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="selectedNotification"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+        @click.self="selectedNotification = null"
+      >
+        <div class="w-full max-w-4xl rounded-2xl border border-navy-700/50 bg-gradient-to-br from-navy-900/95 to-navy-800/95 shadow-2xl">
+          <!-- Header -->
+          <div class="border-b border-navy-700/50 bg-navy-800/50 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+            <div class="flex items-center gap-4">
+              <div
+                :class="{
+                  'bg-blue-500/20': selectedNotification.type === 'COURSE_SUBMITTED',
+                  'bg-green-500/20': selectedNotification.type === 'COURSE_APPROVED',
+                  'bg-red-500/20': selectedNotification.type === 'COURSE_REJECTED',
+                  'bg-amber-500/20': selectedNotification.type === 'NEW_USER' || selectedNotification.type === 'NEW_INSTRUCTOR',
+                  'bg-purple-500/20': !['COURSE_SUBMITTED', 'COURSE_APPROVED', 'COURSE_REJECTED', 'NEW_USER', 'NEW_INSTRUCTOR'].includes(selectedNotification.type)
+                }"
+                class="rounded-xl p-3"
+              >
+                <svg
+                  v-if="selectedNotification.type === 'COURSE_SUBMITTED'"
+                  class="h-6 w-6 text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <svg
+                  v-else-if="selectedNotification.type === 'COURSE_APPROVED'"
+                  class="h-6 w-6 text-green-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg
+                  v-else-if="selectedNotification.type === 'COURSE_REJECTED'"
+                  class="h-6 w-6 text-red-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg
+                  v-else-if="selectedNotification.type === 'NEW_USER' || selectedNotification.type === 'NEW_INSTRUCTOR'"
+                  class="h-6 w-6 text-amber-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                <svg
+                  v-else
+                  class="h-6 w-6 text-purple-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-white">{{ selectedNotification.title }}</h2>
+                <p class="text-sm text-navy-400">{{ formatFullDate(selectedNotification.createdAt) }}</p>
+              </div>
+            </div>
+            <button
+              @click="selectedNotification = null"
+              class="rounded-lg p-2 hover:bg-navy-800/50 transition-colors"
+            >
+              <svg class="h-5 w-5 text-navy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6 space-y-6">
+            <!-- Message -->
+            <div>
+              <h3 class="text-sm font-medium text-navy-400 mb-2">Message</h3>
+              <p class="text-white whitespace-pre-wrap leading-relaxed">{{ selectedNotification.message }}</p>
+            </div>
+
+            <!-- Metadata (if exists) -->
+            <div v-if="selectedNotification.metadata && Object.keys(selectedNotification.metadata).length > 0">
+              <h3 class="text-sm font-medium text-navy-400 mb-3">Details</h3>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div v-for="(value, key) in selectedNotification.metadata" :key="key" class="rounded-lg border border-navy-700/50 bg-navy-800/30 p-4">
+                  <p class="text-xs text-navy-400 uppercase tracking-wider mb-1">{{ formatMetadataKey(key) }}</p>
+                  <p class="text-white font-medium">{{ value }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Badge -->
+            <div class="flex items-center gap-3">
+              <span
+                :class="{
+                  'bg-blue-500/20 text-blue-400 border-blue-500/30': selectedNotification.type === 'COURSE_SUBMITTED',
+                  'bg-green-500/20 text-green-400 border-green-500/30': selectedNotification.type === 'COURSE_APPROVED',
+                  'bg-red-500/20 text-red-400 border-red-500/30': selectedNotification.type === 'COURSE_REJECTED',
+                  'bg-amber-500/20 text-amber-400 border-amber-500/30': selectedNotification.type === 'NEW_USER' || selectedNotification.type === 'NEW_INSTRUCTOR',
+                  'bg-purple-500/20 text-purple-400 border-purple-500/30': !['COURSE_SUBMITTED', 'COURSE_APPROVED', 'COURSE_REJECTED', 'NEW_USER', 'NEW_INSTRUCTOR'].includes(selectedNotification.type)
+                }"
+                class="rounded-lg border px-3 py-1.5 text-sm font-medium"
+              >
+                {{ formatNotificationType(selectedNotification.type) }}
+              </span>
+              <span
+                :class="selectedNotification.read ? 'bg-navy-700/50 text-navy-400' : 'bg-blue-500/20 text-blue-400'"
+                class="rounded-lg px-3 py-1.5 text-sm font-medium"
+              >
+                {{ selectedNotification.read ? 'Read' : 'Unread' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="border-t border-navy-700/50 bg-navy-800/30 px-6 py-4 flex justify-between items-center rounded-b-2xl">
+            <button
+              v-if="selectedNotification.type === 'COURSE_SUBMITTED' && selectedNotification.metadata?.courseId"
+              @click="navigateToAction"
+              class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg"
+            >
+              Review Course
+            </button>
+            <button
+              v-else-if="selectedNotification.type === 'NEW_USER' || selectedNotification.type === 'NEW_INSTRUCTOR'"
+              @click="navigateToUsers"
+              class="rounded-lg bg-gradient-to-r from-accent-500 to-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:from-accent-600 hover:to-emerald-700 transition-all shadow-lg"
+            >
+              View Users
+            </button>
+            <div v-else></div>
+            <button
+              @click="selectedNotification = null"
+              class="rounded-lg border border-navy-700 bg-navy-800/50 px-5 py-2.5 text-sm font-medium text-navy-200 hover:bg-navy-700/50 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -377,6 +536,7 @@ const open = ref(false)
 const route = useRoute()
 const notificationMenuOpen = ref(false)
 const notificationMenuRef = ref<HTMLElement | null>(null)
+const selectedNotification = ref<any>(null)
 
 // Fetch notifications with lazy loading to prevent blocking
 const { data: notificationsData, refresh: refreshNotifications } = useLazyFetch('/api/admin/notifications', {
@@ -434,14 +594,49 @@ async function handleNotificationClick(notification: any) {
     }
   }
 
-  // Navigate based on notification type
-  if (notification.type === 'COURSE_SUBMITTED' && notification.metadata?.courseId) {
-    await navigateTo(`/admin/courses/review`)
-    notificationMenuOpen.value = false
-  } else if (notification.type === 'COURSE_APPROVED' || notification.type === 'COURSE_REJECTED') {
-    await navigateTo(`/admin/courses`)
-    notificationMenuOpen.value = false
+  // Open the notification detail modal
+  selectedNotification.value = notification
+  notificationMenuOpen.value = false
+}
+
+function formatFullDate(date: string) {
+  return new Date(date).toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function formatMetadataKey(key: string) {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()
+}
+
+function formatNotificationType(type: string) {
+  const typeMap: Record<string, string> = {
+    'COURSE_SUBMITTED': 'Course Submitted',
+    'COURSE_APPROVED': 'Course Approved',
+    'COURSE_REJECTED': 'Course Rejected',
+    'NEW_USER': 'New User Registration',
+    'NEW_INSTRUCTOR': 'New Instructor Registration',
+    'ENROLLMENT': 'New Enrollment',
+    'PAYOUT_REQUEST': 'Payout Request'
   }
+  return typeMap[type] || type.replace(/_/g, ' ')
+}
+
+async function navigateToAction() {
+  if (selectedNotification.value?.type === 'COURSE_SUBMITTED') {
+    await navigateTo('/admin/courses/review')
+  }
+  selectedNotification.value = null
+}
+
+async function navigateToUsers() {
+  await navigateTo('/admin/users')
+  selectedNotification.value = null
 }
 
 async function markAllAsRead() {
