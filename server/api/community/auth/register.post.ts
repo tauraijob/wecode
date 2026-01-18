@@ -94,7 +94,9 @@ export default defineEventHandler(async (event) => {
         })
 
         // Send verification email to user
-        const baseUrl = process.env.SITE_URL || 'http://localhost:3000'
+        // Use runtimeConfig to get SITE_URL at runtime (not baked in at build time)
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.siteUrl || 'https://wecode.co.zw'
         const verificationLink = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`
 
         try {
