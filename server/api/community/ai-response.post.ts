@@ -18,7 +18,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: 'Post ID and content are required' })
     }
 
-    const apiKey = process.env.GROQ_API_KEY
+    // Use runtimeConfig to get API key at runtime (not baked in at build time)
+    const config = useRuntimeConfig()
+    const apiKey = config.groqApiKey
     if (!apiKey) {
         throw createError({ statusCode: 503, statusMessage: 'AI service not configured' })
     }

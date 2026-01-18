@@ -73,6 +73,9 @@ export default defineNuxtConfig({
     componentDir: 'components/ui'
   },
   runtimeConfig: {
+    // Server-side only (private)
+    groqApiKey: process.env.GROQ_API_KEY || '',
+    // Public (available on client)
     public: {
       googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || '',
       siteUrl: process.env.SITE_URL || 'https://wecode.co.zw',
