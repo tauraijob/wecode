@@ -108,6 +108,27 @@ export function emailVerificationEmail(name: string, verificationLink: string): 
   return baseTemplate(content, 'Verify your email address')
 }
 
+// Alias function for resend verification that returns {html, text}
+export function getEmailVerificationTemplate(name: string, verificationLink: string, role?: string): { html: string; text: string } {
+  const html = emailVerificationEmail(name, verificationLink)
+  const text = `
+Hi ${name},
+
+Please verify your email address by clicking the link below:
+${verificationLink}
+
+This link will expire in 24 hours.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+The ${BRAND_NAME} Team
+  `.trim()
+
+  return { html, text }
+}
+
+
 export function mentorPendingApprovalEmail(name: string): string {
   const content = `
     <div class="content">

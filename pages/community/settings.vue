@@ -180,7 +180,7 @@
     </div>
 
     <!-- Become a Mentor -->
-    <div v-if="user?.role === 'INDIVIDUAL'" class="rounded-lg bg-gradient-to-br from-primary-50 to-primary-100 border border-primary-200 shadow-sm overflow-hidden mb-4">
+    <div v-if="user?.role === 'INDIVIDUAL' && !hasPendingMentorApp" class="rounded-lg bg-gradient-to-br from-primary-50 to-primary-100 border border-primary-200 shadow-sm overflow-hidden mb-4">
       <div class="p-4">
         <div class="flex items-start gap-3">
           <div class="p-2 rounded-md bg-primary-100">
@@ -190,8 +190,25 @@
           </div>
           <div class="flex-1">
             <h3 class="text-sm font-semibold text-slate-900">Become a Mentor</h3>
-            <p class="text-xs text-slate-600 mt-0.5">Share your expertise and earn credits</p>
-            <button class="mt-2 px-3 py-1.5 rounded-md bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium">Apply Now</button>
+            <p class="text-xs text-slate-600 mt-0.5">Share your expertise and earn credits by mentoring others</p>
+            <button @click="showMentorModal = true" class="mt-2 px-3 py-1.5 rounded-md bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium">Apply Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Mentor Application Notice -->
+    <div v-if="hasPendingMentorApp" class="rounded-lg bg-amber-50 border border-amber-200 shadow-sm overflow-hidden mb-4">
+      <div class="p-4">
+        <div class="flex items-start gap-3">
+          <div class="p-2 rounded-md bg-amber-100">
+            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-sm font-semibold text-amber-800">Mentor Application Pending</h3>
+            <p class="text-xs text-amber-700 mt-0.5">Your application is being reviewed. We'll notify you once approved!</p>
           </div>
         </div>
       </div>
@@ -214,6 +231,63 @@
     </div>
 
     <TopUpModal v-model="showTopUpModal" />
+
+    <!-- Mentor Application Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showMentorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div class="bg-white rounded-xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-slate-200 bg-gradient-to-r from-primary-500 to-primary-600">
+              <h3 class="text-lg font-bold text-white">Become a Mentor</h3>
+              <p class="text-primary-100 text-sm">Share your expertise and earn credits</p>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Bio / About You*</label>
+                <textarea
+                  v-model="mentorApp.bio"
+                  placeholder="Tell us about your experience, background, and what you can teach (min 50 characters)"
+                  rows="4"
+                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                ></textarea>
+                <p class="text-xs text-slate-400 mt-1">{{ mentorApp.bio.length }}/50 characters minimum</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Skills*</label>
+                <input
+                  v-model="mentorApp.skills"
+                  type="text"
+                  placeholder="e.g., JavaScript, Python, React, Web Development"
+                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+                <p class="text-xs text-slate-400 mt-1">Comma-separated list of your skills</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Hourly Rate (Credits)*</label>
+                <input
+                  v-model.number="mentorApp.hourlyRate"
+                  type="number"
+                  min="10"
+                  max="500"
+                  placeholder="e.g., 50"
+                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+                <p class="text-xs text-slate-400 mt-1">1 credit = $0.10 USD. Suggested: 30-100 credits/hour</p>
+              </div>
+              <div class="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
+                <strong>Note:</strong> Your application will be reviewed by our team. You'll receive an email once approved.
+              </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+              <button @click="showMentorModal = false" class="px-4 py-2 text-slate-600 hover:text-slate-800 text-sm font-medium">Cancel</button>
+              <button @click="submitMentorApp" :disabled="submittingMentorApp" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+                {{ submittingMentorApp ? 'Submitting...' : 'Submit Application' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -291,4 +365,59 @@ const updateProfile = async () => {
     saving.value = false
   }
 }
+
+// Mentor Application
+const showMentorModal = ref(false)
+const submittingMentorApp = ref(false)
+const hasPendingMentorApp = ref(false)
+const mentorApp = reactive({
+  bio: '',
+  skills: '',
+  hourlyRate: 50
+})
+
+// Check if user has pending mentor application
+onMounted(async () => {
+  if (user.value?.role === 'INDIVIDUAL') {
+    try {
+      const res = await $fetch<any>('/api/community/mentors/me')
+      if (res && !res.isApproved) {
+        hasPendingMentorApp.value = true
+      }
+    } catch (err) {
+      // No mentor profile, can apply
+    }
+  }
+})
+
+const submitMentorApp = async () => {
+  if (mentorApp.bio.length < 50) {
+    error('Bio must be at least 50 characters')
+    return
+  }
+  if (!mentorApp.skills.trim()) {
+    error('Please list your skills')
+    return
+  }
+  if (mentorApp.hourlyRate < 10 || mentorApp.hourlyRate > 500) {
+    error('Hourly rate must be between 10 and 500 credits')
+    return
+  }
+
+  submittingMentorApp.value = true
+  try {
+    await $fetch('/api/community/mentors/apply', {
+      method: 'POST',
+      body: mentorApp
+    })
+    success('Mentor application submitted! We will review it and notify you.')
+    showMentorModal.value = false
+    hasPendingMentorApp.value = true
+  } catch (err: any) {
+    error(err.data?.message || 'Failed to submit application')
+  } finally {
+    submittingMentorApp.value = false
+  }
+}
 </script>
+
