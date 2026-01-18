@@ -9,7 +9,7 @@ async function main() {
   // Create admin user for E-LEARNING PLATFORM (different from general website)
   const adminEmail = 'taujob1111@gmail.com'
   const adminPassword = 'ElearningAdmin@2024'
-  
+
   const hashedPassword = await bcrypt.hash(adminPassword, 10)
 
   const adminUser = await prisma.user.upsert({
@@ -36,7 +36,7 @@ async function main() {
   // Create a regular user for courses (E-LEARNING PLATFORM)
   const userEmail = 'info@wecode.co.zw'
   const userPassword = 'ElearningStudent@2024'
-  
+
   const userHashedPassword = await bcrypt.hash(userPassword, 10)
 
   const regularUser = await prisma.user.upsert({
@@ -63,7 +63,7 @@ async function main() {
   // Create instructor user for E-LEARNING PLATFORM
   const instructorEmail = 'mtauraij@gmail.com'
   const instructorPassword = 'ElearningInstructor@2024'
-  
+
   const instructorHashedPassword = await bcrypt.hash(instructorPassword, 10)
 
   const instructorUser = await prisma.user.upsert({
@@ -319,7 +319,7 @@ async function main() {
 
   for (const courseData of courses) {
     const { topics, ...courseInfo } = courseData
-    
+
     // Check if course already exists
     const existingCourse = await prisma.course.findFirst({
       where: { name: courseData.name }
@@ -329,7 +329,7 @@ async function main() {
       console.log(`⏭️  Course already exists: ${courseData.name}`)
       continue
     }
-    
+
     const course = await prisma.course.create({
       data: {
         ...courseInfo,
@@ -388,7 +388,7 @@ async function main() {
 
   // Create products
   console.log('\n🛍️  Creating products...')
-  
+
   const products = [
     {
       name: 'Touchpad Gel Cleaner & Protector',
@@ -578,6 +578,268 @@ async function main() {
   console.log('   9. Wireless Charging Mouse Pad - $39.99')
   console.log('   10. Laptop Cooling Pad RGB - $34.99')
   console.log('\n💡 You can now login and explore the courses and shop products!')
+
+  // ==========================================
+  // Community & Mentorship Test Users
+  // ==========================================
+  console.log('\n🧑‍🏫 Creating Community & Mentorship test users...')
+
+  const communityPassword = 'Community@2024'
+  const communityHashedPassword = await bcrypt.hash(communityPassword, 10)
+
+  // Create Mentor 1 - Verified, many sessions
+  const mentor1 = await prisma.user.upsert({
+    where: { email: 'mentor1@wecode.co.zw' },
+    update: {},
+    create: {
+      email: 'mentor1@wecode.co.zw',
+      name: 'Sarah Moyo',
+      role: 'MENTOR',
+      hashedPassword: communityHashedPassword,
+      phone: '+263 772 111 001',
+      emailVerified: true,
+      credits: 500
+    }
+  })
+
+  await prisma.mentorProfile.upsert({
+    where: { userId: mentor1.id },
+    update: {},
+    create: {
+      userId: mentor1.id,
+      bio: 'Senior Software Engineer with 8+ years of experience in full-stack development. I specialize in React, Node.js, and cloud architecture. Passionate about helping junior developers grow their careers and build production-ready applications.',
+      hourlyRate: 50,
+      skills: 'React,Node.js,TypeScript,AWS,System Design,Career Coaching',
+      available: true,
+      verified: true,
+      sessionsCount: 127
+    }
+  })
+  console.log('   ✅ Created Mentor: Sarah Moyo (Verified, 127 sessions)')
+
+  // Create Mentor 2 - Verified, moderate sessions
+  const mentor2 = await prisma.user.upsert({
+    where: { email: 'mentor2@wecode.co.zw' },
+    update: {},
+    create: {
+      email: 'mentor2@wecode.co.zw',
+      name: 'Tinashe Chigumba',
+      role: 'MENTOR',
+      hashedPassword: communityHashedPassword,
+      phone: '+263 772 111 002',
+      emailVerified: true,
+      credits: 300
+    }
+  })
+
+  await prisma.mentorProfile.upsert({
+    where: { userId: mentor2.id },
+    update: {},
+    create: {
+      userId: mentor2.id,
+      bio: 'Data Scientist and Machine Learning Engineer. I help aspiring data professionals understand complex ML concepts and build real-world AI solutions. Former Google intern with experience in big data technologies.',
+      hourlyRate: 75,
+      skills: 'Python,Machine Learning,Data Science,TensorFlow,SQL,Statistics',
+      available: true,
+      verified: true,
+      sessionsCount: 84
+    }
+  })
+  console.log('   ✅ Created Mentor: Tinashe Chigumba (Verified, 84 sessions)')
+
+  // Create Mentor 3 - Not verified, new mentor
+  const mentor3 = await prisma.user.upsert({
+    where: { email: 'mentor3@wecode.co.zw' },
+    update: {},
+    create: {
+      email: 'mentor3@wecode.co.zw',
+      name: 'Grace Dziva',
+      role: 'MENTOR',
+      hashedPassword: communityHashedPassword,
+      phone: '+263 772 111 003',
+      emailVerified: true,
+      credits: 100
+    }
+  })
+
+  await prisma.mentorProfile.upsert({
+    where: { userId: mentor3.id },
+    update: {},
+    create: {
+      userId: mentor3.id,
+      bio: 'UI/UX Designer with a passion for creating beautiful and functional interfaces. I teach design principles, Figma, and how to bridge the gap between design and development. Self-taught designer turned professional.',
+      hourlyRate: 35,
+      skills: 'UI/UX Design,Figma,CSS,User Research,Prototyping',
+      available: true,
+      verified: false,
+      sessionsCount: 12
+    }
+  })
+  console.log('   ✅ Created Mentor: Grace Dziva (New mentor, 12 sessions)')
+
+  // Create Community User with credits
+  const communityUser = await prisma.user.upsert({
+    where: { email: 'community@wecode.co.zw' },
+    update: { credits: 1000 },
+    create: {
+      email: 'community@wecode.co.zw',
+      name: 'Community Member',
+      role: 'INDIVIDUAL',
+      hashedPassword: communityHashedPassword,
+      phone: '+263 772 111 004',
+      emailVerified: true,
+      credits: 1000
+    }
+  })
+  console.log('   ✅ Created Community User with 1000 credits')
+
+  // Create sample forum posts
+  console.log('\n💬 Creating sample forum posts...')
+
+  const post1 = await prisma.forumPost.upsert({
+    where: { id: 'seed-post-1' },
+    update: {},
+    create: {
+      id: 'seed-post-1',
+      title: 'Best resources for learning React in 2024?',
+      content: `Hey everyone! 👋
+
+I'm starting my journey into React development and I'm overwhelmed by the number of resources out there. I've been coding in vanilla JavaScript for about a year now, and I feel ready to take the next step.
+
+What resources would you recommend for someone at my level? I'm particularly interested in:
+- Official documentation vs video courses
+- Project-based learning
+- Understanding hooks deeply
+
+Any suggestions would be greatly appreciated! Also, if there are any mentors here who specialize in React, I'd love to hear your take on this.
+
+Thanks in advance! 🙏`,
+      authorId: communityUser.id
+    }
+  })
+
+  await prisma.forumComment.upsert({
+    where: { id: 'seed-comment-1' },
+    update: {},
+    create: {
+      id: 'seed-comment-1',
+      content: `Great question! I highly recommend starting with the official React documentation - it's been completely rewritten and is now interactive. The new docs at react.dev are fantastic for beginners.
+
+For project-based learning, try building a todo app first, then move to something more complex like a weather app or a simple e-commerce site.
+
+Feel free to book a session with me if you want personalized guidance! 🚀`,
+      authorId: mentor1.id,
+      postId: post1.id
+    }
+  })
+
+  await prisma.forumComment.upsert({
+    where: { id: 'seed-comment-2' },
+    update: {},
+    create: {
+      id: 'seed-comment-2',
+      content: `I second Sarah's recommendation! Also check out "Full Stack Open" - it's a free course from the University of Helsinki that covers React, Node.js, and GraphQL. Super comprehensive!`,
+      authorId: mentor2.id,
+      postId: post1.id
+    }
+  })
+
+  const post2 = await prisma.forumPost.upsert({
+    where: { id: 'seed-post-2' },
+    update: {},
+    create: {
+      id: 'seed-post-2',
+      title: 'Tips for transitioning from design to frontend development',
+      content: `Hello fellow creators! 🎨
+
+I've been working as a UI/UX designer for 3 years and I'm looking to transition into frontend development. I already know HTML and CSS pretty well from my design work, but JavaScript still feels intimidating.
+
+Has anyone made this transition successfully? What was your learning path? Would love to hear your stories and any advice you might have.
+
+Also curious about how to leverage my design background as a strength in development roles.`,
+      authorId: mentor3.id
+    }
+  })
+
+  await prisma.forumComment.upsert({
+    where: { id: 'seed-comment-3' },
+    update: {},
+    create: {
+      id: 'seed-comment-3',
+      content: `I made this exact transition 5 years ago! Your design background is actually a HUGE advantage. You already understand user experience, which many developers struggle with.
+
+My advice: Start with JavaScript fundamentals, then move to a framework like React. Your CSS skills will make your components look amazing from day one.
+
+Don't be intimidated - you've already done the harder part by understanding visual hierarchy and user flows!`,
+      authorId: mentor1.id,
+      postId: post2.id
+    }
+  })
+
+  const post3 = await prisma.forumPost.upsert({
+    where: { id: 'seed-post-3' },
+    update: {},
+    create: {
+      id: 'seed-post-3',
+      title: 'How to approach system design interviews?',
+      content: `I have a senior developer interview coming up that includes a system design round. I've never done one before and I'm quite nervous about it.
+
+What topics should I focus on? How do you structure your answers? Any resources specifically for Zimbabwe's tech scene?
+
+Would appreciate any help! 🙏`,
+      authorId: communityUser.id
+    }
+  })
+
+  await prisma.forumComment.upsert({
+    where: { id: 'seed-comment-4' },
+    update: {},
+    create: {
+      id: 'seed-comment-4',
+      content: `System design can seem daunting but it's actually quite structured. Focus on these areas:
+
+1. **Requirements gathering** - Always clarify functional and non-functional requirements
+2. **High-level design** - Start with boxes and arrows
+3. **Deep dive** - Pick one component to explain in detail
+4. **Trade-offs** - Explain why you made certain choices
+
+For resources, check out "Designing Data-Intensive Applications" and the System Design Primer on GitHub.
+
+I offer mentorship sessions specifically for interview prep if you're interested!`,
+      authorId: mentor2.id,
+      postId: post3.id
+    }
+  })
+
+  console.log('   ✅ Created 3 forum posts with comments')
+
+  // Print community credentials
+  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('🧑‍🏫 COMMUNITY & MENTORSHIP LOGIN CREDENTIALS:')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('👤 MENTOR 1 (Verified - Senior):')
+  console.log('   Email:    mentor1@wecode.co.zw')
+  console.log(`   Password: ${communityPassword}`)
+  console.log('   Name:     Sarah Moyo')
+  console.log('   Rate:     50 credits/hour | Sessions: 127')
+  console.log('')
+  console.log('👤 MENTOR 2 (Verified - Data Science):')
+  console.log('   Email:    mentor2@wecode.co.zw')
+  console.log(`   Password: ${communityPassword}`)
+  console.log('   Name:     Tinashe Chigumba')
+  console.log('   Rate:     75 credits/hour | Sessions: 84')
+  console.log('')
+  console.log('👤 MENTOR 3 (New - Design):')
+  console.log('   Email:    mentor3@wecode.co.zw')
+  console.log(`   Password: ${communityPassword}`)
+  console.log('   Name:     Grace Dziva')
+  console.log('   Rate:     35 credits/hour | Sessions: 12')
+  console.log('')
+  console.log('👤 COMMUNITY MEMBER (Has 1000 Credits):')
+  console.log('   Email:    community@wecode.co.zw')
+  console.log(`   Password: ${communityPassword}`)
+  console.log('   Credits:  1000')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 }
 
 main()

@@ -6,7 +6,16 @@ export default defineEventHandler(async (event) => {
   if (!token) throw createError({ statusCode: 401, statusMessage: 'Unauthenticated' })
   const session = verifyJwt(token)
   if (!session?.userId) throw createError({ statusCode: 401, statusMessage: 'Unauthenticated' })
-  const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { id: true, email: true, name: true, role: true } })
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      credits: true
+    }
+  })
   if (!user) throw createError({ statusCode: 404, statusMessage: 'User not found' })
   return user
 })

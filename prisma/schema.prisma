@@ -13,6 +13,7 @@ enum Role {
   CORPORATE
   ADMIN
   INSTRUCTOR
+  MENTOR
 }
 
 enum RequestCategory {
@@ -56,6 +57,8 @@ model User {
   hashedPassword String
   phone          String?
   emailVerified  Boolean   @default(false)
+  verificationToken String?  // Token for email verification
+  tokenExpiresAt    DateTime? // Token expiry time
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -79,6 +82,19 @@ model User {
   instructorEarnings InstructorEarning[]
   payouts            Payout[]
   processedPayouts   Payout[] @relation("PayoutProcessor")
+
+  // Community & Mentorship
+  credits          Int              @default(0)
+  mentorProfile    MentorProfile?
+  communityProfile CommunityProfile?
+  forumPosts       ForumPost[]
+  forumComments    ForumComment[]
+  mentorBookings   MentorBooking[]  @relation("BookingUser")
+  mentorSessions   MentorBooking[]  @relation("BookingMentor")
+  chatRoomsAsMentor ChatRoom[]      @relation("ChatMentor")
+  chatRoomsAsMentee ChatRoom[]      @relation("ChatMentee")
+  sentMessages      ChatMessage[]
+  creditPurchases   CreditPurchase[]
 }
 
 model Request {
@@ -606,4 +622,175 @@ model OrderItem {
   orderId String
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
+}
+
+// ==========================================
+// Community & Mentorship Models
+// ==========================================
+
+model ForumPost {
+  id          String         @id @default(cuid())
+  title       String
+  content     String         @db.Text
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+  comments    ForumComment[]
+  aiChat      AIChat?        // AI conversation for this post
+}
+
+model ForumComment {
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId      String
+}
+
+model MentorProfile {
+  id              String   @id @default(cuid())
+  bio             String   @db.Text
+  hourlyRate      Int      // Credits per hour
+  skills          String   @db.Text  // Comma-separated skills
+  available       Boolean  @default(true)
+  verified        Boolean  @default(false)  // Verification badge
+  isApproved      Boolean  @default(false)  // Admin must approve
+  approvedAt      DateTime?
+  sessionsCount   Int      @default(0)       // Number of completed sessions
+  totalEarnings   Int      @default(0)       // Cumulative earnings (stats only)
+  withdrawableBalance Int  @default(0)       // Credits available for cashout
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @unique
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model MentorBooking {
+  id           String        @id @default(cuid())
+  scheduledAt  DateTime
+  duration     Int           @default(60)  // in minutes
+  creditsCost  Int
+  status       BookingStatus @default(PENDING)
+  notes        String?       @db.Text
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user         User     @relation("BookingUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  mentor       User     @relation("BookingMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+  mentorId     String
+  
+  meetingUrl   String?
+  chatRoomId   String?
+  chatRoom     ChatRoom? @relation(fields: [chatRoomId], references: [id])
+}
+
+model ChatRoom {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  mentorId    String
+  menteeId    String
+  
+  mentor      User     @relation("ChatMentor", fields: [mentorId], references: [id])
+  mentee      User     @relation("ChatMentee", fields: [menteeId], references: [id])
+  
+  messages    ChatMessage[]
+  bookings    MentorBooking[]
+  
+  @@unique([mentorId, menteeId])
+}
+
+model ChatMessage {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+  
+  chatRoomId  String
+  chatRoom    ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  
+  senderId    String
+  sender      User     @relation(fields: [senderId], references: [id])
+}
+
+// AI Chat for Forum Posts
+model AIChat {
+  id        String          @id @default(cuid())
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  post      ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String          @unique  // One AI chat per post
+  messages  AIChatMessage[]
+}
+
+model AIChatMessage {
+  id        String   @id @default(cuid())
+  role      String   // 'user' or 'assistant'
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  chat      AIChat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId    String
+}
+
+// Community Member Profile
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+model CommunityProfile {
+  id              String          @id @default(cuid())
+  username        String          @unique
+  profession      String?                          // e.g., "Software Developer", "Student"
+  experienceLevel ExperienceLevel @default(BEGINNER)
+  languages       String?         @db.Text         // Comma-separated: "JavaScript, Python, TypeScript"
+  bio             String?         @db.Text
+  location        String?
+  githubUrl       String?
+  linkedinUrl     String?
+  websiteUrl      String?
+  avatarUrl       String?
+  isPublic        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String          @unique
+}
+
+// Credit/Token Purchase Tracking
+model CreditPurchase {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId     String    // starter, standard, premium
+  credits       Int       // 50, 120, 300
+  currency      String    // USD or ZWG
+  amount        Float     // Price paid
+  reference     String    @unique // PayNow reference
+  status        String    @default("PENDING") // PENDING, COMPLETED, FAILED
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@index([userId])
+  @@index([status])
 }

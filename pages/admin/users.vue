@@ -1,15 +1,15 @@
 <template>
-  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
+  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-6">
     <!-- Header -->
-    <div class="mb-6 sm:mb-8">
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+    <div class="mb-5">
+      <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Users
       </h1>
-      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Manage user accounts, roles, and permissions</p>
+      <p class="mt-1 text-xs sm:text-sm text-navy-300">Manage user accounts, roles, and permissions</p>
     </div>
 
     <!-- Stats -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
+    <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
       <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-4">
         <div class="text-sm text-navy-400">Total Users</div>
         <div class="mt-1 text-2xl font-bold text-white">{{ users.length }}</div>
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Search and Filters -->
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="relative max-w-md flex-1">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-navy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

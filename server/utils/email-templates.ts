@@ -1,280 +1,348 @@
 /**
- * Email Templates for WeCodeZW
- * Beautiful, modern, responsive email templates
+ * Email Template System
+ * Beautiful, responsive email templates for all notifications
  */
 
-const BRAND_COLORS = {
-  primary: '#1e3a8a',
-  primaryLight: '#3b82f6',
-  gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
-  success: '#10b981',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  text: '#1e293b',
-  textLight: '#64748b',
-  bg: '#f8fafc',
-  white: '#ffffff'
-}
+const BRAND_COLOR = '#1e3a5f'  // Navy blue
+const BRAND_NAME = 'WeCode Community'
+const LOGO_URL = 'https://wecode.co.zw/images/logo.png'
+const SITE_URL = 'https://wecode.co.zw'
 
-/**
- * Base email template wrapper
- */
-function getBaseTemplate(content: string, title?: string): string {
+// Base wrapper for all emails
+function baseTemplate(content: string, preheader?: string): string {
   return `
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>${title || 'WeCodeZW'}</title>
-  <!--[if mso]>
-  <style type="text/css">
-    body, table, td {font-family: Arial, sans-serif !important;}
+  <title>${BRAND_NAME}</title>
+  ${preheader ? `<meta name="description" content="${preheader}">` : ''}
+  <style>
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f7fa; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+    .header { background: linear-gradient(135deg, ${BRAND_COLOR} 0%, #2d4a6f 100%); padding: 30px 40px; text-align: center; }
+    .header img { max-height: 50px; }
+    .header h1 { color: #ffffff; margin: 15px 0 0 0; font-size: 24px; font-weight: 600; }
+    .content { padding: 40px; color: #333333; line-height: 1.6; }
+    .content h2 { color: ${BRAND_COLOR}; margin-top: 0; font-size: 22px; }
+    .content p { margin: 0 0 15px 0; font-size: 15px; }
+    .button { display: inline-block; background: ${BRAND_COLOR}; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; margin: 20px 0; }
+    .button:hover { background: #15304f; }
+    .button-success { background: #059669; }
+    .button-warning { background: #d97706; }
+    .info-box { background: #f0f7ff; border-left: 4px solid ${BRAND_COLOR}; padding: 15px 20px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+    .info-box p { margin: 0; font-size: 14px; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .details-table td { padding: 12px 15px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+    .details-table td:first-child { color: #6b7280; width: 40%; }
+    .details-table td:last-child { color: #111827; font-weight: 500; }
+    .footer { background: #f9fafb; padding: 25px 40px; text-align: center; border-top: 1px solid #e5e7eb; }
+    .footer p { margin: 0 0 10px 0; font-size: 13px; color: #6b7280; }
+    .footer a { color: ${BRAND_COLOR}; text-decoration: none; }
+    .social-links { margin: 15px 0; }
+    .social-links a { display: inline-block; margin: 0 8px; color: #9ca3af; text-decoration: none; }
+    @media (max-width: 600px) {
+      .content { padding: 25px; }
+      .header { padding: 20px 25px; }
+    }
   </style>
-  <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: ${BRAND_COLORS.bg}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: ${BRAND_COLORS.bg};">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: ${BRAND_COLORS.white}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          ${content}
-        </table>
-        
-        <!-- Footer -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; margin-top: 24px;">
-          <tr>
-            <td align="center" style="padding: 24px 20px;">
-              <p style="margin: 0 0 8px 0; color: ${BRAND_COLORS.textLight}; font-size: 14px; line-height: 1.5;">
-                <strong style="color: ${BRAND_COLORS.text};">WeCodeZW</strong><br>
-                194 Baines Ave, Harare, Zimbabwe<br>
-                Phone: +263 778 456 168 | Email: info@wecode.co.zw
-              </p>
-              <p style="margin: 16px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 12px; line-height: 1.5;">
-                This email was sent from WeCodeZW. If you have any questions, please contact us at info@wecode.co.zw
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `.trim()
-}
-
-/**
- * Header section
- */
-function getHeader(title: string, subtitle?: string): string {
-  return `
-  <tr>
-    <td style="background: ${BRAND_COLORS.gradient}; padding: 48px 40px; text-align: center;">
-      <h1 style="margin: 0 0 8px 0; color: ${BRAND_COLORS.white}; font-size: 28px; font-weight: 700; line-height: 1.2;">
-        ${title}
-      </h1>
-      ${subtitle ? `<p style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 16px; line-height: 1.5;">${subtitle}</p>` : ''}
-    </td>
-  </tr>
-  `.trim()
-}
-
-/**
- * Button component
- */
-function getButton(href: string, text: string, variant: 'primary' | 'success' | 'warning' = 'primary'): string {
-  const colors = {
-    primary: BRAND_COLORS.primaryLight,
-    success: BRAND_COLORS.success,
-    warning: BRAND_COLORS.warning
-  }
-
-  return `
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 32px 0;">
-    <tr>
-      <td align="center">
-        <a href="${href}" style="display: inline-block; background-color: ${colors[variant]}; color: ${BRAND_COLORS.white}; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; line-height: 1.5; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-          ${text}
-        </a>
-      </td>
-    </tr>
-  </table>
-  `.trim()
-}
-
-/**
- * Content section
- */
-function getContent(html: string): string {
-  return `
-  <tr>
-    <td style="padding: 40px;">
-      <div style="color: ${BRAND_COLORS.text}; font-size: 16px; line-height: 1.7;">
-        ${html}
+<body>
+  <div style="padding: 20px; background: #f5f7fa;">
+    <div class="container">
+      <div class="header">
+        <img src="${LOGO_URL}" alt="${BRAND_NAME}" />
+        <h1>${BRAND_NAME}</h1>
       </div>
-    </td>
-  </tr>
-  `.trim()
-}
-
-/**
- * Info box component
- */
-function getInfoBox(content: string, type: 'info' | 'success' | 'warning' = 'info'): string {
-  const bgColors = {
-    info: '#eff6ff',
-    success: '#f0fdf4',
-    warning: '#fffbeb'
-  }
-  const borderColors = {
-    info: '#3b82f6',
-    success: '#10b981',
-    warning: '#f59e0b'
-  }
-
-  return `
-  <div style="background-color: ${bgColors[type]}; border-left: 4px solid ${borderColors[type]}; padding: 20px; border-radius: 6px; margin: 24px 0;">
-    <div style="color: ${BRAND_COLORS.text}; font-size: 15px; line-height: 1.6;">
       ${content}
+      <div class="footer">
+        <p>© ${new Date().getFullYear()} ${BRAND_NAME}. All rights reserved.</p>
+        <p><a href="${SITE_URL}">Visit our website</a> | <a href="${SITE_URL}/community">Community Hub</a></p>
+      </div>
     </div>
   </div>
-  `.trim()
+</body>
+</html>
+`
 }
 
-/**
- * Email Verification Template
- */
-export function getEmailVerificationTemplate(name: string, verificationLink: string, role?: string): { html: string; text: string } {
-  // Show role-appropriate welcome message
-  const communityText = role === 'INSTRUCTOR'
-    ? 'community of instructors'
-    : 'community of learners'
+// ==================== USER EMAILS ====================
 
+export function welcomeEmail(name: string, verificationLink: string): string {
   const content = `
-    ${getHeader('Welcome to WeCodeZW!', 'Verify Your Email Address')}
-    ${getContent(`
-      <p style="margin: 0 0 16px 0;">Hi <strong>${name}</strong>,</p>
-      <p style="margin: 0 0 24px 0;">Thank you for registering with WeCodeZW! We're excited to have you join our ${communityText}.</p>
-      <p style="margin: 0 0 24px 0;">To get started, please verify your email address by clicking the button below:</p>
-      ${getButton(verificationLink, 'Verify Email Address', 'primary')}
-      <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Or copy and paste this link into your browser:</p>
-      <p style="margin: 8px 0 24px 0; color: ${BRAND_COLORS.primaryLight}; font-size: 14px; word-break: break-all;">${verificationLink}</p>
-      ${getInfoBox('This verification link will expire in 24 hours. If you didn\'t create an account, please ignore this email.', 'info')}
-    `)}
+    <div class="content">
+      <h2>Welcome to ${BRAND_NAME}! 🎉</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>Thank you for joining our community of developers, mentors, and tech enthusiasts. We're excited to have you!</p>
+      <p>Please verify your email address to get started:</p>
+      <center>
+        <a href="${verificationLink}" class="button">Verify Email Address</a>
+      </center>
+      <div class="info-box">
+        <p><strong>What can you do?</strong></p>
+        <p>✓ Book sessions with expert mentors<br>
+           ✓ Join discussions in our forum<br>
+           ✓ Share knowledge and earn credits</p>
+      </div>
+      <p>If you didn't create this account, you can safely ignore this email.</p>
+      <p>Best regards,<br><strong>The ${BRAND_NAME} Team</strong></p>
+    </div>
   `
-
-  const html = getBaseTemplate(content, 'Verify Your Email — WeCodeZW')
-  const text = `Welcome to WeCodeZW!\n\nHi ${name},\n\nThank you for registering with WeCodeZW. Please verify your email address by clicking this link:\n${verificationLink}\n\nThis link will expire in 24 hours. If you didn't create an account, please ignore this email.`
-
-  return { html, text }
+  return baseTemplate(content, `Welcome to ${BRAND_NAME} - Verify your email`)
 }
 
-/**
- * Password Reset Template
- */
-export function getPasswordResetTemplate(name: string, resetLink: string): { html: string; text: string } {
+export function emailVerificationEmail(name: string, verificationLink: string): string {
   const content = `
-    ${getHeader('Reset Your Password', 'WeCodeZW Account Security')}
-    ${getContent(`
-      <p style="margin: 0 0 16px 0;">Hi <strong>${name}</strong>,</p>
-      <p style="margin: 0 0 24px 0;">We received a request to reset your password. Click the button below to create a new password:</p>
-      ${getButton(resetLink, 'Reset Password', 'primary')}
-      <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Or copy and paste this link into your browser:</p>
-      <p style="margin: 8px 0 24px 0; color: ${BRAND_COLORS.primaryLight}; font-size: 14px; word-break: break-all;">${resetLink}</p>
-      ${getInfoBox('This link will expire in 1 hour. If you didn\'t request a password reset, please ignore this email and your password will remain unchanged.', 'warning')}
-    `)}
+    <div class="content">
+      <h2>Verify Your Email Address</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>Please click the button below to verify your email address:</p>
+      <center>
+        <a href="${verificationLink}" class="button">Verify Email</a>
+      </center>
+      <p style="font-size: 13px; color: #6b7280;">This link will expire in 24 hours.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+    </div>
   `
-
-  const html = getBaseTemplate(content, 'Reset Your Password — WeCodeZW')
-  const text = `Password Reset Request\n\nHi ${name},\n\nWe received a request to reset your password. Click this link to create a new password:\n${resetLink}\n\nThis link will expire in 1 hour. If you didn't request a password reset, please ignore this email.`
-
-  return { html, text }
+  return baseTemplate(content, 'Verify your email address')
 }
 
-/**
- * Magic Link Template
- */
-export function getMagicLinkTemplate(name: string, magicLink: string): { html: string; text: string } {
+export function mentorPendingApprovalEmail(name: string): string {
   const content = `
-    ${getHeader('Secure Sign-In Link', 'WeCodeZW Authentication')}
-    ${getContent(`
-      <p style="margin: 0 0 16px 0;">Hi <strong>${name}</strong>,</p>
-      <p style="margin: 0 0 24px 0;">Click the button below to securely sign in to your WeCodeZW account:</p>
-      ${getButton(magicLink, 'Sign In to WeCodeZW', 'primary')}
-      <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Or copy and paste this link into your browser:</p>
-      <p style="margin: 8px 0 24px 0; color: ${BRAND_COLORS.primaryLight}; font-size: 14px; word-break: break-all;">${magicLink}</p>
-      ${getInfoBox('This link will expire in 30 minutes. If you didn\'t request this sign-in link, please ignore this email.', 'warning')}
-    `)}
+    <div class="content">
+      <h2>Mentor Application Received 📋</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>Thank you for applying to become a mentor on ${BRAND_NAME}!</p>
+      <p>Your application is now under review by our admin team. We'll notify you once a decision has been made.</p>
+      <div class="info-box">
+        <p><strong>What happens next?</strong></p>
+        <p>Our team will review your profile, skills, and experience. This usually takes 1-2 business days.</p>
+      </div>
+      <p>In the meantime, feel free to explore our community forum and connect with other members.</p>
+      <p>Best regards,<br><strong>The ${BRAND_NAME} Team</strong></p>
+    </div>
   `
-
-  const html = getBaseTemplate(content, 'Your Secure Sign-In Link — WeCodeZW')
-  const text = `Secure Sign-In Link\n\nHi ${name},\n\nClick this link to sign in to your WeCodeZW account:\n${magicLink}\n\nThis link will expire in 30 minutes.`
-
-  return { html, text }
+  return baseTemplate(content, 'Your mentor application is under review')
 }
 
-/**
- * Contact Form Template (Admin)
- */
-export function getContactFormTemplate(data: {
+export function mentorApprovedEmail(name: string): string {
+  const content = `
+    <div class="content">
+      <h2>Congratulations! You're Approved 🎊</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>Great news! Your mentor application has been <strong style="color: #059669;">approved</strong>.</p>
+      <p>You can now:</p>
+      <div class="info-box">
+        <p>✓ Set your availability and hourly rate<br>
+           ✓ Accept session bookings from mentees<br>
+           ✓ Earn credits for completed sessions<br>
+           ✓ Request payouts for your earnings</p>
+      </div>
+      <center>
+        <a href="${SITE_URL}/mentor" class="button button-success">Go to Mentor Dashboard</a>
+      </center>
+      <p>Welcome to the mentor team!</p>
+      <p>Best regards,<br><strong>The ${BRAND_NAME} Team</strong></p>
+    </div>
+  `
+  return baseTemplate(content, 'Your mentor application has been approved!')
+}
+
+export function mentorRejectedEmail(name: string, reason?: string): string {
+  const content = `
+    <div class="content">
+      <h2>Mentor Application Update</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>Thank you for your interest in becoming a mentor on ${BRAND_NAME}.</p>
+      <p>After careful review, we're unable to approve your application at this time.</p>
+      ${reason ? `<div class="info-box"><p><strong>Reason:</strong> ${reason}</p></div>` : ''}
+      <p>This decision doesn't prevent you from participating in our community. You can still:</p>
+      <p>• Join discussions in our forum<br>
+         • Book sessions with mentors<br>
+         • Reapply in the future</p>
+      <p>If you have questions, please reach out to our support team.</p>
+      <p>Best regards,<br><strong>The ${BRAND_NAME} Team</strong></p>
+    </div>
+  `
+  return baseTemplate(content, 'Update on your mentor application')
+}
+
+export function forumReplyNotification(postAuthor: string, postTitle: string, commenterName: string, commentPreview: string, postUrl: string): string {
+  const content = `
+    <div class="content">
+      <h2>New Reply to Your Post 💬</h2>
+      <p>Hi <strong>${postAuthor}</strong>,</p>
+      <p><strong>${commenterName}</strong> replied to your post:</p>
+      <div class="info-box">
+        <p><strong>${postTitle}</strong></p>
+        <p style="color: #374151; margin-top: 8px;">"${commentPreview.substring(0, 150)}${commentPreview.length > 150 ? '...' : ''}"</p>
+      </div>
+      <center>
+        <a href="${postUrl}" class="button">View Reply</a>
+      </center>
+      <p style="font-size: 13px; color: #6b7280;">You received this because you're the author of this post.</p>
+    </div>
+  `
+  return baseTemplate(content, `${commenterName} replied to your post`)
+}
+
+export function mentionNotification(userName: string, mentionerName: string, context: string, contextUrl: string): string {
+  const content = `
+    <div class="content">
+      <h2>You Were Mentioned 👋</h2>
+      <p>Hi <strong>${userName}</strong>,</p>
+      <p><strong>${mentionerName}</strong> mentioned you in a post:</p>
+      <div class="info-box">
+        <p>"${context.substring(0, 200)}${context.length > 200 ? '...' : ''}"</p>
+      </div>
+      <center>
+        <a href="${contextUrl}" class="button">View Post</a>
+      </center>
+    </div>
+  `
+  return baseTemplate(content, `${mentionerName} mentioned you`)
+}
+
+export function payoutRequestConfirmation(name: string, amount: number, method: string): string {
+  const content = `
+    <div class="content">
+      <h2>Payout Request Received 💰</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>We've received your payout request. Here are the details:</p>
+      <table class="details-table">
+        <tr><td>Amount</td><td>$${amount.toFixed(2)} USD</td></tr>
+        <tr><td>Method</td><td>${method}</td></tr>
+        <tr><td>Status</td><td><span style="color: #d97706;">Pending</span></td></tr>
+      </table>
+      <div class="info-box">
+        <p>Processing usually takes 24-48 hours. We'll notify you once your payment is processed.</p>
+      </div>
+      <center>
+        <a href="${SITE_URL}/mentor/payouts" class="button">View Payout History</a>
+      </center>
+    </div>
+  `
+  return baseTemplate(content, 'Your payout request has been received')
+}
+
+// ==================== ADMIN EMAILS ====================
+
+export function adminNewUserAlert(userName: string, userEmail: string): string {
+  const content = `
+    <div class="content">
+      <h2>New User Registration 👤</h2>
+      <p>A new user has registered on ${BRAND_NAME}:</p>
+      <table class="details-table">
+        <tr><td>Name</td><td>${userName}</td></tr>
+        <tr><td>Email</td><td>${userEmail}</td></tr>
+        <tr><td>Registered</td><td>${new Date().toLocaleString()}</td></tr>
+      </table>
+      <center>
+        <a href="${SITE_URL}/admin/community/users" class="button">View in Admin Panel</a>
+      </center>
+    </div>
+  `
+  return baseTemplate(content, `New user: ${userName}`)
+}
+
+export function adminMentorApplicationAlert(userName: string, userEmail: string, skills: string): string {
+  const content = `
+    <div class="content">
+      <h2>New Mentor Application 🎓</h2>
+      <p>A user has applied to become a mentor:</p>
+      <table class="details-table">
+        <tr><td>Name</td><td>${userName}</td></tr>
+        <tr><td>Email</td><td>${userEmail}</td></tr>
+        <tr><td>Skills</td><td>${skills}</td></tr>
+        <tr><td>Applied</td><td>${new Date().toLocaleString()}</td></tr>
+      </table>
+      <p><strong>Action Required:</strong> Please review and approve/reject this application.</p>
+      <center>
+        <a href="${SITE_URL}/admin/community/mentors" class="button button-warning">Review Application</a>
+      </center>
+    </div>
+  `
+  return baseTemplate(content, `New mentor application: ${userName}`)
+}
+
+export function adminPayoutRequestAlert(userName: string, amount: number, method: string, details: string): string {
+  const content = `
+    <div class="content">
+      <h2>New Payout Request 💸</h2>
+      <p>A mentor has requested a payout:</p>
+      <table class="details-table">
+        <tr><td>Mentor</td><td>${userName}</td></tr>
+        <tr><td>Amount</td><td><strong>$${amount.toFixed(2)} USD</strong></td></tr>
+        <tr><td>Method</td><td>${method}</td></tr>
+        <tr><td>Details</td><td>${details}</td></tr>
+        <tr><td>Requested</td><td>${new Date().toLocaleString()}</td></tr>
+      </table>
+      <p><strong>Action Required:</strong> Process this payout and mark as completed.</p>
+      <center>
+        <a href="${SITE_URL}/admin/community/payouts" class="button button-warning">Process Payout</a>
+      </center>
+    </div>
+  `
+  return baseTemplate(content, `Payout request: $${amount.toFixed(2)} from ${userName}`)
+}
+
+// ==================== CONTACT FORM ====================
+
+interface ContactFormData {
   fullName: string
   email: string
   clientType: string
   phone?: string
   message?: string
-}): { html: string; text: string } {
-  const content = `
-    ${getHeader('New Contact Inquiry', 'WeCodeZW Contact Form')}
-    ${getContent(`
-      <div style="background-color: #f8fafc; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-        <h2 style="margin: 0 0 20px 0; color: ${BRAND_COLORS.text}; font-size: 20px; font-weight: 600;">Contact Details</h2>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500; width: 120px;">Name:</td>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.text}; font-weight: 600;">${data.fullName}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500;">Email:</td>
-            <td style="padding: 8px 0;"><a href="mailto:${data.email}" style="color: ${BRAND_COLORS.primaryLight}; text-decoration: none; font-weight: 500;">${data.email}</a></td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500;">Type:</td>
-            <td style="padding: 8px 0;">
-              <span style="background-color: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 4px; font-size: 14px; font-weight: 500; text-transform: capitalize;">
-                ${data.clientType}
-              </span>
-            </td>
-          </tr>
-          ${data.phone ? `
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500;">Phone:</td>
-            <td style="padding: 8px 0;"><a href="tel:${data.phone}" style="color: ${BRAND_COLORS.primaryLight}; text-decoration: none; font-weight: 500;">${data.phone}</a></td>
-          </tr>
-          ` : ''}
-        </table>
-      </div>
-      ${data.message ? `
-      <div style="background-color: #f8fafc; border-left: 4px solid ${BRAND_COLORS.primaryLight}; padding: 20px; border-radius: 0 6px 6px 0; margin-top: 24px;">
-        <h3 style="margin: 0 0 12px 0; color: ${BRAND_COLORS.text}; font-size: 18px; font-weight: 600;">Message</h3>
-        <p style="margin: 0; color: ${BRAND_COLORS.text}; line-height: 1.7; white-space: pre-wrap;">${data.message}</p>
-      </div>
-      ` : ''}
-      <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Reply directly to this email to respond to ${data.fullName}.</p>
-    `)}
-  `
-
-  const html = getBaseTemplate(content, 'New Contact Inquiry — WeCodeZW')
-  const text = `New Contact Inquiry\n\nName: ${data.fullName}\nEmail: ${data.email}\nClient Type: ${data.clientType}\n${data.phone ? `Phone: ${data.phone}\n` : ''}${data.message ? `\nMessage:\n${data.message}` : ''}`
-
-  return { html, text }
 }
 
-/**
- * Quote Request Template (Admin)
- */
-export function getQuoteRequestAdminTemplate(data: {
+export function getContactFormTemplate(data: ContactFormData): { html: string; text: string } {
+  const clientTypeLabels: Record<string, string> = {
+    individual: 'Individual',
+    corporate: 'Corporate / Business',
+    school: 'School / Institution'
+  }
+
+  const content = `
+    <div class="content">
+      <h2>New Contact Form Inquiry 📬</h2>
+      <p>You have received a new inquiry from the website:</p>
+      <table class="details-table">
+        <tr><td>Name</td><td>${data.fullName}</td></tr>
+        <tr><td>Email</td><td><a href="mailto:${data.email}">${data.email}</a></td></tr>
+        <tr><td>Client Type</td><td>${clientTypeLabels[data.clientType] || data.clientType}</td></tr>
+        ${data.phone ? `<tr><td>Phone</td><td>${data.phone}</td></tr>` : ''}
+      </table>
+      ${data.message ? `
+      <div class="info-box">
+        <p><strong>Message:</strong></p>
+        <p>${data.message.replace(/\n/g, '<br>')}</p>
+      </div>
+      ` : ''}
+      <p style="font-size: 13px; color: #6b7280;">Reply directly to this email to respond to the inquiry.</p>
+    </div>
+  `
+
+  const text = `
+New Contact Form Inquiry
+
+Name: ${data.fullName}
+Email: ${data.email}
+Client Type: ${clientTypeLabels[data.clientType] || data.clientType}
+${data.phone ? `Phone: ${data.phone}` : ''}
+${data.message ? `\nMessage:\n${data.message}` : ''}
+  `.trim()
+
+  return {
+    html: baseTemplate(content, `New inquiry from ${data.fullName}`),
+    text
+  }
+}
+
+// ==================== QUOTE REQUEST TEMPLATES ====================
+
+interface QuoteAdminData {
   invoiceNumber: string
   schoolName: string
   level: string
@@ -283,133 +351,97 @@ export function getQuoteRequestAdminTemplate(data: {
   phone?: string
   total: number
   currency: string
-  dashLink?: string
-}): { html: string; text: string } {
-  const content = `
-    ${getHeader('New Quote Request', `Invoice ${data.invoiceNumber}`)}
-    ${getContent(`
-      <div style="background-color: #f8fafc; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-        <h2 style="margin: 0 0 20px 0; color: ${BRAND_COLORS.text}; font-size: 20px; font-weight: 600;">School Information</h2>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500; width: 140px;">School:</td>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.text}; font-weight: 600;">${data.schoolName}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500;">Level:</td>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.text}; font-weight: 600;">${data.level}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500;">Contact:</td>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.text}; font-weight: 600;">${data.contactName}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500;">Email:</td>
-            <td style="padding: 8px 0;"><a href="mailto:${data.email}" style="color: ${BRAND_COLORS.primaryLight}; text-decoration: none; font-weight: 500;">${data.email}</a></td>
-          </tr>
-          ${data.phone ? `
-          <tr>
-            <td style="padding: 8px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500;">Phone:</td>
-            <td style="padding: 8px 0;"><a href="tel:${data.phone}" style="color: ${BRAND_COLORS.primaryLight}; text-decoration: none; font-weight: 500;">${data.phone}</a></td>
-          </tr>
-          ` : ''}
-        </table>
-      </div>
-      
-      <div style="background-color: #eff6ff; border-left: 4px solid ${BRAND_COLORS.primaryLight}; padding: 20px; border-radius: 0 6px 6px 0; margin: 24px 0;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <p style="margin: 0 0 4px 0; color: ${BRAND_COLORS.textLight}; font-size: 14px; font-weight: 500;">Total Amount</p>
-            <p style="margin: 0; color: ${BRAND_COLORS.text}; font-size: 32px; font-weight: 700;">${data.currency} ${data.total.toFixed(2)}</p>
-          </div>
-          <div style="text-align: right;">
-            <p style="margin: 0 0 4px 0; color: ${BRAND_COLORS.textLight}; font-size: 14px; font-weight: 500;">Invoice Number</p>
-            <p style="margin: 0; color: ${BRAND_COLORS.text}; font-size: 18px; font-weight: 600;">${data.invoiceNumber}</p>
-          </div>
-        </div>
-      </div>
-      
-      <p style="margin: 24px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Reply directly to this email to contact ${data.contactName}.</p>
-    `)}
-  `
-
-  const html = getBaseTemplate(content, `Quote Request — ${data.invoiceNumber} — WeCodeZW`)
-  const text = `New Quote Request\n\nInvoice: ${data.invoiceNumber}\nSchool: ${data.schoolName}\nLevel: ${data.level}\nContact: ${data.contactName}\nEmail: ${data.email}\n${data.phone ? `Phone: ${data.phone}\n` : ''}Total: ${data.currency} ${data.total.toFixed(2)}`
-
-  return { html, text }
+  dashLink: string
 }
 
-/**
- * Quote Request Template (User)
- */
-export function getQuoteRequestUserTemplate(data: {
+export function getQuoteRequestAdminTemplate(data: QuoteAdminData): { html: string; text: string } {
+  const content = `
+    <div class="content">
+      <h2>New Quote Request 📋</h2>
+      <p>A new school quote request has been submitted:</p>
+      <table class="details-table">
+        <tr><td>Invoice #</td><td><strong>${data.invoiceNumber}</strong></td></tr>
+        <tr><td>School</td><td>${data.schoolName}</td></tr>
+        <tr><td>Level</td><td>${data.level}</td></tr>
+        <tr><td>Contact</td><td>${data.contactName}</td></tr>
+        <tr><td>Email</td><td><a href="mailto:${data.email}">${data.email}</a></td></tr>
+        ${data.phone ? `<tr><td>Phone</td><td>${data.phone}</td></tr>` : ''}
+        <tr><td>Total</td><td><strong>${data.currency} ${data.total.toFixed(2)}</strong></td></tr>
+      </table>
+      <center>
+        <a href="${data.dashLink}" class="button">View in Dashboard</a>
+      </center>
+    </div>
+  `
+
+  const text = `
+New Quote Request
+
+Invoice: ${data.invoiceNumber}
+School: ${data.schoolName}
+Level: ${data.level}
+Contact: ${data.contactName}
+Email: ${data.email}
+${data.phone ? `Phone: ${data.phone}` : ''}
+Total: ${data.currency} ${data.total.toFixed(2)}
+
+View: ${data.dashLink}
+  `.trim()
+
+  return {
+    html: baseTemplate(content, `Quote Request: ${data.schoolName}`),
+    text
+  }
+}
+
+interface QuoteUserData {
   invoiceNumber: string
   schoolName: string
   total: number
   currency: string
   dashLink: string
-}): { html: string; text: string } {
-  const content = `
-    ${getHeader('Your Quote is Ready!', `Invoice ${data.invoiceNumber}`)}
-    ${getContent(`
-      <p style="margin: 0 0 24px 0;">Thank you for your quote request for <strong>${data.schoolName}</strong>.</p>
-      
-      <div style="background-color: #f8fafc; border-radius: 8px; padding: 24px; margin: 24px 0;">
-        <div style="text-align: center;">
-          <p style="margin: 0 0 8px 0; color: ${BRAND_COLORS.textLight}; font-size: 14px; font-weight: 500;">Total Amount</p>
-          <p style="margin: 0; color: ${BRAND_COLORS.text}; font-size: 36px; font-weight: 700;">${data.currency} ${data.total.toFixed(2)}</p>
-          <p style="margin: 8px 0 0 0; color: ${BRAND_COLORS.textLight}; font-size: 14px;">Invoice: ${data.invoiceNumber}</p>
-        </div>
-      </div>
-      
-      ${getButton(data.dashLink, 'Access Your Dashboard', 'primary')}
-      
-      ${getInfoBox('You can access your dashboard anytime to view your quote, make payments, and track your progress.', 'info')}
-    `)}
-  `
-
-  const html = getBaseTemplate(content, `Your Quote — ${data.invoiceNumber} — WeCodeZW`)
-  const text = `Your Quote is Ready!\n\nThank you for your quote request for ${data.schoolName}.\n\nTotal: ${data.currency} ${data.total.toFixed(2)}\nInvoice: ${data.invoiceNumber}\n\nAccess your dashboard: ${data.dashLink}`
-
-  return { html, text }
 }
 
-/**
- * Admin Notification Template
- */
-export function getAdminNotificationTemplate(title: string, message: string, metadata?: any): { html: string; text: string } {
-  // Format message - convert markdown-style formatting to HTML
-  const formattedMessage = message
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>')
-
+export function getQuoteRequestUserTemplate(data: QuoteUserData): { html: string; text: string } {
   const content = `
-    ${getHeader(title, 'WeCodeZW Notification')}
-    ${getContent(`
-      <div style="background-color: #f8fafc; border-radius: 8px; padding: 24px;">
-        <div style="color: ${BRAND_COLORS.text}; line-height: 1.7;">
-          ${formattedMessage}
-        </div>
+    <div class="content">
+      <h2>Your Quote is Ready! 📄</h2>
+      <p>Thank you for your interest in WeCode's Coding & Robotics Club program!</p>
+      <p>We've prepared a quote for <strong>${data.schoolName}</strong>:</p>
+      <div class="info-box">
+        <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+        <p><strong>Total:</strong> ${data.currency} ${data.total.toFixed(2)}</p>
       </div>
-      ${metadata && Object.keys(metadata).length > 0 ? `
-      <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
-        <p style="margin: 0 0 12px 0; color: ${BRAND_COLORS.textLight}; font-size: 14px; font-weight: 500;">Additional Details:</p>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-size: 14px;">
-          ${Object.entries(metadata).map(([key, value]) => `
-          <tr>
-            <td style="padding: 4px 0; color: ${BRAND_COLORS.textLight}; font-weight: 500; width: 140px;">${key}:</td>
-            <td style="padding: 4px 0; color: ${BRAND_COLORS.text};">${value}</td>
-          </tr>
-          `).join('')}
-        </table>
-      </div>
-      ` : ''}
-    `)}
+      <p>You can view your quote and manage your account using the secure link below:</p>
+      <center>
+        <a href="${data.dashLink}" class="button">View Quote & Dashboard</a>
+      </center>
+      <p style="font-size: 13px; color: #6b7280;">This link is valid for 30 minutes. If you need a new link, please contact us.</p>
+      <p>If you have any questions, feel free to reply to this email.</p>
+      <p>Best regards,<br><strong>The WeCode Team</strong></p>
+    </div>
   `
 
-  const html = getBaseTemplate(content, `${title} — WeCodeZW`)
-  const text = `${title}\n\n${message.replace(/\*\*/g, '')}`
+  const text = `
+Your Quote is Ready!
 
-  return { html, text }
+Thank you for your interest in WeCode's Coding & Robotics Club program!
+
+Invoice #: ${data.invoiceNumber}
+School: ${data.schoolName}
+Total: ${data.currency} ${data.total.toFixed(2)}
+
+View your quote: ${data.dashLink}
+
+This link is valid for 30 minutes.
+
+Best regards,
+The WeCode Team
+  `.trim()
+
+  return {
+    html: baseTemplate(content, `Your Quote: ${data.invoiceNumber}`),
+    text
+  }
 }
 

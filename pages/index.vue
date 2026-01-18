@@ -6,14 +6,14 @@
     <div class="absolute top-20 right-10 w-72 h-72 bg-primary-100/40 rounded-full blur-3xl"></div>
     <div class="absolute bottom-10 left-10 w-72 h-72 bg-accent-100/30 rounded-full blur-3xl"></div>
     
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20 lg:py-28">
-      <div class="grid items-center gap-12 lg:gap-16 lg:grid-cols-2">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+      <div class="grid items-center gap-10 lg:gap-12 lg:grid-cols-2">
         <div class="animate-fade-up">
-          <span class="inline-flex items-center gap-2 rounded-full bg-primary-50 border border-primary-200 px-4 py-1.5 text-xs font-medium text-primary-600">
-            <span class="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
+          <span class="inline-flex items-center gap-2 rounded-full bg-primary-50 border border-primary-200 px-3 py-1 text-xs font-medium text-primary-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></span>
             WeCodeZW • Digital Skills • IT Services
           </span>
-          <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-gray-900">
+          <h1 class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight text-gray-900">
             Digital Skills in Zimbabwe: 
             <span class="bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent">Coding, IT Services</span>, and Training
           </h1>
@@ -72,36 +72,36 @@
   </section>
 
   <!-- Stats Section -->
-  <section class="py-16 bg-gradient-to-br from-primary-600 to-primary-700">
+  <section class="py-12 bg-gradient-to-br from-primary-600 to-primary-700">
     <div class="mx-auto max-w-7xl px-4 sm:px-6">
-      <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+      <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
         <div class="text-center">
-          <div class="text-3xl sm:text-4xl font-bold text-white">25+</div>
-          <div class="mt-1 text-sm text-primary-100">Courses Available</div>
+          <div class="text-2xl sm:text-3xl font-bold text-white">25+</div>
+          <div class="mt-1 text-xs text-primary-100">Courses Available</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl sm:text-4xl font-bold text-white">100+</div>
-          <div class="mt-1 text-sm text-primary-100">Students Enrolled</div>
+          <div class="text-2xl sm:text-3xl font-bold text-white">100+</div>
+          <div class="mt-1 text-xs text-primary-100">Students Enrolled</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl sm:text-4xl font-bold text-accent-300">95%</div>
-          <div class="mt-1 text-sm text-primary-100">Success Rate</div>
+          <div class="text-2xl sm:text-3xl font-bold text-accent-300">95%</div>
+          <div class="mt-1 text-xs text-primary-100">Success Rate</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl sm:text-4xl font-bold text-accent-300">4.8★</div>
-          <div class="mt-1 text-sm text-primary-100">Average Rating</div>
+          <div class="text-2xl sm:text-3xl font-bold text-accent-300">4.8★</div>
+          <div class="mt-1 text-xs text-primary-100">Average Rating</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Featured Courses Section -->
-  <section class="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20 lg:py-24">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900">
+  <section class="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-gray-900">
         Featured <span class="bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent">Courses</span>
       </h2>
-      <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+      <p class="mt-3 text-base text-gray-600 max-w-2xl mx-auto">
         Start your learning journey with our hands-on courses designed for real-world skills
       </p>
     </div>

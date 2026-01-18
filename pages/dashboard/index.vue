@@ -1,15 +1,15 @@
 <template>
-  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
+  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-6">
     <!-- Header -->
-    <div class="mb-6 sm:mb-8">
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+    <div class="mb-5">
+      <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Dashboard
       </h1>
-      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Welcome back! View your activity and manage invoices and clubs.</p>
+      <p class="mt-1 text-xs sm:text-sm text-navy-300">Welcome back! View your activity and manage invoices and clubs.</p>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid gap-6 md:grid-cols-4 mb-8">
+    <div class="grid gap-4 md:grid-cols-4 mb-6">
       <div class="group relative overflow-hidden rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6 hover:border-blue-500/50 transition-all hover:shadow-lg">
         <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
         <div class="relative">
@@ -21,7 +21,7 @@
             </div>
           </div>
           <div class="text-sm font-medium text-navy-300 mb-1">Quotes</div>
-          <div class="text-3xl font-bold text-white">{{ summary.quotes }}</div>
+          <div class="text-2xl font-bold text-white">{{ summary.quotes }}</div>
         </div>
       </div>
 
@@ -36,7 +36,7 @@
             </div>
           </div>
           <div class="text-sm font-medium text-navy-300 mb-1">Invoices</div>
-          <div class="text-3xl font-bold text-white">{{ summary.invoices }}</div>
+          <div class="text-2xl font-bold text-white">{{ summary.invoices }}</div>
         </div>
       </div>
 
@@ -51,7 +51,7 @@
             </div>
           </div>
           <div class="text-sm font-medium text-navy-300 mb-1">Paid</div>
-          <div class="text-3xl font-bold text-white">{{ summary.invoicesPaid }}</div>
+          <div class="text-2xl font-bold text-white">{{ summary.invoicesPaid }}</div>
         </div>
       </div>
 
@@ -66,22 +66,22 @@
             </div>
           </div>
           <div class="text-sm font-medium text-navy-300 mb-1">Clubs</div>
-          <div class="text-3xl font-bold text-white">{{ summary.clubs }}</div>
+          <div class="text-2xl font-bold text-white">{{ summary.clubs }}</div>
         </div>
       </div>
     </div>
 
     <!-- Charts Section -->
-    <div class="grid gap-6 lg:grid-cols-2 mb-8">
-      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
-        <h3 class="text-lg font-semibold text-white mb-4">Payments Over Time</h3>
-        <div class="h-64">
+    <div class="grid gap-4 lg:grid-cols-2 mb-6">
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-4">
+        <h3 class="text-base font-semibold text-white mb-3">Payments Over Time</h3>
+        <div class="h-56">
           <canvas ref="paymentsChart"></canvas>
         </div>
       </div>
-      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
-        <h3 class="text-lg font-semibold text-white mb-4">Club Growth</h3>
-        <div class="h-64">
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-4">
+        <h3 class="text-base font-semibold text-white mb-3">Club Growth</h3>
+        <div class="h-56">
           <canvas ref="clubsChart"></canvas>
         </div>
       </div>

@@ -2,7 +2,7 @@
   <div class="mx-auto max-w-7xl px-4 sm:px-6 py-8">
     <!-- Header -->
     <div class="mb-6 sm:mb-8">
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+      <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Your Requests
       </h1>
       <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Submit and track your service requests</p>

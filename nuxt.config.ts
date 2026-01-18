@@ -9,6 +9,13 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt'
   ],
+  components: [
+    {
+      path: '~/components/community',
+      pathPrefix: false
+    },
+    '~/components'
+  ],
   css: ['@/assets/css/tailwind.css'],
   postcss: {
     plugins: {
@@ -68,7 +75,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || '',
-      siteUrl: process.env.SITE_URL || 'https://wecode.co.zw'
+      siteUrl: process.env.SITE_URL || 'https://wecode.co.zw',
+      adminWhatsapp: process.env.ADMIN_WHATSAPP || ''
     }
   },
   nitro: {

@@ -1,17 +1,17 @@
 <template>
-  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
+  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-6">
     <!-- Header -->
-    <div class="mb-6 sm:mb-8">
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+    <div class="mb-5">
+      <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Invoices & Payments
       </h1>
-      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Manage invoices and payment records</p>
+      <p class="mt-1 text-xs sm:text-sm text-navy-300">Manage invoices and payment records</p>
     </div>
 
-    <div class="grid gap-6 md:grid-cols-2">
+    <div class="grid gap-4 md:grid-cols-2">
       <!-- Invoices -->
-      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Invoices</h2>
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-4">
+        <h2 class="text-lg font-semibold text-white mb-3">Invoices</h2>
         <div class="mb-4 flex flex-wrap items-center gap-3">
           <div class="relative flex-1 min-w-[150px]">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-navy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,8 +93,8 @@
       </div>
 
       <!-- Payments -->
-      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Payments</h2>
+      <div class="rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-800/60 to-navy-900/40 p-4">
+        <h2 class="text-lg font-semibold text-white mb-3">Payments</h2>
         <div class="mb-4 flex flex-wrap items-center gap-3">
           <div class="relative flex-1 min-w-[150px]">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-navy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

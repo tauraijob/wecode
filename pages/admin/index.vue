@@ -1,25 +1,25 @@
 <template>
-  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-8">
+  <section class="mx-auto max-w-7xl px-3 sm:px-4 py-6">
     <!-- Header -->
-    <div class="mb-6 sm:mb-8">
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
+    <div class="mb-5">
+      <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-navy-200 to-navy-400 bg-clip-text text-transparent">
         Admin Dashboard
       </h1>
-      <p class="mt-1 sm:mt-2 text-sm sm:text-base text-navy-300">Welcome back! Here's what's happening with your platform.</p>
+      <p class="mt-1 text-xs sm:text-sm text-navy-300">Welcome back! Here's what's happening with your platform.</p>
     </div>
 
     <!-- E-Learning Platform Section -->
-    <div class="mb-8 rounded-2xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 via-navy-900/60 to-navy-800/40 p-4 sm:p-8 shadow-xl backdrop-blur-sm">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div class="flex items-center gap-3">
-          <div class="rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-2 sm:p-3 border border-blue-500/30">
-            <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="mb-6 rounded-xl border border-navy-700/50 bg-gradient-to-br from-navy-900/80 via-navy-900/60 to-navy-800/40 p-4 sm:p-6 shadow-xl backdrop-blur-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-2 border border-blue-500/30">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
           <div>
-            <h2 class="text-xl sm:text-2xl font-bold text-white">E-Learning Platform</h2>
-            <p class="text-xs sm:text-sm text-navy-300">Manage courses, enrollments, and student progress</p>
+            <h2 class="text-lg sm:text-xl font-bold text-white">E-Learning Platform</h2>
+            <p class="text-xs text-navy-300">Manage courses, enrollments, and student progress</p>
           </div>
         </div>
         <div class="flex flex-wrap gap-2">
@@ -51,7 +51,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Total Courses</div>
-            <div class="text-3xl font-bold text-white">{{ elearningMetrics.courses }}</div>
+            <div class="text-2xl font-bold text-white">{{ elearningMetrics.courses }}</div>
             <div class="text-xs text-navy-400 mt-2">{{ elearningMetrics.publishedCourses }} published</div>
           </div>
         </div>
@@ -67,7 +67,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Total Enrollments</div>
-            <div class="text-3xl font-bold text-white">{{ elearningMetrics.enrollments }}</div>
+            <div class="text-2xl font-bold text-white">{{ elearningMetrics.enrollments }}</div>
             <div class="text-xs text-navy-400 mt-2">{{ elearningMetrics.activeStudents }} active students</div>
           </div>
         </div>
@@ -83,7 +83,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Published Courses</div>
-            <div class="text-3xl font-bold text-white">{{ elearningMetrics.publishedCourses }}</div>
+            <div class="text-2xl font-bold text-white">{{ elearningMetrics.publishedCourses }}</div>
             <div class="text-xs text-navy-400 mt-2">Ready for enrollment</div>
           </div>
         </div>
@@ -99,7 +99,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Active Students</div>
-            <div class="text-3xl font-bold text-white">{{ elearningMetrics.activeStudents }}</div>
+            <div class="text-2xl font-bold text-white">{{ elearningMetrics.activeStudents }}</div>
             <div class="text-xs text-navy-400 mt-2">Currently learning</div>
           </div>
         </div>
@@ -326,7 +326,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Total Revenue</div>
-            <div class="text-3xl font-bold text-white">USD {{ metrics.revenue.toFixed(2) }}</div>
+            <div class="text-2xl font-bold text-white">USD {{ metrics.revenue.toFixed(2) }}</div>
           </div>
         </div>
 
@@ -341,7 +341,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Schools</div>
-            <div class="text-3xl font-bold text-white">{{ metrics.schools }}</div>
+            <div class="text-2xl font-bold text-white">{{ metrics.schools }}</div>
             <NuxtLink to="/admin/schools" class="text-xs text-navy-400 hover:text-navy-300 mt-2 inline-block">View all →</NuxtLink>
           </div>
         </div>
@@ -357,7 +357,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Active Clubs</div>
-            <div class="text-3xl font-bold text-white">{{ metrics.clubs }}</div>
+            <div class="text-2xl font-bold text-white">{{ metrics.clubs }}</div>
             <NuxtLink to="/admin/clubs" class="text-xs text-navy-400 hover:text-navy-300 mt-2 inline-block">View all →</NuxtLink>
           </div>
         </div>
@@ -373,7 +373,7 @@
               </div>
             </div>
             <div class="text-sm font-medium text-navy-300 mb-1">Pending Requests</div>
-            <div class="text-3xl font-bold text-white">{{ metrics.pendingRequests }}</div>
+            <div class="text-2xl font-bold text-white">{{ metrics.pendingRequests }}</div>
             <NuxtLink to="/admin/requests" class="text-xs text-navy-400 hover:text-navy-300 mt-2 inline-block">View all →</NuxtLink>
           </div>
         </div>

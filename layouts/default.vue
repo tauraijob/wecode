@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-cream-50 text-gray-900">
     <header class="sticky top-0 z-40 border-b border-cream-300/60 bg-surface-50/95 backdrop-blur-md shadow-sm">
-      <div class="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4 py-3">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4 py-2">
         <NuxtLink to="/" class="flex items-center gap-2 font-semibold tracking-tight">
           <div
             v-if="logoUrl"
@@ -10,7 +10,7 @@
             <img
               :src="logoUrl"
               alt="WeCodeZW Logo"
-              class="h-10 sm:h-12 md:h-14 w-auto object-contain"
+              class="h-8 sm:h-10 md:h-11 w-auto object-contain"
               @error="logoUrl = null"
             />
           </div>
@@ -106,7 +106,7 @@
           <template v-if="!me">
             <NuxtLink to="/auth/login" class="hidden sm:inline-block rounded-lg border border-cream-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-100 transition-colors font-medium">Sign in</NuxtLink>
             <NuxtLink to="/auth/register" class="hidden sm:inline-block rounded-lg border border-purple-300 bg-purple-50 px-3 py-1.5 text-sm text-purple-700 hover:bg-purple-100 transition-colors font-medium">Register</NuxtLink>
-            <NuxtLink to="/request" class="rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-white shadow-md hover:shadow-lg hover:from-primary-700 hover:to-primary-800 transition-all font-medium">Request Training</NuxtLink>
+            <NuxtLink to="/community" class="rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-white shadow-md hover:shadow-lg hover:from-primary-700 hover:to-primary-800 transition-all font-medium">Community</NuxtLink>
           </template>
 
           <!-- Logged In -->
@@ -153,12 +153,17 @@
                             :class="{
                               'bg-blue-500/20 text-blue-400 border-blue-500/30': me.role === 'ADMIN',
                               'bg-purple-500/20 text-purple-400 border-purple-500/30': me.role === 'STUDENT',
-                              'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': me.role === 'USER'
+                              'bg-teal-500/20 text-teal-400 border-teal-500/30': me.role === 'INDIVIDUAL',
+                              'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': me.role === 'MENTOR',
+                              'bg-amber-500/20 text-amber-400 border-amber-500/30': me.role === 'INSTRUCTOR'
                             }"
                             class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium"
                           >
                             <span v-if="me.role === 'STUDENT'">E-Learning Student</span>
                             <span v-else-if="me.role === 'ADMIN'">Admin</span>
+                            <span v-else-if="me.role === 'INDIVIDUAL'">Community Member</span>
+                            <span v-else-if="me.role === 'MENTOR'">Mentor</span>
+                            <span v-else-if="me.role === 'INSTRUCTOR'">Instructor</span>
                             <span v-else>{{ me.role }}</span>
                           </span>
                         </div>
@@ -178,6 +183,18 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                       <span class="text-navy-200 group-hover:text-white">Admin Dashboard</span>
+                    </NuxtLink>
+                    
+                    <NuxtLink 
+                      v-else-if="me.role === 'INDIVIDUAL' || me.role === 'MENTOR'" 
+                      @click="menuOpen = false" 
+                      to="/community" 
+                      class="flex items-center gap-3 px-4 py-2.5 hover:bg-navy-800/50 transition-colors group"
+                    >
+                      <svg class="h-4 w-4 text-navy-400 group-hover:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span class="text-navy-200 group-hover:text-white">Community Hub</span>
                     </NuxtLink>
                     
                     <NuxtLink 
@@ -205,6 +222,19 @@
                     </NuxtLink>
 
                     <NuxtLink 
+                      v-if="me.role === 'INDIVIDUAL' || me.role === 'MENTOR'"
+                      @click="menuOpen = false" 
+                      to="/community/settings" 
+                      class="flex items-center gap-3 px-4 py-2.5 hover:bg-navy-800/50 transition-colors group"
+                    >
+                      <svg class="h-4 w-4 text-navy-400 group-hover:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <span class="text-navy-200 group-hover:text-white">Account Settings</span>
+                    </NuxtLink>
+
+                    <NuxtLink 
+                      v-else
                       @click="menuOpen = false" 
                       to="/dashboard/account" 
                       class="flex items-center gap-3 px-4 py-2.5 hover:bg-navy-800/50 transition-colors group"
