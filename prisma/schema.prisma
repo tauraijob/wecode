@@ -12,6 +12,7 @@ enum Role {
   STUDENT
   CORPORATE
   ADMIN
+  COMMUNITY_ADMIN
   INSTRUCTOR
   MENTOR
 }
@@ -95,6 +96,7 @@ model User {
   chatRoomsAsMentee ChatRoom[]      @relation("ChatMentee")
   sentMessages      ChatMessage[]
   creditPurchases   CreditPurchase[]
+  couponRedemptions CouponRedemption[]
 }
 
 model Request {
@@ -793,4 +795,37 @@ model CreditPurchase {
 
   @@index([userId])
   @@index([status])
+}
+
+// Coupon/Promo Code System
+model Coupon {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  credits     Int       // Credits to award when redeemed
+  maxUses     Int?      // null = unlimited
+  usedCount   Int       @default(0)
+  expiresAt   DateTime?
+  active      Boolean   @default(true)
+  description String?   // Optional description for admin reference
+  createdAt   DateTime  @default(now())
+  createdBy   String    // Admin who created it
+  
+  redemptions CouponRedemption[]
+  
+  @@index([code])
+  @@index([active])
+}
+
+model CouponRedemption {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  credits   Int      // Credits awarded at time of redemption
+  createdAt DateTime @default(now())
+  
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([couponId, userId]) // Prevent duplicate redemptions
+  @@index([userId])
 }

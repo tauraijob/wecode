@@ -70,7 +70,18 @@ export default defineEventHandler(async (event) => {
         }
     })
 
-    const baseUrl = process.env.SITE_URL || 'https://wecode.co.zw'
+    // Determine if we're in development mode
+    const isDevelopment = process.env.NODE_ENV === 'development'
+
+    // Get site URL with production fallback
+    let baseUrl = process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
+
+    // CRITICAL: In production, NEVER allow localhost URLs
+    if (!isDevelopment && baseUrl.includes('localhost')) {
+        console.warn(`Warning: SITE_URL contains localhost in production. Forcing https://wecode.co.zw`)
+        baseUrl = 'https://wecode.co.zw'
+    }
+
     const postUrl = `${baseUrl}/community/post/${postId}`
 
     // 1. Notify post author (if not the commenter)

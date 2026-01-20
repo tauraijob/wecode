@@ -17,12 +17,22 @@ export default defineEventHandler(async (event) => {
   const expires = new Date(Date.now() + 1000 * 60 * 30) // 30 minutes
   await prisma.magicLink.create({ data: { token, userId: user.id, expiresAt: expires } })
 
-  const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
+  // Determine if we're in development mode
+  const isDevelopment = process.env.NODE_ENV === 'development'
+
+  // Get site URL with production fallback
+  let siteUrl = process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
+
+  // CRITICAL: In production, NEVER allow localhost URLs
+  if (!isDevelopment && siteUrl.includes('localhost')) {
+    siteUrl = 'https://wecode.co.zw'
+  }
+
   const link = `${siteUrl}/api/auth/magic-link/verify?token=${token}`
 
   const { getMagicLinkTemplate } = await import('~~/server/utils/email-templates')
   const { html, text } = getMagicLinkTemplate(user.name || 'User', link)
-  
+
   await sendMail({
     to: email,
     subject: 'Your secure sign-in link — WeCodeZW',

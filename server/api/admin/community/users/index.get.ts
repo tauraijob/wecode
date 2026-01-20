@@ -13,7 +13,8 @@ export default defineEventHandler(async (event) => {
     // Verify admin auth
     const token = getCookie(event, 'token')
     const auth = token ? verifyJwt(token) : null
-    if (!auth || auth.role !== 'ADMIN') {
+    const allowedRoles = ['ADMIN', 'COMMUNITY_ADMIN']
+    if (!auth || !allowedRoles.includes(auth.role)) {
         throw createError({ statusCode: 403, statusMessage: 'Admin access required' })
     }
 
@@ -21,13 +22,24 @@ export default defineEventHandler(async (event) => {
     const search = query.search as string | undefined
     const verified = query.verified as string | undefined
 
-    let whereClause: any = {}
+    // Community roles filter - only show community-related users
+    const communityRoles = ['INDIVIDUAL', 'MENTOR', 'COMMUNITY_ADMIN']
+
+    let whereClause: any = {
+        role: { in: communityRoles }
+    }
 
     if (search) {
-        whereClause.OR = [
-            { name: { contains: search } },
-            { email: { contains: search } }
+        whereClause.AND = [
+            { role: { in: communityRoles } },
+            {
+                OR: [
+                    { name: { contains: search } },
+                    { email: { contains: search } }
+                ]
+            }
         ]
+        delete whereClause.role // Remove since it's in AND now
     }
 
     if (verified === 'true') {

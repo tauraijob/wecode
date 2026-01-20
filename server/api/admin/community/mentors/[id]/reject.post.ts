@@ -15,7 +15,8 @@ export default defineEventHandler(async (event) => {
     // Verify admin auth
     const token = getCookie(event, 'token')
     const auth = token ? verifyJwt(token) : null
-    if (!auth || auth.role !== 'ADMIN') {
+    const allowedRoles = ['ADMIN', 'COMMUNITY_ADMIN']
+    if (!auth || !allowedRoles.includes(auth.role)) {
         throw createError({ statusCode: 403, statusMessage: 'Admin access required' })
     }
 

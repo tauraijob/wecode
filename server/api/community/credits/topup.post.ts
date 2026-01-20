@@ -87,7 +87,18 @@ export default defineEventHandler(async (event) => {
 
     const paynow = new Paynow(integrationId, integrationKey)
 
-    const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'http://localhost:3000'
+    // Determine if we're in development mode
+    const isDevelopment = process.env.NODE_ENV === 'development'
+
+    // Get site URL with production fallback
+    let baseUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
+
+    // CRITICAL: In production, NEVER allow localhost URLs
+    if (!isDevelopment && baseUrl.includes('localhost')) {
+        console.warn(`Warning: SITE_URL contains localhost in production. Forcing https://wecode.co.zw`)
+        baseUrl = 'https://wecode.co.zw'
+    }
+
     paynow.resultUrl = `${baseUrl}/api/community/credits/webhook`
     paynow.returnUrl = `${baseUrl}/community?credits=success`
 

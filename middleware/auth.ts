@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-  const protectedPaths = ['/dashboard', '/admin', '/instructor', '/mentor']
+  const protectedPaths = ['/dashboard', '/admin', '/instructor', '/mentor', '/community/admin']
   if (!protectedPaths.some((p) => to.path.startsWith(p))) return
 
   const me = await $fetch('/api/auth/me').catch(() => null)
@@ -8,6 +8,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Admin redirect
   if (to.path.startsWith('/dashboard') && me.role === 'ADMIN') {
     return navigateTo('/admin')
+  }
+
+  // Community Admin redirect - send to community admin dashboard
+  if (to.path.startsWith('/dashboard') && me.role === 'COMMUNITY_ADMIN') {
+    return navigateTo('/community/admin')
   }
 
   // Community members (INDIVIDUAL, MENTOR) should not access /dashboard

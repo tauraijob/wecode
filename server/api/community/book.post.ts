@@ -61,6 +61,10 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: 'This mentor is not currently available' })
     }
 
+    if (!mentorProfile.isApproved) {
+        throw createError({ statusCode: 400, statusMessage: 'This mentor is not yet approved to offer sessions' })
+    }
+
     if (mentorProfile.userId === auth.userId) {
         throw createError({ statusCode: 400, statusMessage: 'You cannot book a session with yourself' })
     }

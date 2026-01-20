@@ -13,7 +13,8 @@ export default defineEventHandler(async (event) => {
     // Verify admin auth
     const token = getCookie(event, 'token')
     const auth = token ? verifyJwt(token) : null
-    if (!auth || auth.role !== 'ADMIN') {
+    const allowedRoles = ['ADMIN', 'COMMUNITY_ADMIN']
+    if (!auth || !allowedRoles.includes(auth.role)) {
         throw createError({ statusCode: 403, statusMessage: 'Admin access required' })
     }
 
@@ -24,7 +25,10 @@ export default defineEventHandler(async (event) => {
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
 
-    // Gather all stats
+    // Community roles filter - only show community-related users
+    const communityRoles = ['INDIVIDUAL', 'MENTOR', 'COMMUNITY_ADMIN']
+
+    // Gather all stats (filtered to community users only)
     const [
         totalUsers,
         usersToday,
@@ -41,11 +45,11 @@ export default defineEventHandler(async (event) => {
         totalPosts,
         totalComments
     ] = await Promise.all([
-        // Users
-        prisma.user.count(),
-        prisma.user.count({ where: { createdAt: { gte: today } } }),
-        prisma.user.count({ where: { createdAt: { gte: weekAgo } } }),
-        prisma.user.count({ where: { emailVerified: true } }),
+        // Users (community roles only)
+        prisma.user.count({ where: { role: { in: communityRoles } } }),
+        prisma.user.count({ where: { role: { in: communityRoles }, createdAt: { gte: today } } }),
+        prisma.user.count({ where: { role: { in: communityRoles }, createdAt: { gte: weekAgo } } }),
+        prisma.user.count({ where: { role: { in: communityRoles }, emailVerified: true } }),
 
         // Mentors
         prisma.mentorProfile.count(),
@@ -66,8 +70,9 @@ export default defineEventHandler(async (event) => {
         prisma.forumComment.count()
     ])
 
-    // Recent activity (last 5 users)
+    // Recent activity (last 5 community users only)
     const recentUsers = await prisma.user.findMany({
+        where: { role: { in: communityRoles } },
         take: 5,
         orderBy: { createdAt: 'desc' },
         select: {

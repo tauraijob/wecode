@@ -89,6 +89,19 @@
           <div class="pt-3 pb-0.5">
             <div class="px-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Account</div>
           </div>
+
+          <!-- Community Admin Link (For ADMIN and COMMUNITY_ADMIN) -->
+          <NuxtLink 
+            v-if="me?.role === 'ADMIN' || me?.role === 'COMMUNITY_ADMIN'" 
+            to="/community/admin" 
+            :class="navClass('/community/admin')"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+            <span>Community Admin</span>
+          </NuxtLink>
+
           <NuxtLink to="/community/settings" :class="navClass('/community/settings')">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -105,10 +118,32 @@
             </div>
             <button
               @click="showTopUpModal = true"
-              class="w-full py-1.5 px-3 rounded-md bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium transition-colors"
+              class="w-full py-1.5 px-3 rounded-md bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium transition-colors mb-2"
             >
               Top Up Credits
             </button>
+            
+            <!-- Redeem Code -->
+            <div class="mt-2 pt-2 border-t border-primary-200/60">
+              <div class="text-[10px] text-slate-500 mb-1">Have a code?</div>
+              <div class="relative">
+                <input 
+                  v-model="redeemCode"
+                  @keyup.enter="redeemCoupon"
+                  type="text" 
+                  placeholder="Promo code"
+                  class="w-full pl-2 pr-14 py-1.5 text-[11px] border border-slate-200 rounded-md bg-white/80 focus:ring-1 focus:ring-primary-400 focus:border-primary-400 placeholder:text-slate-400 placeholder:normal-case shadow-sm"
+                  style="text-transform: uppercase;"
+                />
+                <button 
+                  @click="redeemCoupon"
+                  :disabled="redeeming || !redeemCode.trim()"
+                  class="absolute right-1 top-1 bottom-1 px-2 bg-slate-800 hover:bg-slate-900 text-white text-[9px] font-bold rounded flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed uppercase tracking-wider"
+                >
+                  {{ redeeming ? '...' : 'Apply' }}
+                </button>
+              </div>
+            </div>
           </div>
         </template>
 
@@ -436,10 +471,32 @@
             </div>
             <button
               @click="showTopUpModal = true; open = false"
-              class="w-full py-1.5 px-3 rounded-md bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium transition-colors"
+              class="w-full py-1.5 px-3 rounded-md bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium transition-colors mb-2"
             >
               Top Up Credits
             </button>
+            
+            <!-- Mobile Redeem Code -->
+            <div class="mt-2 pt-2 border-t border-primary-200/60">
+              <div class="text-[10px] text-slate-500 mb-1">Have a code?</div>
+              <div class="relative">
+                <input 
+                  v-model="redeemCode"
+                  @keyup.enter="redeemCoupon"
+                  type="text" 
+                  placeholder="Promo code"
+                  class="w-full pl-2 pr-14 py-1.5 text-[11px] border border-slate-200 rounded-md bg-white/80 focus:ring-1 focus:ring-primary-400 focus:border-primary-400 placeholder:text-slate-400 placeholder:normal-case shadow-sm"
+                  style="text-transform: uppercase;"
+                />
+                <button 
+                  @click="redeemCoupon"
+                  :disabled="redeeming || !redeemCode.trim()"
+                  class="absolute right-1 top-1 bottom-1 px-2 bg-slate-800 hover:bg-slate-900 text-white text-[9px] font-bold rounded flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed uppercase tracking-wider"
+                >
+                  {{ redeeming ? '...' : 'Apply' }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -464,6 +521,31 @@ const userMenuRef = ref<HTMLElement | null>(null)
 const notificationMenuRef = ref<HTMLElement | null>(null)
 const showTopUpModal = ref(false)
 const route = useRoute()
+
+// Redeem Code Logic
+const redeemCode = ref('')
+const redeeming = ref(false)
+const { error: toastError, success } = useToast()
+
+const redeemCoupon = async () => {
+  if (!redeemCode.value.trim() || redeeming.value) return
+  
+  redeeming.value = true
+  try {
+    const response = await $fetch<any>('/api/community/coupons/redeem', {
+      method: 'POST',
+      body: { code: redeemCode.value.trim() }
+    })
+    success(response.message || `Received ${response.creditsAwarded} credits!`)
+    redeemCode.value = ''
+    // Refresh user data to update credits display
+    refreshNuxtData('me')
+  } catch (err: any) {
+    toastError(err.data?.message || 'Invalid or expired code')
+  } finally {
+    redeeming.value = false
+  }
+}
 
 // Notifications Logic
 const { data: notificationData, refresh: refreshNotifications } = useFetch('/api/notifications', {
