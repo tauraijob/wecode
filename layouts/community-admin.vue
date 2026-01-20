@@ -200,8 +200,8 @@ const { data: stats } = useFetch<any>('/api/admin/community/stats', {
   default: () => ({ mentors: { pending: 0 }, payouts: { pending: 0 } })
 })
 
-const pendingMentors = computed(() => stats.value?.mentors?.pending || 0)
-const pendingPayouts = computed(() => stats.value?.payouts?.pending || 0)
+const pendingMentors = computed(() => Number(stats.value?.mentors?.pending) || 0)
+const pendingPayouts = computed(() => Number(stats.value?.payouts?.pending) || 0)
 
 function isActive(path: string, exact = false) {
   if (exact) {

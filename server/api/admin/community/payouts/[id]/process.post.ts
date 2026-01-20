@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
     const updatedPayout = await prisma.payout.update({
         where: { id: payoutId },
         data: {
-            status: 'PROCESSED',
+            status: 'COMPLETED',
             processedAt: new Date(),
             processedById: auth.userId,
             reference: reference || null

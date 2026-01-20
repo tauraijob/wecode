@@ -143,6 +143,12 @@
                   {{ redeeming ? '...' : 'Apply' }}
                 </button>
               </div>
+              <NuxtLink 
+                to="/community/credits" 
+                class="block text-center text-[10px] text-primary-600 hover:text-primary-700 hover:underline mt-2"
+              >
+                Learn about credits →
+              </NuxtLink>
             </div>
           </div>
         </template>

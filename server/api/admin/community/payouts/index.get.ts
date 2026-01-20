@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     const status = query.status as string | undefined
 
     let whereClause: any = {}
-    if (status && ['PENDING', 'PROCESSED', 'REJECTED'].includes(status)) {
+    if (status && ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'].includes(status)) {
         whereClause.status = status
     }
 
@@ -45,8 +45,9 @@ export default defineEventHandler(async (event) => {
     const stats = {
         total: await prisma.payout.count(),
         pending: await prisma.payout.count({ where: { status: 'PENDING' } }),
-        processed: await prisma.payout.count({ where: { status: 'PROCESSED' } })
+        completed: await prisma.payout.count({ where: { status: 'COMPLETED' } })
     }
 
     return { payouts, stats }
 })
+

@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
                     name,
                     hashedPassword,
                     role: 'INDIVIDUAL',
-                    credits: 10, // Starting credits for new community members
+                    credits: 20, // Starting credits for new community members
                     verificationToken,
                     tokenExpiresAt,
                     emailVerified: false
