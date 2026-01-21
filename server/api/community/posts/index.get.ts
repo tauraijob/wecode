@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 /**
- * Get all forum posts with author info and comment count
+ * Get all forum posts with author info, comment count, views, and likes
  * Public access - anyone can view posts
  */
 export default defineEventHandler(async (event) => {
@@ -27,7 +27,10 @@ export default defineEventHandler(async (event) => {
                         }
                     },
                     _count: {
-                        select: { comments: true }
+                        select: {
+                            comments: true,
+                            likes: true
+                        }
                     }
                 }
             }),
@@ -53,10 +56,33 @@ export default defineEventHandler(async (event) => {
             // Community profiles not available yet, that's fine
         }
 
+        // Get like counts for each post
+        const postIds = posts.map(p => p.id)
+        const likeCounts = await prisma.forumLike.groupBy({
+            by: ['postId', 'type'],
+            where: { postId: { in: postIds } },
+            _count: { id: true }
+        })
+
+        // Build like count map
+        const likeMap: Record<string, { likes: number; dislikes: number }> = {}
+        postIds.forEach(id => {
+            likeMap[id] = { likes: 0, dislikes: 0 }
+        })
+        likeCounts.forEach((count: any) => {
+            if (count.type === 'LIKE') {
+                likeMap[count.postId].likes = count._count.id
+            } else {
+                likeMap[count.postId].dislikes = count._count.id
+            }
+        })
+
         return {
             posts: posts.map(post => ({
                 ...post,
                 commentCount: post._count.comments,
+                likes: likeMap[post.id]?.likes || 0,
+                dislikes: likeMap[post.id]?.dislikes || 0,
                 author: {
                     ...post.author,
                     communityProfile: profileMap[post.authorId] || null
@@ -77,3 +103,4 @@ export default defineEventHandler(async (event) => {
         })
     }
 })
+

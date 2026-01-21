@@ -40,6 +40,61 @@
           <div class="p-4 rounded-lg bg-white border border-slate-200 shadow-sm">
             <ForumContent :content="post.content" />
           </div>
+
+          <!-- Like/Dislike & Stats Bar -->
+          <div class="mt-3 flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+            <div class="flex items-center gap-4">
+              <!-- Like Button -->
+              <button 
+                @click="handleVote('LIKE')"
+                :disabled="!isAuthenticated || voting"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200"
+                :class="[
+                  userVote === 'LIKE' 
+                    ? 'bg-green-100 text-green-600 border border-green-200' 
+                    : 'bg-slate-50 text-slate-500 hover:bg-green-50 hover:text-green-500 border border-slate-200',
+                  !isAuthenticated || voting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                ]"
+              >
+                <svg class="w-4 h-4" :fill="userVote === 'LIKE' ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                </svg>
+                <span class="text-xs font-semibold">{{ likes }}</span>
+              </button>
+
+              <!-- Dislike Button -->
+              <button 
+                @click="handleVote('DISLIKE')"
+                :disabled="!isAuthenticated || voting"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200"
+                :class="[
+                  userVote === 'DISLIKE' 
+                    ? 'bg-red-100 text-red-600 border border-red-200' 
+                    : 'bg-slate-50 text-slate-500 hover:bg-red-50 hover:text-red-500 border border-slate-200',
+                  !isAuthenticated || voting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                ]"
+              >
+                <svg class="w-4 h-4" :fill="userVote === 'DISLIKE' ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
+                </svg>
+                <span class="text-xs font-semibold">{{ dislikes }}</span>
+              </button>
+            </div>
+
+            <!-- Views -->
+            <div class="flex items-center gap-1.5 text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span class="text-xs font-medium">{{ post.viewCount || 0 }} views</span>
+            </div>
+          </div>
+          
+          <!-- Login prompt for voting -->
+          <p v-if="!isAuthenticated" class="mt-2 text-center text-xs text-slate-400">
+            <NuxtLink :to="`/auth/login?redirect=/community/post/${route.params.id}`" class="text-primary-500 hover:underline">Login</NuxtLink> to like or dislike this post
+          </p>
         </article>
 
         <!-- AI Chat Section -->
@@ -201,15 +256,28 @@ interface ChatMessage {
 definePageMeta({ layout: 'community' })
 const route = useRoute()
 const { user, isAuthenticated } = useAuth()
-const { error: toastError } = useToast()
+const { error: toastError, success: toastSuccess } = useToast()
 const newComment = ref('')
 const commenting = ref(false)
 const userMessage = ref('')
 const loadingAI = ref(false)
 const aiError = ref('')
 const chatMessages = ref<ChatMessage[]>([])
+const voting = ref(false)
+const userVote = ref<string | null>(null)
+const likes = ref(0)
+const dislikes = ref(0)
 
 const { data: post, pending, error: fetchError, refresh } = useFetch<any>(`/api/community/posts/${route.params.id}`)
+
+// Initialize vote state from post data
+watch(() => post.value, (newPost) => {
+  if (newPost) {
+    userVote.value = newPost.userVote || null
+    likes.value = newPost.likes || 0
+    dislikes.value = newPost.dislikes || 0
+  }
+}, { immediate: true })
 
 // Load saved chat on page load
 const loadSavedChat = async () => {
@@ -257,6 +325,24 @@ const formatDate = (date: string) => {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   return d.toLocaleDateString()
+}
+
+const handleVote = async (type: 'LIKE' | 'DISLIKE') => {
+  if (!isAuthenticated.value || voting.value) return
+  voting.value = true
+  try {
+    const result = await $fetch<{ success: boolean; userVote: string | null; likes: number; dislikes: number }>(`/api/community/posts/${route.params.id}/like`, {
+      method: 'POST',
+      body: { type }
+    })
+    userVote.value = result.userVote
+    likes.value = result.likes
+    dislikes.value = result.dislikes
+  } catch (err: any) {
+    toastError(err.data?.message || 'Failed to vote')
+  } finally {
+    voting.value = false
+  }
 }
 
 const addComment = async () => {

@@ -225,6 +225,25 @@ export function mentionNotification(userName: string, mentionerName: string, con
   return baseTemplate(content, `${mentionerName} mentioned you`)
 }
 
+export function forumLikeNotification(postAuthor: string, likerName: string, postTitle: string, postUrl: string): string {
+  const content = `
+    <div class="content">
+      <h2>Someone Liked Your Post! ❤️</h2>
+      <p>Hi <strong>${postAuthor}</strong>,</p>
+      <p><strong>${likerName}</strong> liked your post:</p>
+      <div class="info-box">
+        <p><strong>${postTitle.substring(0, 100)}${postTitle.length > 100 ? '...' : ''}</strong></p>
+      </div>
+      <center>
+        <a href="${postUrl}" class="button">View Post</a>
+      </center>
+      <p style="font-size: 13px; color: #6b7280;">Keep sharing great content with the community!</p>
+    </div>
+  `
+  return baseTemplate(content, `${likerName} liked your post`)
+}
+
+
 export function payoutRequestConfirmation(name: string, amount: number, method: string): string {
   const content = `
     <div class="content">

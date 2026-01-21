@@ -97,6 +97,7 @@ model User {
   sentMessages      ChatMessage[]
   creditPurchases   CreditPurchase[]
   couponRedemptions CouponRedemption[]
+  forumLikes        ForumLike[]
 }
 
 model Request {
@@ -634,12 +635,14 @@ model ForumPost {
   id          String         @id @default(cuid())
   title       String
   content     String         @db.Text
+  viewCount   Int            @default(0)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
   author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
   comments    ForumComment[]
+  likes       ForumLike[]
   aiChat      AIChat?        // AI conversation for this post
 }
 
@@ -828,4 +831,19 @@ model CouponRedemption {
   
   @@unique([couponId, userId]) // Prevent duplicate redemptions
   @@index([userId])
+}
+
+// Forum Likes/Dislikes
+model ForumLike {
+  id        String   @id @default(cuid())
+  type      String   // 'LIKE' or 'DISLIKE'
+  createdAt DateTime @default(now())
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  
+  @@unique([userId, postId]) // One vote per user per post
+  @@index([postId])
 }
