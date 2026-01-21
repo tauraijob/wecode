@@ -43,7 +43,9 @@ export default defineEventHandler(async (event) => {
         totalBookings,
         completedBookings,
         totalPosts,
-        totalComments
+        totalComments,
+        creditSales,
+        sessionCredits
     ] = await Promise.all([
         // Users (community roles only)
         prisma.user.count({ where: { role: { in: communityRoles } } }),
@@ -67,7 +69,20 @@ export default defineEventHandler(async (event) => {
 
         // Forum
         prisma.forumPost.count(),
-        prisma.forumComment.count()
+        prisma.forumComment.count(),
+
+        // Revenue Sources
+        // 1. Credit Sales (Completed purchases)
+        prisma.creditPurchase.aggregate({
+            where: { status: 'COMPLETED' },
+            _sum: { amount: true }
+        }),
+
+        // 2. Mentorship Sessions (for commission calc)
+        prisma.mentorBooking.aggregate({
+            where: { status: 'COMPLETED' },
+            _sum: { creditsCost: true }
+        })
     ])
 
     // Recent activity (last 5 community users only)
@@ -96,6 +111,14 @@ export default defineEventHandler(async (event) => {
         }
     })
 
+    // Calculate Revenue
+    const creditSalesTotal = Number(creditSales._sum.amount || 0)
+    const totalSessionCredits = Number(sessionCredits._sum.creditsCost || 0)
+
+    // Commission Revenue: 40% of session credits * $0.10/credit
+    const commissionRevenue = (totalSessionCredits * 0.40) * 0.10
+    const totalRevenue = creditSalesTotal + commissionRevenue
+
     return {
         users: {
             total: totalUsers,
@@ -121,6 +144,11 @@ export default defineEventHandler(async (event) => {
         forum: {
             posts: totalPosts,
             comments: totalComments
+        },
+        revenue: {
+            total: totalRevenue,
+            sales: creditSalesTotal,
+            commissions: commissionRevenue
         },
         recentUsers,
         recentPendingMentors
