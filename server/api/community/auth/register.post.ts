@@ -7,7 +7,7 @@ import { welcomeEmail, adminNewUserAlert } from '~~/server/utils/email-templates
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
-    const { name, email, password, username, profession, experienceLevel, languages } = body
+    const { name, email, password, username, profession, experienceLevel, languages, referralCode } = body
 
     // Validation
     if (!name || !email || !password || !username) {
@@ -65,6 +65,16 @@ export default defineEventHandler(async (event) => {
 
         // Create user and community profile in a transaction
         const result = await prisma.$transaction(async (tx) => {
+            // Look up referrer if referral code provided
+            let referrerId: string | null = null
+            if (referralCode) {
+                const referrer = await tx.user.findFirst({ where: { referralCode: referralCode.toUpperCase() } })
+                if (referrer) referrerId = referrer.id
+            }
+
+            // Generate unique referral code for new user
+            const newReferralCode = crypto.randomBytes(4).toString('hex').toUpperCase()
+
             // Create user with INDIVIDUAL role (community member)
             const user = await tx.user.create({
                 data: {
@@ -75,7 +85,9 @@ export default defineEventHandler(async (event) => {
                     credits: 20, // Starting credits for new community members
                     verificationToken,
                     tokenExpiresAt,
-                    emailVerified: false
+                    emailVerified: false,
+                    referralCode: newReferralCode,
+                    referredById: referrerId
                 }
             })
 
@@ -89,6 +101,25 @@ export default defineEventHandler(async (event) => {
                     languages: languages || null,
                 }
             })
+
+            // Process referral reward
+            if (referrerId) {
+                await tx.referral.create({
+                    data: {
+                        code: referralCode.toUpperCase(),
+                        referrerId,
+                        referredId: user.id,
+                        status: 'COMPLETED',
+                        creditsAwarded: 5,
+                        completedAt: new Date()
+                    }
+                })
+                // Award referrer credits and XP
+                await tx.user.update({
+                    where: { id: referrerId },
+                    data: { credits: { increment: 5 }, xp: { increment: 50 } }
+                })
+            }
 
             return { user, profile }
         })

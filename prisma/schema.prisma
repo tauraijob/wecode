@@ -98,6 +98,23 @@ model User {
   creditPurchases   CreditPurchase[]
   couponRedemptions CouponRedemption[]
   forumLikes        ForumLike[]
+
+  // Community Growth Features
+  referralCode      String?          @unique
+  xp                Int              @default(0)
+  referredBy        User?            @relation("Referrals", fields: [referredById], references: [id])
+  referredById      String?
+  referrals         User[]           @relation("Referrals")
+  hostedSessions    GroupSession[]
+  groupSessionRSVPs GroupSessionRSVP[]
+  codingChallenges  CodingChallenge[]
+  challengeSubmissions ChallengeSubmission[]
+  submissionVotes   SubmissionVote[]
+  resources         Resource[]
+  resourceUpvotes   ResourceUpvote[]
+  badges            UserBadge[]
+  referralsMade     Referral[]       @relation("Referrer")
+  referralsReceived Referral[]       @relation("Referred")
 }
 
 model Request {
@@ -636,6 +653,9 @@ model ForumPost {
   title       String
   content     String         @db.Text
   viewCount   Int            @default(0)
+  tags        String?        // Comma-separated tags for Q&A filtering
+  isQuestion  Boolean        @default(false)
+  acceptedAnswerId String?   // ID of the accepted comment
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
@@ -649,6 +669,8 @@ model ForumPost {
 model ForumComment {
   id          String    @id @default(cuid())
   content     String    @db.Text
+  isAccepted  Boolean   @default(false)
+  upvotes     Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -846,4 +868,175 @@ model ForumLike {
   
   @@unique([userId, postId]) // One vote per user per post
   @@index([postId])
+}
+
+// ==========================================
+// Community Growth Features
+// ==========================================
+
+// Group Sessions / Webinars
+enum SessionStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+model GroupSession {
+  id            String        @id @default(cuid())
+  title         String
+  description   String        @db.Text
+  scheduledAt   DateTime
+  duration      Int           @default(60) // minutes
+  maxAttendees  Int?
+  meetingUrl    String?
+  status        SessionStatus @default(UPCOMING)
+  coverImage    String?
+  tags          String?       // Comma-separated
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  host          User          @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  hostId        String
+  rsvps         GroupSessionRSVP[]
+}
+
+model GroupSessionRSVP {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  session   GroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@unique([sessionId, userId])
+}
+
+// Coding Challenges
+enum ChallengeDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model CodingChallenge {
+  id          String              @id @default(cuid())
+  title       String
+  description String              @db.Text
+  difficulty  ChallengeDifficulty @default(MEDIUM)
+  startsAt    DateTime
+  endsAt      DateTime
+  tags        String?             // Comma-separated
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  createdBy   User                @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById String
+  submissions ChallengeSubmission[]
+}
+
+model ChallengeSubmission {
+  id          String   @id @default(cuid())
+  code        String   @db.Text
+  language    String   // e.g., "javascript", "python"
+  description String?  @db.Text
+  voteCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  challenge   CodingChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challengeId String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  votes       SubmissionVote[]
+
+  @@unique([challengeId, userId]) // One submission per user per challenge
+}
+
+model SubmissionVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  submission   ChallengeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  submissionId String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+
+  @@unique([submissionId, userId])
+}
+
+// Resource Library
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  url         String
+  description String?  @db.Text
+  category    String   // e.g., "Tutorial", "Documentation", "Tool", "Article"
+  upvoteCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+  upvotes     ResourceUpvote[]
+}
+
+model ResourceUpvote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  resourceId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+
+  @@unique([resourceId, userId])
+}
+
+// Gamification
+model Badge {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String
+  icon        String      // Emoji or icon name
+  criteria    String      // e.g., "first_post", "10_sessions", "top_mentor"
+  xpReward    Int         @default(0)
+  createdAt   DateTime    @default(now())
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  earnedAt  DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  badgeId   String
+
+  @@unique([userId, badgeId])
+}
+
+// Referral System
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+}
+
+model Referral {
+  id              String         @id @default(cuid())
+  code            String
+  creditsAwarded  Int            @default(0)
+  status          ReferralStatus @default(PENDING)
+  createdAt       DateTime       @default(now())
+  completedAt     DateTime?
+
+  referrer        User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referrerId      String
+  referred        User           @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+  referredId      String
+
+  @@unique([referrerId, referredId])
 }

@@ -36,7 +36,9 @@ export default defineEventHandler(async (event) => {
         data: {
             title: body.title.trim(),
             content: body.content.trim(),
-            authorId: auth.userId
+            authorId: auth.userId,
+            tags: body.tags || null,
+            isQuestion: body.isQuestion || false
         },
         include: {
             author: {
@@ -47,6 +49,12 @@ export default defineEventHandler(async (event) => {
                 }
             }
         }
+    })
+
+    // Award XP for posting
+    await prisma.user.update({
+        where: { id: auth.userId },
+        data: { xp: { increment: 10 } }
     })
 
     return post
