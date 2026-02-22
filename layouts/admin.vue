@@ -106,6 +106,12 @@
           </svg>
           <span>Billing</span>
         </NuxtLink>
+        <NuxtLink :to="'/admin/ai'" :class="navClass('/admin/ai')">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>Tau AI</span>
+        </NuxtLink>
 
       </nav>
     </aside>

@@ -115,6 +115,10 @@ model User {
   badges            UserBadge[]
   referralsMade     Referral[]       @relation("Referrer")
   referralsReceived Referral[]       @relation("Referred")
+
+  // Support Chats
+  supportChats      SupportChat[]  @relation("ChatUser")
+  adminSupportChats SupportChat[]  @relation("ChatAdmin")
 }
 
 model Request {
@@ -1043,4 +1047,53 @@ model Referral {
   referredId      String
 
   @@unique([referrerId, referredId])
+}
+
+// AI Knowledge Base & Support Chat
+model AIKnowledgeBase {
+  id        String   @id @default(cuid())
+  content   String   @db.LongText
+  sourceUrl String?
+  isManual  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sourceUrl])
+}
+
+enum SupportChatStatus {
+  AI_ACTIVE
+  HUMAN_ACTIVE
+  CLOSED
+}
+
+model SupportChat {
+  id        String            @id @default(cuid())
+  userId    String?
+  guestId   String?           // For non-logged in users
+  guestName String?           // For users who provide their name
+  status    SupportChatStatus @default(AI_ACTIVE)
+  adminId   String?           // Admin/Community Admin ID if human takeover
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user      User?             @relation("ChatUser", fields: [userId], references: [id])
+  admin     User?             @relation("ChatAdmin", fields: [adminId], references: [id])
+  messages  SupportMessage[]
+
+  @@index([userId])
+  @@index([guestId])
+  @@index([status])
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  chatId    String
+  role      String   // 'user', 'assistant', 'admin'
+  content   String   @db.LongText
+  createdAt DateTime @default(now())
+
+  chat      SupportChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
 }

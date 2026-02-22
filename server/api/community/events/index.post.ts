@@ -12,10 +12,10 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 401, statusMessage: 'Authentication required' })
     }
 
-    // Only mentors and admins can create events
+    // Only community admins and platform admins can create events
     const user = await prisma.user.findUnique({ where: { id: auth.userId }, select: { role: true } })
-    if (!user || !['MENTOR', 'ADMIN', 'COMMUNITY_ADMIN'].includes(user.role)) {
-        throw createError({ statusCode: 403, statusMessage: 'Only mentors and admins can create events' })
+    if (!user || !['ADMIN', 'COMMUNITY_ADMIN'].includes(user.role)) {
+        throw createError({ statusCode: 403, statusMessage: 'Only community admins can create events' })
     }
 
     const formData = await readMultipartFormData(event)

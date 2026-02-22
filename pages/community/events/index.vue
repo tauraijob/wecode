@@ -235,7 +235,7 @@ definePageMeta({ layout: 'community' })
 useHead({ title: 'Community Events - WeCode' })
 
 const { user } = useAuth()
-const canCreate = computed(() => user.value && ['MENTOR', 'ADMIN', 'COMMUNITY_ADMIN'].includes(user.value.role))
+const canCreate = computed(() => user.value && ['ADMIN', 'COMMUNITY_ADMIN'].includes(user.value.role))
 
 const tabs = [
   { key: 'upcoming', label: 'Upcoming' },

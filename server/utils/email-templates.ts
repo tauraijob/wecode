@@ -485,3 +485,23 @@ The WeCode Team
   }
 }
 
+export function adminNewSupportChatAlert(chatId: string, name: string, message: string): string {
+  const content = `
+    <div class="content">
+      <h2>New Support Chat Started 💬</h2>
+      <p>A user has started a new chat session with Tau:</p>
+      <table class="details-table">
+        <tr><td>User Name</td><td>${name}</td></tr>
+        <tr><td>Chat ID</td><td>${chatId}</td></tr>
+        <tr><td>First Message</td><td>${message}</td></tr>
+        <tr><td>Time</td><td>${new Date().toLocaleString()}</td></tr>
+      </table>
+      <p><strong>Action:</strong> You can monitor or join this chat from the AI Management dashboard.</p>
+      <center>
+        <a href="${SITE_URL}/admin/ai" class="button">Go to AI Dashboard</a>
+      </center>
+    </div>
+  `
+  return baseTemplate(content, `New support chat from ${name}`)
+}
+
