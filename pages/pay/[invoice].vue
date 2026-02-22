@@ -198,6 +198,39 @@
             </div>
 
             <div v-else class="space-y-3">
+              <!-- Gateway Selector -->
+              <div class="mb-4">
+                <p class="text-xs text-navy-400 mb-2 font-medium">Choose payment method:</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    @click="selectedGateway = 'paynow'"
+                    :class="selectedGateway === 'paynow' 
+                      ? 'border-blue-500 bg-blue-500/20 ring-2 ring-blue-500/30' 
+                      : 'border-navy-600 bg-navy-800/50 hover:bg-navy-700/50'"
+                    class="relative rounded-lg border p-3 text-center transition-all"
+                  >
+                    <div class="text-sm font-semibold text-white mb-0.5">Paynow</div>
+                    <div class="text-[10px] text-navy-400">EcoCash, OneMoney, Bank</div>
+                    <div v-if="selectedGateway === 'paynow'" class="absolute top-1.5 right-1.5">
+                      <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                    </div>
+                  </button>
+                  <button
+                    @click="selectedGateway = 'smilepay'"
+                    :class="selectedGateway === 'smilepay' 
+                      ? 'border-green-500 bg-green-500/20 ring-2 ring-green-500/30' 
+                      : 'border-navy-600 bg-navy-800/50 hover:bg-navy-700/50'"
+                    class="relative rounded-lg border p-3 text-center transition-all"
+                  >
+                    <div class="text-sm font-semibold text-white mb-0.5">Smile&Pay</div>
+                    <div class="text-[10px] text-navy-400">EcoCash, Visa, InnBucks</div>
+                    <div v-if="selectedGateway === 'smilepay'" class="absolute top-1.5 right-1.5">
+                      <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               <button
                 @click="payNow"
                 :disabled="paying"
@@ -207,7 +240,7 @@
                 <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
-                {{ paying ? 'Processing...' : 'Pay with Paynow' }}
+                {{ paying ? 'Processing...' : `Pay with ${selectedGateway === 'smilepay' ? 'Smile&Pay' : 'Paynow'}` }}
               </button>
               
               <NuxtLink
@@ -228,7 +261,7 @@
               <!-- Development: Manual Payment Confirmation -->
               <div v-if="isDev" class="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
                 <p class="text-xs text-amber-300 mb-2">
-                  <strong>Localhost Testing:</strong> PayNow webhooks can't reach localhost. After completing payment on PayNow, click the button below to manually confirm.
+                  <strong>Localhost Testing:</strong> Webhooks can't reach localhost. After completing payment, click below to manually confirm.
                 </p>
                 <button
                   @click="confirmPaymentManually"
@@ -258,6 +291,7 @@ const invoiceId = computed(() => {
 const paying = ref(false)
 const confirming = ref(false)
 const checkingPayment = ref(false)
+const selectedGateway = ref<'paynow' | 'smilepay'>('paynow')
 const error = ref<string | null>(null)
 const isDev = computed(() => {
   if (process.client) {
@@ -525,41 +559,52 @@ async function payNow() {
       return
     }
     
-    const res = await $fetch('/api/paynow/initiate', {
-      method: 'POST',
-      body: {
-        invoiceNumber: invoiceId.value,
-        email: invoice.value?.user?.email,
-        amount: amount
-      }
-    })
-    const redirectUrl = (res as any)?.redirectUrl
-    const pollUrl = (res as any)?.pollUrl
-    
-    if (redirectUrl) {
-      // Store pollUrl in localStorage for later use when user returns
-      // Use invoice number from the response or from the invoice value
-      const invoiceNumber = invoice.value?.number || invoiceId.value
-      if (pollUrl && invoiceNumber) {
-        try {
-          const stored = localStorage.getItem('paynow_pollUrls') || '{}'
-          const pollUrls = JSON.parse(stored)
-          pollUrls[invoiceNumber] = pollUrl
-          localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
-          console.log('Stored pollUrl for invoice:', invoiceNumber, 'PollUrl:', pollUrl.substring(0, 50) + '...')
-        } catch (e) {
-          console.warn('Failed to store pollUrl:', e)
+    if (selectedGateway.value === 'smilepay') {
+      // ─── Smile&Pay Flow ───
+      const res = await $fetch('/api/smilepay/initiate', {
+        method: 'POST',
+        body: {
+          invoiceNumber: invoiceId.value,
+          email: invoice.value?.user?.email,
+          amount: amount,
+          currency: invoice.value?.currency || 'USD'
         }
+      })
+      const paymentUrl = (res as any)?.paymentUrl
+      if (paymentUrl) {
+        window.location.href = paymentUrl
       } else {
-        console.warn('Cannot store pollUrl - missing pollUrl or invoice number', { pollUrl: !!pollUrl, invoiceNumber })
+        alert('Smile&Pay initiation failed. Please try again or contact us.')
       }
-      
-      // Open PayNow in same window (better for mobile) or new tab
-      window.location.href = redirectUrl
-      // Note: After payment, PayNow will redirect back to returnUrl
-      // The polling mechanism will detect the payment status change using stored pollUrl
     } else {
-      alert('Payment initiation failed. Please try again or contact us.')
+      // ─── Paynow Flow ───
+      const res = await $fetch('/api/paynow/initiate', {
+        method: 'POST',
+        body: {
+          invoiceNumber: invoiceId.value,
+          email: invoice.value?.user?.email,
+          amount: amount
+        }
+      })
+      const redirectUrl = (res as any)?.redirectUrl
+      const pollUrl = (res as any)?.pollUrl
+      
+      if (redirectUrl) {
+        const invoiceNumber = invoice.value?.number || invoiceId.value
+        if (pollUrl && invoiceNumber) {
+          try {
+            const stored = localStorage.getItem('paynow_pollUrls') || '{}'
+            const pollUrls = JSON.parse(stored)
+            pollUrls[invoiceNumber] = pollUrl
+            localStorage.setItem('paynow_pollUrls', JSON.stringify(pollUrls))
+          } catch (e) {
+            console.warn('Failed to store pollUrl:', e)
+          }
+        }
+        window.location.href = redirectUrl
+      } else {
+        alert('Paynow initiation failed. Please try again or contact us.')
+      }
     }
   } catch (e: any) {
     console.error('PayNow initiation error:', e)

@@ -35,22 +35,26 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)
     const currency = (body.currency || 'USD').toUpperCase()
+    const gateway = (body.gateway || 'paynow').toLowerCase() as 'paynow' | 'smilepay'
 
     // Validate currency
     if (!['USD', 'ZWG'].includes(currency)) {
         throw createError({ statusCode: 400, statusMessage: 'Invalid currency. Choose: USD or ZWG' })
     }
 
+    // Validate gateway
+    if (!['paynow', 'smilepay'].includes(gateway)) {
+        throw createError({ statusCode: 400, statusMessage: 'Invalid gateway. Choose: paynow or smilepay' })
+    }
+
     // Exchange rate from environment
     const zwgRate = parseFloat(process.env.ZWG_USD_RATE || '30.5')
 
     // Credit packages with USD base pricing
-    // Base rate: $0.10 per credit
-    // Larger packages include bonus credits for better value
     const creditPackages: Record<string, { credits: number; priceUsd: number }> = {
-        'starter': { credits: 100, priceUsd: 10 },      // $0.10/credit (base rate)
-        'standard': { credits: 220, priceUsd: 20 },     // $0.09/credit (10% bonus)
-        'premium': { credits: 500, priceUsd: 45 }       // $0.09/credit (11% bonus)
+        'starter': { credits: 100, priceUsd: 10 },
+        'standard': { credits: 220, priceUsd: 20 },
+        'premium': { credits: 500, priceUsd: 45 }
     }
 
     const packageKey = body.package as string
@@ -68,7 +72,7 @@ export default defineEventHandler(async (event) => {
         ? Math.ceil(selectedPackage.priceUsd * zwgRate)
         : selectedPackage.priceUsd
 
-    // Get user info for PayNow
+    // Get user info
     const user = await prisma.user.findUnique({
         where: { id: auth.userId },
         select: { email: true, name: true, phone: true }
@@ -78,32 +82,17 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, statusMessage: 'User not found' })
     }
 
-    const integrationId = process.env.PAYNOW_INTEGRATION_ID
-    const integrationKey = process.env.PAYNOW_INTEGRATION_KEY
-
-    if (!integrationId || !integrationKey) {
-        throw createError({ statusCode: 503, statusMessage: 'Payment gateway not configured' })
-    }
-
-    const paynow = new Paynow(integrationId, integrationKey)
-
     // Determine if we're in development mode
     const isDevelopment = process.env.NODE_ENV === 'development'
 
     // Get site URL with production fallback
     let baseUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.SITE_URL || (isDevelopment ? 'http://localhost:3000' : 'https://wecode.co.zw')
 
-    // CRITICAL: In production, NEVER allow localhost URLs
     if (!isDevelopment && baseUrl.includes('localhost')) {
-        console.warn(`Warning: SITE_URL contains localhost in production. Forcing https://wecode.co.zw`)
         baseUrl = 'https://wecode.co.zw'
     }
 
-    paynow.resultUrl = `${baseUrl}/api/community/credits/webhook`
-    paynow.returnUrl = `${baseUrl}/community?credits=success`
-
-    // Create unique payment reference that encodes package info
-    // Format: CREDITS-{userId8chars}-{packageKey}-{timestamp}
+    // Create unique payment reference
     const reference = `CREDITS-${auth.userId.substring(0, 8)}-${packageKey}-${Date.now()}`
 
     // Create pending CreditPurchase record
@@ -119,45 +108,94 @@ export default defineEventHandler(async (event) => {
         }
     })
 
-    const payment = paynow.createPayment(reference, user.email)
-    payment.add(`${selectedPackage.credits} Credits Package`, price)
-
     try {
-        const response = await paynow.send(payment)
-
-        if (response.success) {
-            return {
-                success: true,
-                redirectUrl: response.redirectUrl,
-                pollUrl: response.pollUrl,
-                reference,
-                credits: selectedPackage.credits,
-                price: price,
-                currency: currency,
-                purchaseId: creditPurchase.id
+        if (gateway === 'smilepay') {
+            // ─── Smile&Pay Gateway ───
+            const apiKey = process.env.SMILEPAY_API_KEY
+            const apiSecret = process.env.SMILEPAY_API_SECRET
+            if (!apiKey || !apiSecret) {
+                throw createError({ statusCode: 503, statusMessage: 'Smile&Pay not configured' })
             }
-        } else {
-            // Mark purchase as failed
-            await prisma.creditPurchase.update({
-                where: { id: creditPurchase.id },
-                data: { status: 'FAILED' }
+
+            const SMILEPAY_BASE = 'https://zbnet.zb.co.zw/wallet_gateway/payments-gateway'
+            const currencyCode = currency === 'ZWG' ? '924' : '840'
+
+            const response = await $fetch<any>(`${SMILEPAY_BASE}/payments/initiate-transaction`, {
+                method: 'POST',
+                headers: {
+                    'x-api-key': apiKey,
+                    'x-api-secret': apiSecret,
+                    'Content-Type': 'application/json'
+                },
+                body: {
+                    amount: price,
+                    currencyCode: currencyCode,
+                    orderReference: reference,
+                    itemName: `${selectedPackage.credits} Credits Package`,
+                    customerEmail: user.email,
+                    returnUrl: `${baseUrl}/community?credits=success`,
+                    resultUrl: `${baseUrl}/api/smilepay/credits-webhook`
+                }
             })
 
-            throw createError({
-                statusCode: 400,
-                statusMessage: response.error || 'Failed to initiate payment'
-            })
+            if (response.paymentUrl || response.redirectUrl) {
+                return {
+                    success: true,
+                    redirectUrl: response.paymentUrl || response.redirectUrl,
+                    reference,
+                    credits: selectedPackage.credits,
+                    price,
+                    currency,
+                    purchaseId: creditPurchase.id,
+                    gateway: 'smilepay'
+                }
+            }
+
+            throw new Error(response.message || 'Failed to initiate Smile&Pay payment')
+        } else {
+            // ─── Paynow Gateway ───
+            const integrationId = process.env.PAYNOW_INTEGRATION_ID
+            const integrationKey = process.env.PAYNOW_INTEGRATION_KEY
+            if (!integrationId || !integrationKey) {
+                throw createError({ statusCode: 503, statusMessage: 'Paynow not configured' })
+            }
+
+            const paynow = new Paynow(integrationId, integrationKey)
+            paynow.resultUrl = `${baseUrl}/api/community/credits/webhook`
+            paynow.returnUrl = `${baseUrl}/community?credits=success`
+
+            const payment = paynow.createPayment(reference, user.email)
+            payment.add(`${selectedPackage.credits} Credits Package`, price)
+
+            const response = await paynow.send(payment)
+
+            if (response.success) {
+                return {
+                    success: true,
+                    redirectUrl: response.redirectUrl,
+                    pollUrl: response.pollUrl,
+                    reference,
+                    credits: selectedPackage.credits,
+                    price,
+                    currency,
+                    purchaseId: creditPurchase.id,
+                    gateway: 'paynow'
+                }
+            }
+
+            throw new Error(response.error || 'Failed to initiate Paynow payment')
         }
     } catch (error: any) {
-        // Mark purchase as failed if payment initiation failed
+        // Mark purchase as failed
         if (creditPurchase?.id) {
             await prisma.creditPurchase.update({
                 where: { id: creditPurchase.id },
                 data: { status: 'FAILED' }
-            }).catch(() => { }) // Ignore if this fails
+            }).catch(() => { })
         }
 
-        console.error('PayNow initiation error:', error)
+        console.error(`${gateway} credit topup error:`, error)
+        if (error.statusCode) throw error
         throw createError({
             statusCode: 500,
             statusMessage: 'Failed to process payment request'

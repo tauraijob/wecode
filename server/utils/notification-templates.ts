@@ -186,6 +186,18 @@ export function getNotificationTemplate(
       actionUrl: '/instructor/payouts'
     }),
 
+    // Event Notifications
+    EVENT_RSVP: (meta) => ({
+      icon: '🎫',
+      color: 'blue',
+      bgColor: 'bg-blue-500/10',
+      borderColor: 'border-blue-500/50',
+      title: meta.title || 'New Event Signup',
+      message: meta.message || `A user signed up for an event.\n\n**Attendee:** ${meta.userName || 'User'}\n**Event:** ${meta.eventTitle || 'Unknown'}\n**Ticket:** ${meta.ticketCode || 'N/A'}`,
+      actionText: 'View Event',
+      actionUrl: meta.eventId ? `/community/events/${meta.eventId}` : undefined
+    }),
+
     // Default template
     DEFAULT: () => ({
       icon: '🔔',
