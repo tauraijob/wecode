@@ -9,9 +9,10 @@ export default defineEventHandler(async (event) => {
     const auth = token ? verifyJwt(token) : null
     if (!auth) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
 
-    const user = await prisma.user.findUnique({ where: { id: auth.userId }, select: { role: true } })
+    const user = await prisma.user.findUnique({ where: { id: auth.userId }, select: { role: true, name: true } })
     if (!user || (user.role !== 'ADMIN' && user.role !== 'COMMUNITY_ADMIN')) {
-        throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+        console.warn(`Unauthorized takeover attempt by User: ${user?.name} (Role: ${user?.role}) on Chat: ${chatId}`)
+        throw createError({ statusCode: 403, statusMessage: 'Forbidden: You do not have permission to join this chat' })
     }
 
     const chat = await prisma.supportChat.update({

@@ -113,9 +113,18 @@
               <p class="text-[11px] text-slate-500">Session ID: {{ activeChat.id }}</p>
             </div>
           </div>
-          <button @click="activeChat = null" class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
+          <div class="flex items-center gap-2">
+            <button 
+              @click="closeChat" 
+              class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-600 hover:text-white transition-all"
+              title="End session and close chat"
+            >
+              Close Chat
+            </button>
+            <button @click="activeChat = null" class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
         </div>
 
         <!-- Chat History -->
@@ -237,12 +246,32 @@ async function crawlSite() {
 
 async function joinChat(chat: any) {
   if (confirm(`Join support session with ${chat.user?.name || 'Guest'}?`)) {
-    await $fetch(`/api/admin/ai/chats/${chat.id}/status`, { 
-      method: 'PATCH',
-      body: { status: 'HUMAN_ACTIVE' }
-    })
-    refreshChats()
-    activeChat.value = chat
+    try {
+      await $fetch(`/api/admin/ai/chats/${chat.id}/status`, { 
+        method: 'PATCH',
+        body: { status: 'HUMAN_ACTIVE' }
+      })
+      refreshChats()
+      activeChat.value = chat
+    } catch (e: any) {
+      alert(`Failed to join chat: ${e.message || 'Unknown error'}`)
+    }
+  }
+}
+
+async function closeChat() {
+  if (!activeChat.value) return
+  if (confirm('Permanently close this chat session?')) {
+    try {
+      await $fetch(`/api/admin/ai/chats/${activeChat.value.id}/status`, { 
+        method: 'PATCH',
+        body: { status: 'CLOSED' }
+      })
+      activeChat.value = null
+      refreshChats()
+    } catch (e: any) {
+      alert('Failed to close chat')
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
+  <div class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
     <!-- Chat Window -->
     <transition
       enter-active-class="transition duration-300 ease-out"
@@ -135,6 +135,15 @@ let pollingInterval: any = null
 function toggleChat() {
   isOpen.value = !isOpen.value
 }
+
+onMounted(() => {
+  // Check if there's an existing guest ID or session
+  const guestId = useCookie('tau_guest_id').value
+  if (guestId) {
+     // We don't have the chatId yet, but we could find it if we had an API for it
+     // For now, we'll let it be set when they send the first message or if it's already in a ref
+  }
+})
 
 onUnmounted(() => {
   if (pollingInterval) clearInterval(pollingInterval)
