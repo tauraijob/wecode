@@ -75,6 +75,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-side only (private)
     groqApiKey: process.env.GROQ_API_KEY || '',
+    brevoSmtpUser: process.env.BREVO_SMTP_USER || '',
+    brevoSmtpKey: process.env.BREVO_SMTP_KEY || '',
+    mailFrom: process.env.MAIL_FROM || '',
+    mailTo: process.env.MAIL_TO || '' || 'info@wecode.co.zw',
     // Public (available on client)
     public: {
       googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || '',

@@ -1,26 +1,33 @@
 import prisma from '~~/server/utils/db'
 
 export async function getTauResponse(userMessage: string, history: { role: 'user' | 'assistant', content: string }[] = []) {
-    const apiKey = process.env.GROQ_API_KEY
+    const config = useRuntimeConfig()
+    const apiKey = config.groqApiKey || process.env.GROQ_API_KEY
+
     if (!apiKey) {
-        throw new Error('GROQ_API_KEY not found in environment')
+        console.error('CRITICAL: GROQ_API_KEY not found in runtimeConfig or process.env')
+        throw new Error('AI configuration missing')
     }
 
     // 1. Get Knowledge Base context
-    // Simple keyword matching for context retrieval
     const words = userMessage.toLowerCase().split(/\s+/).filter(w => w.length > 3)
 
     let context = ''
-    if (words.length > 0) {
-        const kbEntries = await prisma.aIKnowledgeBase.findMany({
-            where: {
-                OR: words.map(word => ({
-                    content: { contains: word }
-                }))
-            },
-            take: 5
-        })
-        context = kbEntries.map(e => e.content).join('\n\n')
+    try {
+        if (words.length > 0) {
+            const kbEntries = await prisma.aIKnowledgeBase.findMany({
+                where: {
+                    OR: words.map(word => ({
+                        content: { contains: word }
+                    }))
+                },
+                take: 5
+            })
+            context = kbEntries.map(e => e.content).join('\n\n')
+        }
+    } catch (err) {
+        console.error('KB Retrieval Error:', err)
+        // Continue without context if KB fails
     }
 
     // 2. Prepare System Prompt
@@ -65,9 +72,13 @@ ${context || 'No specific context found. Provide general helpful information abo
             }
         })
 
+        if (!response?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid response format from Groq API')
+        }
+
         return response.choices[0].message.content
     } catch (error: any) {
-        console.error('Groq API Error:', error)
+        console.error('Groq API Error:', error?.data || error)
         return "I'm having a bit of trouble connecting to my brain right now. Please try again or reach out to our team on WhatsApp!"
     }
 }
