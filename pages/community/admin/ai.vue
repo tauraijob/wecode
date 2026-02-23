@@ -99,6 +99,57 @@
         </div>
       </div>
     </div>
+    <!-- Real-time Chat Modal -->
+    <div v-if="activeChat" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="flex h-[600px] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+          <div class="flex items-center gap-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600 text-xl font-bold text-white shadow-lg">
+              {{ activeChat.user?.name?.charAt(0) || 'G' }}
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900">{{ activeChat.user?.name || 'Guest User' }}</h3>
+              <p class="text-[11px] text-slate-500">Session ID: {{ activeChat.id }}</p>
+            </div>
+          </div>
+          <button @click="activeChat = null" class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <!-- Chat History -->
+        <div ref="adminMessageArea" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30">
+          <div v-for="msg in activeChatMessages" :key="msg.id" :class="msg.role === 'user' ? 'flex justify-start' : 'flex justify-end'">
+            <div 
+              :class="msg.role === 'user' ? 'bg-white text-slate-700 rounded-tl-none border border-slate-200' : 'bg-primary-600 text-white rounded-tr-none shadow-md shadow-primary-900/10'"
+              class="max-w-[80%] rounded-2xl px-4 py-3 text-sm"
+            >
+              <div class="mb-1 text-[9px] opacity-60 uppercase font-bold tracking-widest">{{ msg.role === 'user' ? (activeChat.user?.name || 'User') : 'You' }}</div>
+              {{ msg.content }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Input -->
+        <form @submit.prevent="sendAdminMessage" class="border-t border-slate-100 p-6 bg-white">
+          <div class="flex gap-3">
+            <input 
+              v-model="adminInput" 
+              placeholder="Type your message..." 
+              class="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3.5 text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500/30 transition-all"
+            />
+            <button 
+              type="submit" 
+              :disabled="!adminInput.trim() || sending"
+              class="rounded-xl bg-primary-600 px-6 py-3.5 font-bold text-white hover:bg-primary-500 disabled:opacity-50 transition-all shadow-md active:scale-95"
+            >
+              {{ sending ? 'Sending' : 'Send' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </NuxtLayout>
 </template>
 
@@ -110,9 +161,67 @@ const showAddModal = ref(false)
 const { data: chats, refresh: refreshChats } = useFetch<any[]>('/api/admin/ai/chats', { default: () => [] })
 const { data: kb, refresh: refreshKb } = useFetch<any[]>('/api/admin/ai/kb', { default: () => [] })
 
+const activeChat = ref<any>(null)
+const activeChatMessages = ref<any[]>([])
+const adminInput = ref('')
+const sending = ref(false)
+const adminMessageArea = ref<HTMLElement>()
+let pollingInterval: any = null
+
 onMounted(() => {
   chatsLoading.value = false
+  
+  // Refresh chat list every 30s
+  setInterval(() => refreshChats(), 30000)
 })
+
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval)
+})
+
+watch(activeChat, (newVal) => {
+  if (pollingInterval) clearInterval(pollingInterval)
+  if (newVal) {
+    fetchMessages()
+    pollingInterval = setInterval(fetchMessages, 3000) // Poll every 3s
+  }
+})
+
+async function fetchMessages() {
+  if (!activeChat.value) return
+  try {
+    const data = await $fetch<any[]>(`/api/admin/ai/chats/${activeChat.value.id}/messages`)
+    activeChatMessages.value = data
+    scrollToBottom()
+  } catch (e) {
+    console.error('Failed to fetch messages')
+  }
+}
+
+async function sendAdminMessage() {
+  if (!adminInput.value.trim() || !activeChat.value || sending.value) return
+  sending.value = true
+  try {
+    await $fetch(`/api/admin/ai/chats/${activeChat.value.id}/message`, {
+      method: 'POST',
+      body: { content: adminInput.value }
+    })
+    adminInput.value = ''
+    await fetchMessages()
+  } catch (e) {
+    alert('Failed to send message')
+  } finally {
+    sending.value = false
+  }
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (adminMessageArea.value) {
+      adminMessageArea.value.scrollTop = adminMessageArea.value.scrollHeight
+    }
+  })
+}
 
 async function crawlSite() {
   crawling.value = true
@@ -133,6 +242,7 @@ async function joinChat(chat: any) {
       body: { status: 'HUMAN_ACTIVE' }
     })
     refreshChats()
+    activeChat.value = chat
   }
 }
 

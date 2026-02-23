@@ -18,7 +18,10 @@
               <div class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-primary-700 bg-green-500"></div>
             </div>
             <div>
-              <div class="text-sm font-bold uppercase tracking-wider">Tau</div>
+              <div class="flex items-center gap-2">
+                <div class="text-sm font-bold uppercase tracking-wider">Tau</div>
+                <div v-if="chatStatus === 'HUMAN_ACTIVE'" class="bg-white/20 text-[9px] px-1.5 py-0.5 rounded uppercase font-bold">Human Admin</div>
+              </div>
               <div class="text-[10px] text-primary-100">AI Assistant • Online</div>
             </div>
           </div>
@@ -126,9 +129,38 @@ const messageArea = ref<HTMLElement>()
 const chatId = ref<string | null>(null)
 
 const messages = ref<any[]>([])
+const chatStatus = ref('AI_ACTIVE')
+let pollingInterval: any = null
 
 function toggleChat() {
   isOpen.value = !isOpen.value
+}
+
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval)
+})
+
+watch(chatId, (newId) => {
+  if (pollingInterval) clearInterval(pollingInterval)
+  if (newId) {
+    pollingInterval = setInterval(refreshMessages, 3000)
+  }
+})
+
+async function refreshMessages() {
+  if (!chatId.value || !isOpen.value) return
+  try {
+    const res = await $fetch<any>('/api/ai/messages', {
+      params: { chatId: chatId.value }
+    })
+    if (res.messages.length > messages.value.length) {
+      messages.value = res.messages
+      chatStatus.value = res.status
+      scrollToBottom()
+    }
+  } catch (e) {
+    console.warn('Failed to refresh messages')
+  }
 }
 
 function startConversation() {
@@ -142,15 +174,19 @@ function startConversation() {
 async function sendMessage() {
   if (!input.value.trim() || typing.value) return
   
-  // Auto-start session for logged in users if they just start typing
+  // Auto-start session for logged in users
   if (!sessionStarted.value && user.value) {
     sessionStarted.value = true
   }
 
   const userMsg = input.value.trim()
-  messages.value.push({ role: 'user', content: userMsg })
   input.value = ''
-  typing.value = true
+  
+  // Optimistic update if AI is active
+  if (chatStatus.value === 'AI_ACTIVE') {
+    messages.value.push({ role: 'user', content: userMsg })
+    typing.value = true
+  }
   
   scrollToBottom()
 
@@ -166,10 +202,14 @@ async function sendMessage() {
     
     if (res.ok) {
       chatId.value = res.chatId
-      messages.value.push({ role: 'assistant', content: res.reply })
+      if (res.reply) {
+        messages.value.push({ role: 'assistant', content: res.reply })
+      }
     }
   } catch (e) {
-    messages.value.push({ role: 'assistant', content: "Sorry, I'm having some technical difficulties. Please try again later!" })
+     if (chatStatus.value === 'AI_ACTIVE') {
+       messages.value.push({ role: 'assistant', content: "Sorry, I'm having some technical difficulties." })
+     }
   } finally {
     typing.value = false
     scrollToBottom()

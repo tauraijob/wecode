@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
             return {
                 ok: true,
                 chatId: chat.id,
-                reply: "One of our human admins has been notified. They'll be with you shortly!",
+                reply: null, // No AI reply
                 status: 'HUMAN_ACTIVE'
             }
         }
