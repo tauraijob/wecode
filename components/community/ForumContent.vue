@@ -30,7 +30,7 @@
       </div>
       
       <!-- Regular Text -->
-      <p v-else class="whitespace-pre-line">{{ block.text }}</p>
+      <p v-else class="whitespace-pre-line" v-html="linkify(block.text || '')"></p>
     </template>
   </div>
 </template>
@@ -161,8 +161,8 @@ const parsedContent = computed<ContentBlock[]>(() => {
     // Add code block
     blocks.push({
       type: 'code',
-      language: match[1] || detectLanguage(match[2]),
-      code: match[2].trim()
+      language: match[1] || detectLanguage(match[2] || ''),
+      code: (match[2] || '').trim()
     })
     
     lastIndex = match.index + match[0].length
@@ -218,9 +218,30 @@ const highlightCode = (code: string, language?: string) => {
 }
 
 const escapeHtml = (text: string) => {
-  const div = document.createElement('div')
-  div.textContent = text
-  return div.innerHTML
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+const linkify = (text: string) => {
+  if (!text) return ''
+  
+  const escaped = escapeHtml(text)
+  
+  // Regex to match URLs
+  // Handles http, https and www.
+  const urlRegex = /((?:https?:\/\/|www\.)[^\s<]+)/g
+  
+  return escaped.replace(urlRegex, (url) => {
+    let href = url
+    if (url.startsWith('www.')) {
+      href = 'http://' + url
+    }
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline break-all font-medium transition-colors">${url}</a>`
+  })
 }
 
 const copyCode = async (code: string) => {

@@ -83,13 +83,27 @@
               <span class="text-[10px] font-medium">{{ post.viewCount || 0 }}</span>
             </div>
           </div>
-          
-          <!-- Read more indicator -->
-          <div class="flex items-center gap-1 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span class="text-[10px] font-medium">Read</span>
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2">
+            <!-- Share Icon -->
+            <button 
+              @click.stop.prevent="sharePost"
+              class="p-1.5 rounded-full text-slate-400 hover:text-primary-500 hover:bg-primary-50 transition-all"
+              title="Copy link"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            </button>
+            
+            <!-- Read more indicator -->
+            <div class="flex items-center gap-1 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span class="text-[10px] font-medium">Read</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -146,5 +160,16 @@ const formatDate = (date: string) => {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const { success: toastSuccess, error: toastError } = useToast()
+
+const sharePost = () => {
+  if (process.client) {
+    const url = `${window.location.origin}/community/post/${props.post.id}`
+    navigator.clipboard.writeText(url)
+      .then(() => toastSuccess('Link copied!'))
+      .catch(() => toastError('Failed to copy'))
+  }
 }
 </script>
